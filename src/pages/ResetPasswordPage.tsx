@@ -130,7 +130,7 @@ export function ResetPasswordPage() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
-            <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-16 mx-auto mb-4" />
+            <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-20 w-auto mx-auto mb-3 object-contain" />
             <h1 className="text-2xl font-bold text-gray-900">Create New Password</h1>
             <p className="text-gray-600 mt-2">Enter a new password for your account</p>
           </div>

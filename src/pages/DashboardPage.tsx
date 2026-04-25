@@ -85,11 +85,8 @@ export function DashboardPage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10" />
-            <div>
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Image Skinn & Hair</h1>
-              <p className="text-xs text-gray-500">Salon CRM System</p>
-            </div>
+            <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-12 w-auto object-contain" />
+            <p className="text-xs text-gray-400 font-medium hidden sm:block">Salon CRM System</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="text-sm font-medium text-gray-700 hidden sm:inline">{user?.name}</span>

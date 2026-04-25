@@ -104,10 +104,9 @@ export function LoginPage() {
             <img
               src="/Image_logo.png"
               alt="Image Skinn & Hair"
-              className="h-20 mx-auto mb-4"
+              className="h-28 w-auto mx-auto mb-3 object-contain"
             />
-            <h1 className="text-3xl font-bold text-gray-900">Image Skinn & Hair</h1>
-            <p className="text-gray-600 mt-2 text-sm">Salon Management Portal</p>
+            <p className="text-gray-500 text-sm font-medium tracking-wide">Salon Management Portal</p>
           </div>
 
           {/* Error Messages */}
