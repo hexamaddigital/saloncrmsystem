@@ -121,9 +121,13 @@ export function ForgotPasswordPage() {
             <div className="text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {step === 'email' ? 'Check Your Email' : 'Password Updated Successfully'}
+                {step === 'reset_direct' ? 'Password Updated Successfully' : 'Check Your Email'}
               </h1>
-              {step === 'email' ? (
+              {step === 'reset_direct' ? (
+                <p className="text-gray-600 mb-8">
+                  Your password has been reset. You can now sign in with your new password.
+                </p>
+              ) : (
                 <>
                   <p className="text-gray-600 mb-6">
                     We've sent a password reset link to <strong>{email}</strong>
@@ -132,10 +136,6 @@ export function ForgotPasswordPage() {
                     Click the link in the email to reset your password. The link will expire in 24 hours.
                   </p>
                 </>
-              ) : (
-                <p className="text-gray-600 mb-8">
-                  Your password has been reset. You can now sign in with your new password.
-                </p>
               )}
               <button
                 onClick={() => navigate('/login')}

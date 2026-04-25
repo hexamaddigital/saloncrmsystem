@@ -66,35 +66,38 @@ export function UserManagementPage() {
         throw new Error('Phone number must be exactly 10 digits');
       }
 
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: {
-          data: { name: form.name, phone: form.phone, role: form.role }
-        }
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || supabaseAnonKey}`,
+          'apikey': supabaseAnonKey,
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          name: form.name,
+          phone: form.phone,
+          role: form.role,
+        }),
       });
 
-      if (signUpError) throw signUpError;
+      const result = await response.json();
 
-      if (signUpData.user) {
-        const { error: userError } = await supabase
-          .from('users')
-          .insert({
-            id: signUpData.user.id,
-            name: form.name,
-            email: form.email,
-            phone: form.phone,
-            role: form.role
-          });
-
-        if (userError) throw userError;
-
-        setForm({ name: '', email: '', phone: '', password: '', role: 'operator' });
-        setShowAddForm(false);
-        setSuccess('User created successfully');
-        fetchUsers();
-        setTimeout(() => setSuccess(''), 3000);
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create user');
       }
+
+      setForm({ name: '', email: '', phone: '', password: '', role: 'operator' });
+      setShowAddForm(false);
+      setSuccess('User created successfully');
+      fetchUsers();
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add user');
     }
@@ -269,32 +272,38 @@ export function UserManagementPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map(u => (
-                  <tr key={u.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
-                    <td className="px-6 py-3 text-gray-900 font-medium">{u.name}</td>
-                    <td className="px-6 py-3 text-gray-700">{u.email}</td>
-                    <td className="px-6 py-3 text-gray-700">{u.phone}</td>
-                    <td className="px-6 py-3">
-                      <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                        u.role === 'admin'
-                          ? 'bg-teal-100 text-teal-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3">
-                      {u.id !== currentUser?.id && (
-                        <button
-                          onClick={() => handleDeleteUser(u.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </td>
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No users found</td>
                   </tr>
-                ))}
+                ) : (
+                  users.map(u => (
+                    <tr key={u.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                      <td className="px-6 py-3 text-gray-900 font-medium">{u.name}</td>
+                      <td className="px-6 py-3 text-gray-700">{u.email}</td>
+                      <td className="px-6 py-3 text-gray-700">{u.phone}</td>
+                      <td className="px-6 py-3">
+                        <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                          u.role === 'admin'
+                            ? 'bg-teal-100 text-teal-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3">
+                        {u.id !== currentUser?.id && (
+                          <button
+                            onClick={() => handleDeleteUser(u.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
