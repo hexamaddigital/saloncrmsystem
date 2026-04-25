@@ -56,7 +56,8 @@ Deno.serve(async (req: Request) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { name, phone, role: userRole }
+      user_metadata: { name, phone, role: userRole },
+      app_metadata: { role: userRole }
     });
 
     if (authError) {
