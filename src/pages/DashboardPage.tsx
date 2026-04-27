@@ -22,54 +22,60 @@ export function DashboardPage() {
     popularTreatments: []
   });
 
+  const isAdmin = user?.role === 'admin';
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
-
     fetchStats();
   }, [user, navigate]);
 
   async function fetchStats() {
     try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
 
-      const { count: clientCount } = await supabase
-        .from('clients')
-        .select('*', { count: 'exact' });
-
-      const { data: todayTransactions } = await supabase
-        .from('transactions')
-        .select('price')
-        .gte('date', today.toISOString());
-
+      // Popular treatments: available to all roles (no financial data)
       const { data: monthTransactions } = await supabase
         .from('transactions')
-        .select('price, treatment_name')
+        .select('treatment_name')
         .gte('date', monthStart.toISOString());
-
-      const dailySales = todayTransactions?.reduce((sum, t) => sum + (t.price || 0), 0) || 0;
-      const monthlySales = monthTransactions?.reduce((sum, t) => sum + (t.price || 0), 0) || 0;
 
       const treatmentCounts = (monthTransactions || []).reduce((acc, t) => {
         const existing = acc.find(item => item.name === t.treatment_name);
-        if (existing) {
-          existing.count++;
-        } else {
-          acc.push({ name: t.treatment_name, count: 1 });
-        }
+        if (existing) existing.count++;
+        else acc.push({ name: t.treatment_name, count: 1 });
         return acc;
       }, [] as Array<{ name: string; count: number }>).sort((a, b) => b.count - a.count).slice(0, 5);
 
-      setStats({
-        totalClients: clientCount || 0,
-        dailySales,
-        monthlySales,
-        popularTreatments: treatmentCounts
-      });
+      if (isAdmin) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const { count: clientCount } = await supabase
+          .from('clients')
+          .select('*', { count: 'exact' });
+
+        const { data: todayTransactions } = await supabase
+          .from('transactions')
+          .select('price')
+          .gte('date', today.toISOString());
+
+        const { data: monthSalesData } = await supabase
+          .from('transactions')
+          .select('price')
+          .gte('date', monthStart.toISOString());
+
+        const dailySales = todayTransactions?.reduce((sum, t) => sum + (t.price || 0), 0) || 0;
+        const monthlySales = monthSalesData?.reduce((sum, t) => sum + (t.price || 0), 0) || 0;
+
+        setStats({ totalClients: clientCount || 0, dailySales, monthlySales, popularTreatments: treatmentCounts });
+      } else {
+        setStats(prev => ({ ...prev, popularTreatments: treatmentCounts }));
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -123,36 +129,40 @@ export function DashboardPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Clients</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalClients}</p>
+        <div className={`grid gap-6 mb-8 ${isAdmin ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
+          {isAdmin && (
+            <>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Total Clients</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalClients}</p>
+                  </div>
+                  <Users className="w-12 h-12 text-teal-100" />
+                </div>
               </div>
-              <Users className="w-12 h-12 text-teal-100" />
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Today's Sales</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">₹{stats.dailySales.toFixed(2)}</p>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Today's Sales</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">₹{stats.dailySales.toFixed(2)}</p>
+                  </div>
+                  <BarChart3 className="w-12 h-12 text-blue-100" />
+                </div>
               </div>
-              <BarChart3 className="w-12 h-12 text-blue-100" />
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Monthly Sales</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">₹{stats.monthlySales.toFixed(2)}</p>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Monthly Sales</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">₹{stats.monthlySales.toFixed(2)}</p>
+                  </div>
+                  <TrendingUp className="w-12 h-12 text-green-100" />
+                </div>
               </div>
-              <TrendingUp className="w-12 h-12 text-green-100" />
-            </div>
-          </div>
+            </>
+          )}
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div>
