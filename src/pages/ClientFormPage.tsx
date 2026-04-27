@@ -23,6 +23,8 @@ interface FormData {
   notes: string;
   service_type: string;
   service_items: string[];
+  custom_hair: string;
+  custom_skin: string;
   oral_medication: string;
   skin_allergies: string;
   home_care: string;
@@ -48,6 +50,8 @@ export function ClientFormPage() {
     notes: '',
     service_type: '',
     service_items: [],
+    custom_hair: '',
+    custom_skin: '',
     oral_medication: '',
     skin_allergies: '',
     home_care: '',
@@ -67,6 +71,8 @@ export function ClientFormPage() {
       ...prev,
       service_type: prev.service_type === value ? '' : value,
       service_items: [],
+      custom_hair: '',
+      custom_skin: '',
       oral_medication: '',
       skin_allergies: '',
       home_care: '',
@@ -75,6 +81,11 @@ export function ClientFormPage() {
   }
 
   function toggleServiceItem(item: string) {
+    if (item === 'Custom') {
+      // just toggle the checkbox; the input field will appear separately
+      setForm(prev => ({ ...prev, service_items: toggleItem(prev.service_items, 'Custom') }));
+      return;
+    }
     setForm(prev => ({ ...prev, service_items: toggleItem(prev.service_items, item) }));
   }
 
@@ -84,6 +95,20 @@ export function ClientFormPage() {
 
   const showHair = form.service_type === 'hair' || form.service_type === 'hair_and_skin';
   const showSkin = form.service_type === 'skin' || form.service_type === 'hair_and_skin';
+  const hairCustomSelected = form.service_items.includes('Custom') && showHair;
+  const skinCustomSelected = form.service_items.includes('Custom') && showSkin;
+
+  function buildServiceItems(): string[] {
+    // Replace the generic "Custom" token with the actual typed values
+    const items = form.service_items.filter(i => i !== 'Custom');
+    if (hairCustomSelected && form.custom_hair.trim()) {
+      items.push(`Custom: ${form.custom_hair.trim()}`);
+    }
+    if (skinCustomSelected && form.custom_skin.trim()) {
+      items.push(`Custom: ${form.custom_skin.trim()}`);
+    }
+    return items;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -94,6 +119,8 @@ export function ClientFormPage() {
       if (!form.name.trim()) throw new Error('Name is required');
       if (!form.phone.trim()) throw new Error('Phone is required');
       if (!/^\d{10}$/.test(form.phone.trim())) throw new Error('Phone number must be exactly 10 digits');
+
+      const serviceItems = buildServiceItems();
 
       const { data, error: insertError } = await supabase
         .from('clients')
@@ -106,10 +133,10 @@ export function ClientFormPage() {
           address: form.address || null,
           notes: form.notes || null,
           service_type: form.service_type || null,
-          service_items: form.service_items.length > 0 ? form.service_items : null,
-          oral_medication: form.oral_medication || null,
-          skin_allergies: form.skin_allergies || null,
-          home_care: form.home_care || null,
+          service_items: serviceItems.length > 0 ? serviceItems : null,
+          oral_medication: form.oral_medication.trim() || null,
+          skin_allergies: form.skin_allergies.trim() || null,
+          home_care: form.home_care.trim() || null,
           hair_conditions: form.hair_conditions.length > 0 ? form.hair_conditions : null,
         })
         .select()
@@ -131,7 +158,21 @@ export function ClientFormPage() {
   const inputCls = 'w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition text-sm';
   const labelCls = 'block text-sm font-medium text-gray-700 mb-1.5';
   const sectionCls = 'bg-gray-50 border border-gray-200 rounded-xl p-5 space-y-4';
-  const pillBase = 'px-3 py-1.5 rounded-full text-sm border transition font-medium';
+
+  function PillButton({ label, active, color, onClick }: { label: string; active: boolean; color: 'teal' | 'rose'; onClick: () => void }) {
+    const activeClass = color === 'teal'
+      ? 'bg-teal-600 text-white border-teal-600'
+      : 'bg-rose-600 text-white border-rose-600';
+    const hoverClass = color === 'teal'
+      ? 'hover:border-teal-400'
+      : 'hover:border-rose-400';
+    return (
+      <button type="button" onClick={onClick}
+        className={`px-3 py-1.5 rounded-full text-sm border font-medium transition ${active ? activeClass : `bg-white text-gray-700 border-gray-300 ${hoverClass}`}`}>
+        {label}
+      </button>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -230,38 +271,68 @@ export function ClientFormPage() {
                 ))}
               </div>
 
+              {/* Hair Services */}
               {showHair && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Hair Services</p>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-700">Hair Services</p>
                   <div className="flex flex-wrap gap-2">
                     {HAIR_SERVICES.map(item => (
-                      <button key={item} type="button" onClick={() => toggleServiceItem(item)}
-                        className={`${pillBase} ${
-                          form.service_items.includes(item)
-                            ? 'bg-teal-600 text-white border-teal-600'
-                            : 'bg-white text-gray-700 border-gray-300 hover:border-teal-400'
-                        }`}>
-                        {item}
-                      </button>
+                      <PillButton key={item} label={item}
+                        active={form.service_items.includes(item)}
+                        color="teal"
+                        onClick={() => toggleServiceItem(item)} />
                     ))}
                   </div>
+                  {hairCustomSelected && (
+                    <div className="mt-2">
+                      <input type="text" name="custom_hair" value={form.custom_hair}
+                        onChange={handleChange}
+                        placeholder="Describe custom hair service..."
+                        className={inputCls} />
+                    </div>
+                  )}
                 </div>
               )}
 
+              {/* Skin Services */}
               {showSkin && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Skin Services</p>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-700">Skin Services</p>
                   <div className="flex flex-wrap gap-2">
                     {SKIN_SERVICES.map(item => (
-                      <button key={item} type="button" onClick={() => toggleServiceItem(item)}
-                        className={`${pillBase} ${
-                          form.service_items.includes(item)
-                            ? 'bg-rose-600 text-white border-rose-600'
-                            : 'bg-white text-gray-700 border-gray-300 hover:border-rose-400'
-                        }`}>
-                        {item}
-                      </button>
+                      <PillButton key={item} label={item}
+                        active={form.service_items.includes(item)}
+                        color="rose"
+                        onClick={() => toggleServiceItem(item)} />
                     ))}
+                  </div>
+                  {skinCustomSelected && (
+                    <div className="mt-2">
+                      <input type="text" name="custom_skin" value={form.custom_skin}
+                        onChange={handleChange}
+                        placeholder="Describe custom skin service..."
+                        className={inputCls} />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Selected services preview */}
+              {(form.service_items.filter(i => i !== 'Custom').length > 0 ||
+                (hairCustomSelected && form.custom_hair.trim()) ||
+                (skinCustomSelected && form.custom_skin.trim())) && (
+                <div className="pt-2 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 mb-1.5">Selected services:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {form.service_items.filter(i => i !== 'Custom').map(item => (
+                      <span key={item} className="px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full border border-teal-200">{item}</span>
+                    ))}
+                    {hairCustomSelected && form.custom_hair.trim() && (
+                      <span className="px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full border border-teal-200">Custom: {form.custom_hair.trim()}</span>
+                    )}
+                    {skinCustomSelected && form.custom_skin.trim() && (
+                      <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-xs rounded-full border border-rose-200">Custom: {form.custom_skin.trim()}</span>
+                    )}
                   </div>
                 </div>
               )}
@@ -298,16 +369,22 @@ export function ClientFormPage() {
                     <p className="text-sm font-semibold text-teal-700">Hair Conditions</p>
                     <div className="flex flex-wrap gap-2">
                       {HAIR_CONDITIONS.map(item => (
-                        <button key={item} type="button" onClick={() => toggleHairCondition(item)}
-                          className={`${pillBase} ${
-                            form.hair_conditions.includes(item)
-                              ? 'bg-teal-600 text-white border-teal-600'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-teal-400'
-                          }`}>
-                          {item}
-                        </button>
+                        <PillButton key={item} label={item}
+                          active={form.hair_conditions.includes(item)}
+                          color="teal"
+                          onClick={() => toggleHairCondition(item)} />
                       ))}
                     </div>
+                    {form.hair_conditions.length > 0 && (
+                      <div className="pt-2 border-t border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1.5">Selected conditions:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {form.hair_conditions.map(c => (
+                            <span key={c} className="px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full border border-teal-200">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
