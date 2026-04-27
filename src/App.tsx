@@ -9,6 +9,7 @@ import { ClientFormPage } from './pages/ClientFormPage';
 import { ClientProfilePage } from './pages/ClientProfilePage';
 import { UserManagementPage } from './pages/UserManagementPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { AdminClientListPage } from './pages/AdminClientListPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -100,6 +101,7 @@ function AppRoutes() {
       <Route path="/clients/search" element={<ProtectedRoute><ClientSearchPage /></ProtectedRoute>} />
       <Route path="/clients/new" element={<ProtectedRoute><ClientFormPage /></ProtectedRoute>} />
       <Route path="/clients/:id" element={<ProtectedRoute><ClientProfilePage /></ProtectedRoute>} />
+      <Route path="/admin/clients" element={<AdminRoute><AdminClientListPage /></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><UserManagementPage /></AdminRoute>} />
       <Route path="/settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />

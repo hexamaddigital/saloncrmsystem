@@ -132,15 +132,19 @@ export function DashboardPage() {
         <div className={`grid gap-6 mb-8 ${isAdmin ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
           {isAdmin && (
             <>
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <button
+                onClick={() => navigate('/admin/clients')}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 hover:border-teal-300 hover:shadow-md p-6 transition text-left group"
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 text-sm font-medium">Total Clients</p>
+                    <p className="text-gray-600 text-sm font-medium group-hover:text-teal-700 transition">Total Clients</p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalClients}</p>
+                    <p className="text-xs text-teal-600 mt-1 opacity-0 group-hover:opacity-100 transition font-medium">View all →</p>
                   </div>
-                  <Users className="w-12 h-12 text-teal-100" />
+                  <Users className="w-12 h-12 text-teal-100 group-hover:text-teal-200 transition" />
                 </div>
-              </div>
+              </button>
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center justify-between">
