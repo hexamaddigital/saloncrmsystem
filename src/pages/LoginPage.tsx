@@ -4,13 +4,9 @@ import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { signIn } from '../lib/auth';
 import {
   validateLoginForm,
-  parseAuthError,
   saveRememberMe,
   clearRememberMe,
   getRememberedEmail,
-  checkRateLimit,
-  recordLoginAttempt,
-  clearLoginAttempts
 } from '../lib/authUtils';
 
 export function LoginPage() {
@@ -22,7 +18,6 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
-  const [rateLimitError, setRateLimitError] = useState('');
 
   useEffect(() => {
     const rememberedEmail = getRememberedEmail();
@@ -36,33 +31,22 @@ export function LoginPage() {
     setEmail(value);
     setFieldErrors(prev => ({ ...prev, email: '' }));
     setError('');
-    setRateLimitError('');
   }
 
   function handlePasswordChange(value: string) {
     setPassword(value);
     setFieldErrors(prev => ({ ...prev, password: '' }));
     setError('');
-    setRateLimitError('');
   }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setFieldErrors({});
-    setRateLimitError('');
 
     const validation = validateLoginForm(email, password);
     if (!validation.valid) {
       setFieldErrors(validation.errors);
-      return;
-    }
-
-    const { allowed, remainingTime } = checkRateLimit();
-    if (!allowed) {
-      setRateLimitError(
-        `Too many login attempts. Please try again in ${remainingTime} seconds.`
-      );
       return;
     }
 
@@ -72,23 +56,19 @@ export function LoginPage() {
       const result = await signIn(email, password);
 
       if (result.success) {
-        clearLoginAttempts();
-
         if (rememberMe) {
           saveRememberMe(email);
         } else {
           clearRememberMe();
         }
-
         navigate('/dashboard');
       } else {
-        recordLoginAttempt();
-        const errorMessage = parseAuthError(result.error);
-        setError(errorMessage);
+        await new Promise(r => setTimeout(r, 1500));
+        setError('Invalid email or password');
       }
     } catch (err) {
-      recordLoginAttempt();
-      setError('An unexpected error occurred. Please try again.');
+      await new Promise(r => setTimeout(r, 1500));
+      setError('Invalid email or password');
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -108,13 +88,6 @@ export function LoginPage() {
             />
             <p className="text-gray-500 text-sm font-medium tracking-wide">Salon Management Portal</p>
           </div>
-
-          {/* Error Messages */}
-          {rateLimitError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
-              {rateLimitError}
-            </div>
-          )}
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">

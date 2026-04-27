@@ -15,10 +15,18 @@ export interface Client {
   name: string;
   phone: string;
   age?: number;
+  dob?: string;
   gender?: 'male' | 'female' | 'other';
   blood_group?: string;
+  profession?: string;
   address?: string;
   notes?: string;
+  service_type?: string;
+  service_items?: string[];
+  oral_medication?: string;
+  skin_allergies?: string;
+  home_care?: string;
+  hair_conditions?: string[];
   created_at: string;
   updated_at: string;
 }
