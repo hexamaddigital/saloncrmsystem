@@ -210,7 +210,17 @@ export function LoginPage() {
 
         {/* Security Footer */}
         <div className="mt-6 text-center text-xs text-gray-400">
-          <p>&copy; {new Date().getFullYear()} Image Skinn & Hair. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} Image Skinn & Hair. All rights reserved. | Designed &amp; Developed by{' '}
+            <a
+              href="https://www.hexamad.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 hover:text-teal-600 transition underline underline-offset-2"
+            >
+              Hexamad Digital
+            </a>
+          </p>
         </div>
       </div>
     </div>
