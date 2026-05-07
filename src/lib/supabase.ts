@@ -11,7 +11,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     storageKey: 'salon-crm-auth',
-    storage: window.localStorage,
+    // sessionStorage isolates each tab: a new tab starts unauthenticated
+    // and does not inherit or overwrite another tab's active session.
+    storage: window.sessionStorage,
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },

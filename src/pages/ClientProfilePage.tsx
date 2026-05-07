@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, Plus, Loader2, Trash2, Star,
-  Scissors, Sparkles, ClipboardList, Pencil, X, Check,
+  Scissors, Sparkles, ClipboardList, Pencil, X, Check, AlertTriangle,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Client, Transaction, Feedback, HealthProfile, HairProfile } from '../lib/types';
@@ -171,6 +171,11 @@ export function ClientProfilePage() {
   });
   const [serviceError, setServiceError] = useState('');
   const [savingService, setSavingService] = useState(false);
+
+  // Delete client state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   // Treatment / feedback forms
   const [showAddTreatment, setShowAddTreatment] = useState(false);
@@ -362,6 +367,28 @@ export function ClientProfilePage() {
     } catch (error) { console.error('Error adding feedback:', error); }
   }
 
+  // ── Delete client (admin only) ──
+
+  async function handleDeleteClient() {
+    if (!client || !isAdmin) return;
+    setDeleting(true);
+    try {
+      // Delete related records first, then the client
+      await Promise.all([
+        supabase.from('transactions').delete().eq('client_id', client.id),
+        supabase.from('feedback').delete().eq('client_id', client.id),
+        supabase.from('health_profiles').delete().eq('client_id', client.id),
+        supabase.from('hair_profiles').delete().eq('client_id', client.id),
+      ]);
+      const { error } = await supabase.from('clients').delete().eq('id', client.id);
+      if (error) throw error;
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Error deleting client:', err);
+      setDeleting(false);
+    }
+  }
+
   async function handleDeleteTransaction(transId: string) {
     if (confirm('Delete this transaction?')) {
       await supabase.from('transactions').delete().eq('id', transId);
@@ -411,9 +438,21 @@ export function ClientProfilePage() {
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10 w-auto object-contain" />
             <h1 className="text-xl font-bold text-gray-900">{client.name}</h1>
           </div>
-          <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
-          </button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <button
+                onClick={() => { setDeleteConfirmText(''); setShowDeleteModal(true); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-lg transition"
+                title="Delete Client Profile"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Delete Client</span>
+              </button>
+            )}
+            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+              <ChevronLeft className="w-6 h-6 text-gray-600" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -864,6 +903,64 @@ export function ClientProfilePage() {
 
         </div>
       </main>
+
+      {/* ── Delete Client Confirmation Modal (Admin only) ── */}
+      {showDeleteModal && isAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !deleting && setShowDeleteModal(false)}
+          />
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-fade-in">
+            <div className="flex items-start gap-4 mb-5">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Delete Client Profile</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  This will permanently delete <span className="font-semibold text-gray-900">{client.name}</span>'s
+                  profile, all treatment history, and all related records. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Type <span className="font-bold text-red-600">DELETE</span> to confirm
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={e => setDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition"
+                disabled={deleting}
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition text-sm disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteClient}
+                disabled={deleteConfirmText !== 'DELETE' || deleting}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {deleting ? <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</> : <><Trash2 className="w-4 h-4" /> Delete Permanently</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Loader2, ChevronLeft, ExternalLink, CalendarDays } from 'lucide-react';
+import { Search, Plus, Loader2, ChevronLeft, ExternalLink, CalendarDays, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Client, Transaction } from '../lib/types';
+
+const PREVIEW_COUNT = 4;
 
 export function ClientSearchPage() {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ export function ClientSearchPage() {
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState('');
+  const [showAll, setShowAll] = useState(false);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -20,6 +23,7 @@ export function ClientSearchPage() {
     setNotFound(false);
     setClient(null);
     setTreatments([]);
+    setShowAll(false);
 
     const trimmedPhone = phone.trim();
     if (!trimmedPhone) {
@@ -59,6 +63,9 @@ export function ClientSearchPage() {
       setLoading(false);
     }
   }
+
+  const visibleTreatments = showAll ? treatments : treatments.slice(0, PREVIEW_COUNT);
+  const hasMore = treatments.length > PREVIEW_COUNT;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -109,7 +116,7 @@ export function ClientSearchPage() {
         {/* Client found */}
         {client && (
           <div className="space-y-4">
-            {/* Client summary + Open Full Profile */}
+            {/* Client summary */}
             <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <p className="font-bold text-teal-900 text-lg">{client.name}</p>
@@ -127,35 +134,79 @@ export function ClientSearchPage() {
               </button>
             </div>
 
-            {/* Treatment History */}
+            {/* Treatment History — preview */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <CalendarDays className="w-5 h-5 text-teal-600" />
-                Treatment History
-                {treatments.length > 0 && (
-                  <span className="ml-1 px-2 py-0.5 bg-teal-100 text-teal-800 text-xs font-semibold rounded-full">
-                    {treatments.length}
-                  </span>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <CalendarDays className="w-5 h-5 text-teal-600" />
+                  Treatment History
+                  {treatments.length > 0 && (
+                    <span className="ml-1 px-2 py-0.5 bg-teal-100 text-teal-800 text-xs font-semibold rounded-full">
+                      {treatments.length}
+                    </span>
+                  )}
+                </h3>
+                {hasMore && showAll && (
+                  <button
+                    onClick={() => setShowAll(false)}
+                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-teal-700 transition"
+                  >
+                    <ChevronUp className="w-3.5 h-3.5" /> Show less
+                  </button>
                 )}
-              </h3>
+              </div>
 
               {treatments.length > 0 ? (
-                <div className="space-y-2">
-                  {treatments.map(tx => (
-                    <div key={tx.id} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <div>
-                        <p className="font-semibold text-gray-900 text-sm">{tx.treatment_name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          {tx.notes ? ` • ${tx.notes}` : ''}
-                        </p>
+                <>
+                  <div className="space-y-2">
+                    {visibleTreatments.map((tx, idx) => (
+                      <div key={tx.id}
+                        className={`flex items-start justify-between p-3 rounded-lg border transition ${idx === 0 ? 'bg-teal-50 border-teal-200' : 'bg-gray-50 border-gray-200'}`}>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-900 text-sm">{tx.treatment_name}</p>
+                            {idx === 0 && (
+                              <span className="text-xs bg-teal-600 text-white px-1.5 py-0.5 rounded font-medium">Latest</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {tx.notes ? ` • ${tx.notes}` : ''}
+                          </p>
+                        </div>
+                        <span className="text-sm font-bold text-teal-700 whitespace-nowrap ml-4 shrink-0">
+                          ₹{Number(tx.price).toFixed(0)}
+                        </span>
                       </div>
-                      <span className="text-sm font-bold text-teal-700 whitespace-nowrap ml-4">
-                        ₹{Number(tx.price).toFixed(0)}
-                      </span>
+                    ))}
+                  </div>
+
+                  {/* View All / collapse */}
+                  {hasMore && !showAll && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <button
+                        onClick={() => setShowAll(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-teal-700 hover:text-teal-800 hover:bg-teal-50 rounded-lg border border-teal-200 hover:border-teal-300 transition"
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                        View All History ({treatments.length} records)
+                      </button>
                     </div>
-                  ))}
-                </div>
+                  )}
+
+                  {/* Full profile link when expanded */}
+                  {showAll && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                      <button
+                        onClick={() => navigate(`/clients/${client.id}`)}
+                        className="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 font-medium transition"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Open full profile for complete details
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <p className="text-gray-500 text-sm text-center py-4">No treatments recorded yet</p>
               )}
