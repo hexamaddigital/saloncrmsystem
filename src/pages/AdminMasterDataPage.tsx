@@ -164,6 +164,9 @@ export function AdminMasterDataPage() {
   const [auditPage, setAuditPage] = useState(0);
   const AUDIT_PAGE_SIZE = 50;
 
+  // Map of uid → { name, role } for audit log display
+  const [userMap, setUserMap] = useState<Record<string, { name: string; role: string }>>({});
+
   // Detail panel
   const [selectedRow, setSelectedRow] = useState<MasterRow | null>(null);
 
@@ -198,7 +201,28 @@ export function AdminMasterDataPage() {
       if (auditOpFilter) q = q.eq('operation', auditOpFilter);
       const { data, error } = await q;
       if (error) throw error;
-      setAuditRows(data as AuditRow[] || []);
+
+      const rows = (data as AuditRow[]) || [];
+      setAuditRows(rows);
+
+      // Resolve any user IDs not yet in the map
+      const unknownIds = [...new Set(
+        rows.map(r => r.changed_by).filter((id): id is string => !!id)
+      )].filter(id => !(id in userMap));
+
+      if (unknownIds.length > 0) {
+        const { data: users } = await supabase
+          .from('users')
+          .select('id, name, role')
+          .in('id', unknownIds);
+        if (users) {
+          setUserMap(prev => {
+            const next = { ...prev };
+            for (const u of users) next[u.id] = { name: u.name, role: u.role };
+            return next;
+          });
+        }
+      }
     } catch (err) {
       setAuditError(err instanceof Error ? err.message : 'Failed to load audit log');
     } finally {
@@ -534,8 +558,8 @@ export function AdminMasterDataPage() {
                               </span>
                             </td>
                             <td className="px-3 py-2.5 text-gray-400 text-xs font-mono">{row.record_id.slice(0, 8)}…</td>
-                            <td className="px-3 py-2.5 text-gray-400 text-xs font-mono">
-                              {row.changed_by ? row.changed_by.slice(0, 8) + '…' : 'system'}
+                            <td className="px-3 py-2.5">
+                              <ChangedByCell uid={row.changed_by} userMap={userMap} />
                             </td>
                             <td className="px-3 py-2.5">
                               <AuditDiff old_data={row.old_data} new_data={row.new_data} op={row.operation} />
@@ -673,6 +697,30 @@ function DetailRow({ label, value, capitalize, danger }: {
         {display}
       </span>
     </div>
+  );
+}
+
+function ChangedByCell({ uid, userMap }: {
+  uid: string | null;
+  userMap: Record<string, { name: string; role: string }>;
+}) {
+  if (!uid) {
+    return <span className="text-xs text-gray-400 italic">System</span>;
+  }
+  const user = userMap[uid];
+  if (!user) {
+    return <span className="text-xs text-gray-400">Unknown User</span>;
+  }
+  const roleBadge = user.role === 'admin'
+    ? 'bg-teal-100 text-teal-700'
+    : 'bg-gray-100 text-gray-600';
+  return (
+    <span className="flex items-center gap-1.5 whitespace-nowrap">
+      <span className="text-xs font-medium text-gray-800">{user.name}</span>
+      <span className={`text-xs px-1.5 py-0.5 rounded capitalize font-medium ${roleBadge}`}>
+        {user.role}
+      </span>
+    </span>
   );
 }
 
