@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Users, TrendingUp, LogOut, Settings, UserCog } from 'lucide-react';
+import { BarChart3, Users, TrendingUp, LogOut, Settings, UserCog, Database } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { signOut } from '../lib/auth';
@@ -101,6 +101,13 @@ export function DashboardPage() {
             </span>
             {user?.role === 'admin' && (
               <>
+                <button
+                  onClick={() => navigate('/admin/master-data')}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition"
+                  title="Master Data Repository"
+                >
+                  <Database className="w-5 h-5 text-gray-600" />
+                </button>
                 <button
                   onClick={() => navigate('/admin/users')}
                   className="p-2 hover:bg-gray-100 rounded-lg transition"
