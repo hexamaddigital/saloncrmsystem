@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Plus, ArrowLeft, Eye, Trash2, X, Search, ChevronLeft, ChevronRight,
   MessageCircle, Printer, Loader2, Receipt, CheckCircle2, AlertCircle,
-  User, Phone, Tag, ChevronDown, ChevronUp, RefreshCw,
+  User, Phone, Tag, ChevronDown, ChevronUp, RefreshCw, Download,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -13,15 +13,15 @@ import type { Invoice, InvoiceItem, Client, Transaction } from '../lib/types';
 
 const ITEMS_PER_PAGE = 20;
 
-const HAIR_SERVICES   = ['Hair Cut', 'Hair Colour', 'Smoothing', 'Keratin', 'Highlight', 'Bluetox', 'Nano Plastia', 'Root Touch-up', 'Hair Spa'];
-const SKIN_SERVICES   = ['Cleanup', 'Facial', 'Pimple Treatment', 'Pigmentation Treatment', 'Wax', 'Threading', 'Bleach', 'D-Tan'];
+const HAIR_SERVICES = ['Hair Cut', 'Hair Colour', 'Smoothing', 'Keratin', 'Highlight', 'Bluetox', 'Nano Plastia', 'Root Touch-up', 'Hair Spa'];
+const SKIN_SERVICES = ['Cleanup', 'Facial', 'Pimple Treatment', 'Pigmentation Treatment', 'Wax', 'Threading', 'Bleach', 'D-Tan'];
 const CUSTOM_SERVICES: string[] = [];
 
 type ServiceCategory = 'hair' | 'skin' | 'hair_and_skin' | 'custom';
 type PaymentStatus   = 'paid' | 'pending' | 'partial';
 
 interface LineItem {
-  id: string; // local key
+  id: string;
   service_name: string;
   category: ServiceCategory | '';
   quantity: number;
@@ -49,23 +49,221 @@ function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// Print-only CSS injected once into <head>
-(function injectPrintStyles() {
-  if (typeof document === 'undefined') return;
-  const id = 'billing-print-style';
-  if (document.getElementById(id)) return;
-  const s = document.createElement('style');
-  s.id = id;
-  s.textContent = `
-    @media print {
-      body > * { display: none !important; }
-      #invoice-print-area { display: block !important; }
-      #invoice-print-area { position: fixed; inset: 0; background: white; padding: 32px; font-family: sans-serif; font-size: 13px; color: #111; }
+// ─── WhatsApp helper ──────────────────────────────────────────────────────────
+// Normalises an Indian phone number to E.164 (+91XXXXXXXXXX).
+// wa.me links require the full international number — without +91 they silently
+// fail on mobile or open the wrong contact.
+function buildWhatsAppUrl(rawPhone: string, message: string): string {
+  // Strip everything that isn't a digit
+  let digits = rawPhone.replace(/\D/g, '');
+  // If it's already 12 digits starting with 91, trust it
+  // If it's 10 digits (Indian mobile), prepend 91
+  if (digits.length === 10) digits = '91' + digits;
+  // If someone stored it as +91XXXXXXXXXX (11–12 digits with leading 0s) normalise
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
+
+// ─── PDF / Print helper ───────────────────────────────────────────────────────
+// Opens a NEW browser window containing a complete self-contained HTML invoice.
+// This is the only reliable cross-browser approach:
+//   • No React DOM / Tailwind CSS interference
+//   • No nested-display:none battle
+//   • Works on Chrome, Firefox, Safari, Edge, mobile Chrome/Safari
+// "Save as PDF" is done via the browser's built-in print → Save as PDF option,
+// which the in-popup "Print" button triggers.
+function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[]): string {
+  const fmt = (n: number) =>
+    Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const statusColorMap: Record<string, string> = {
+    paid:    '#15803d',
+    pending: '#dc2626',
+    partial: '#b45309',
+  };
+  const statusBgMap: Record<string, string> = {
+    paid:    '#f0fdf4',
+    pending: '#fef2f2',
+    partial: '#fffbeb',
+  };
+
+  const itemRows = items.map(it => `
+    <tr>
+      <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;">
+        <span style="font-weight:600;color:#111827;">${it.service_name}</span>
+        ${it.staff_name ? `<br><span style="font-size:11px;color:#9ca3af;">By: ${it.staff_name}</span>` : ''}
+      </td>
+      <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:center;color:#6b7280;">${it.quantity}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:right;color:#374151;">₹${fmt(Number(it.unit_price))}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:700;color:#111827;">₹${fmt(Number(it.total))}</td>
+    </tr>`).join('');
+
+  const discountRow = Number(inv.discount) > 0
+    ? `<tr><td colspan="3" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Discount</td><td style="padding:5px 14px;text-align:right;color:#16a34a;font-weight:600;">−₹${fmt(Number(inv.discount))}</td></tr>`
+    : '';
+  const taxRow = Number(inv.tax) > 0
+    ? `<tr><td colspan="3" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Tax</td><td style="padding:5px 14px;text-align:right;color:#374151;">₹${fmt(Number(inv.tax))}</td></tr>`
+    : '';
+
+  const partialBlock = inv.payment_status !== 'paid' ? `
+    <div style="margin-top:16px;padding:14px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="color:#6b7280;font-size:13px;">Amount Paid</span>
+        <strong style="color:#111827;">₹${fmt(Number(inv.amount_paid))}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:#dc2626;font-weight:700;font-size:13px;">Outstanding Balance</span>
+        <strong style="color:#dc2626;font-size:15px;">₹${fmt(Number(inv.total) - Number(inv.amount_paid))}</strong>
+      </div>
+    </div>` : '';
+
+  const notesBlock = inv.notes ? `
+    <div style="margin-top:16px;padding:14px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;">
+      <p style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:0 0 6px;">Notes</p>
+      <p style="font-size:13px;color:#374151;margin:0;">${inv.notes}</p>
+    </div>` : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Invoice ${inv.invoice_number} — Image Skinn &amp; Hair</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:13px;color:#111827;background:#fff;}
+    .page{max-width:640px;margin:0 auto;padding:36px 32px;}
+    h1{font-size:22px;font-weight:800;letter-spacing:-.5px;}
+    table{width:100%;border-collapse:collapse;}
+    th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;text-decoration:none;}
+    @media print{
+      .no-print{display:none!important;}
+      body{background:#fff;}
+      .page{padding:20px;}
     }
-    #invoice-print-area { display: none; }
-  `;
-  document.head.appendChild(s);
-})();
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Salon header -->
+  <div style="text-align:center;padding-bottom:20px;border-bottom:3px solid #0d9488;margin-bottom:24px;">
+    <h1 style="color:#111827;">Image Skinn &amp; Hair</h1>
+    <p style="color:#6b7280;font-size:12px;margin-top:5px;">Premium Salon &amp; Hair Care</p>
+    <p style="color:#9ca3af;font-size:11px;margin-top:2px;">Tax Invoice</p>
+  </div>
+
+  <!-- Invoice meta -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;gap:16px;">
+    <div>
+      <p style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:600;">Invoice No.</p>
+      <p style="font-size:20px;font-weight:800;color:#0d9488;margin-top:3px;">${inv.invoice_number}</p>
+    </div>
+    <div style="text-align:right;">
+      <p style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:600;">Date</p>
+      <p style="font-size:14px;font-weight:700;color:#111827;margin-top:3px;">${fmtDate(inv.invoice_date)}</p>
+    </div>
+  </div>
+
+  <!-- Client details -->
+  <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:24px;">
+    <p style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:10px;">Bill To</p>
+    <p style="font-size:16px;font-weight:800;color:#111827;">${inv.client_name}</p>
+    <p style="color:#6b7280;margin-top:5px;font-size:13px;">📞 ${inv.client_phone}</p>
+  </div>
+
+  <!-- Services table -->
+  <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+    <table>
+      <thead>
+        <tr style="background:#0d9488;">
+          <th style="padding:11px 14px;text-align:left;color:#fff;">Service</th>
+          <th style="padding:11px 14px;text-align:center;color:#fff;">Qty</th>
+          <th style="padding:11px 14px;text-align:right;color:#fff;">Rate</th>
+          <th style="padding:11px 14px;text-align:right;color:#fff;">Total</th>
+        </tr>
+      </thead>
+      <tbody>${itemRows}</tbody>
+    </table>
+  </div>
+
+  <!-- Totals -->
+  <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+    <div style="min-width:260px;">
+      <table>
+        <tr><td colspan="3" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Subtotal</td><td style="padding:5px 14px;text-align:right;color:#374151;">₹${fmt(Number(inv.subtotal))}</td></tr>
+        ${discountRow}${taxRow}
+        <tr>
+          <td colspan="3" style="padding:12px 14px;text-align:right;font-weight:800;font-size:15px;color:#111827;border-top:2px solid #0d9488;">Grand Total</td>
+          <td style="padding:12px 14px;text-align:right;font-weight:800;font-size:18px;color:#0d9488;border-top:2px solid #0d9488;">₹${fmt(Number(inv.total))}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Payment info -->
+  <div style="background:${statusBgMap[inv.payment_status] ?? '#f9fafb'};border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:4px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div>
+        <p style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:5px;">Payment Method</p>
+        <p style="font-size:14px;font-weight:700;color:#111827;">${inv.payment_method || '—'}</p>
+      </div>
+      <div style="text-align:right;">
+        <p style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:5px;">Status</p>
+        <span style="display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:800;color:#fff;background:${statusColorMap[inv.payment_status] ?? '#6b7280'};">
+          ${inv.payment_status.charAt(0).toUpperCase() + inv.payment_status.slice(1)}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  ${partialBlock}
+  ${notesBlock}
+
+  <!-- Footer -->
+  <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:28px;padding-top:16px;border-top:1px solid #e5e7eb;">
+    Thank you for visiting Image Skinn &amp; Hair! ✨<br>
+    <span style="font-size:11px;">Please keep this invoice for your records.</span>
+  </p>
+
+  <!-- Action buttons (hidden when printing) -->
+  <div class="no-print" style="text-align:center;margin-top:28px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn" onclick="window.print()" style="background:#0d9488;color:#fff;">
+      🖨 Print / Save as PDF
+    </button>
+    <button class="btn" onclick="window.close()" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;">
+      ✕ Close
+    </button>
+  </div>
+
+</div>
+</body>
+</html>`;
+}
+
+function openInvoicePrintWindow(inv: Invoice, items: InvoiceItem[]) {
+  const html = buildInvoiceHTML(inv, items);
+  const win = window.open('', '_blank', 'width=760,height=960,scrollbars=yes,resizable=yes,menubar=no,toolbar=no');
+  if (!win) {
+    // Fallback: try without window features (some browsers block popups with features)
+    const win2 = window.open('', '_blank');
+    if (!win2) {
+      alert('Popup blocked.\n\nTo generate the PDF:\n1. Allow popups for this site in your browser settings\n2. Try again');
+      return;
+    }
+    win2.document.open();
+    win2.document.write(html);
+    win2.document.close();
+    win2.focus();
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+}
+
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -1117,26 +1315,41 @@ export function BillingPage() {
             </div>
 
             {/* Action buttons */}
-            <div className="border-t border-gray-200 px-6 py-4 flex flex-col sm:flex-row gap-2 bg-white">
-              <button
-                onClick={() => window.print()}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition text-sm">
-                <Printer className="w-4 h-4" /> Print / Save PDF
-              </button>
-              <button
-                onClick={() => {
-                  if (!viewInvoice) return;
-                  const name = viewInvoice.client_name;
-                  const phone = viewInvoice.client_phone.replace(/\D/g, '');
-                  const amount = Number(viewInvoice.total).toLocaleString('en-IN');
-                  const invNo = viewInvoice.invoice_number;
-                  const status = viewInvoice.payment_status;
-                  const text = `Hello ${name},\n\nThank you for visiting Image Spa & Hair! 💫\n\nYour invoice *${invNo}* has been generated.\n\n💰 *Total Amount: ₹${amount}*\n📋 Status: ${status.charAt(0).toUpperCase() + status.slice(1)}\n\nWe look forward to serving you again!\n\n— Image Skinn & Hair`;
-                  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
-                }}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition text-sm">
-                <MessageCircle className="w-4 h-4" /> WhatsApp
-              </button>
+            <div className="border-t border-gray-200 px-4 py-4 bg-white">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={() => openInvoicePrintWindow(viewInvoice, viewItems)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl transition text-sm">
+                  <Printer className="w-4 h-4" /> Print Preview
+                </button>
+                <button
+                  onClick={() => openInvoicePrintWindow(viewInvoice, viewItems)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-semibold rounded-xl transition text-sm">
+                  <Download className="w-4 h-4" /> Download PDF
+                </button>
+                <button
+                  onClick={() => {
+                    const inv = viewInvoice;
+                    const services = viewItems.map(i => `• ${i.service_name} — ₹${Number(i.total).toLocaleString('en-IN')}`).join('\n');
+                    const text =
+                      `Hello ${inv.client_name},\n\n` +
+                      `Thank you for visiting *Image Skinn & Hair*! 💫\n\n` +
+                      `*Invoice: ${inv.invoice_number}*\n` +
+                      `Date: ${fmtDate(inv.invoice_date)}\n\n` +
+                      `*Services:*\n${services}\n\n` +
+                      (Number(inv.discount) > 0 ? `Discount: −₹${Number(inv.discount).toLocaleString('en-IN')}\n` : '') +
+                      `*Total: ₹${Number(inv.total).toLocaleString('en-IN')}*\n` +
+                      `Payment: ${inv.payment_method} (${inv.payment_status.charAt(0).toUpperCase() + inv.payment_status.slice(1)})\n` +
+                      (inv.payment_status !== 'paid'
+                        ? `Outstanding: ₹${(Number(inv.total) - Number(inv.amount_paid)).toLocaleString('en-IN')}\n`
+                        : '') +
+                      `\nWe look forward to your next visit! 🌟\n— Image Skinn & Hair`;
+                    window.open(buildWhatsAppUrl(inv.client_phone, text), '_blank', 'noopener,noreferrer');
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold rounded-xl transition text-sm">
+                  <MessageCircle className="w-4 h-4" /> WhatsApp
+                </button>
+              </div>
             </div>
           </div>
         </div>
