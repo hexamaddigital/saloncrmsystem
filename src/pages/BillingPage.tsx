@@ -1,548 +1,557 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Plus,
-  ArrowLeft,
-  Eye,
-  Trash2,
-  X,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  MessageCircle,
-  Printer,
-  Download,
+  Plus, ArrowLeft, Eye, Trash2, X, Search, ChevronLeft, ChevronRight,
+  MessageCircle, Printer, Loader2, Receipt, CheckCircle2, AlertCircle,
+  User, Phone, Tag, ChevronDown, ChevronUp, RefreshCw,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import type { Invoice, InvoiceItem } from '../lib/types';
+import type { Invoice, InvoiceItem, Client, Transaction } from '../lib/types';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const ITEMS_PER_PAGE = 20;
 
-type PaymentStatus = 'paid' | 'pending' | 'partial';
+const HAIR_SERVICES   = ['Hair Cut', 'Hair Colour', 'Smoothing', 'Keratin', 'Highlight', 'Bluetox', 'Nano Plastia', 'Root Touch-up', 'Hair Spa'];
+const SKIN_SERVICES   = ['Cleanup', 'Facial', 'Pimple Treatment', 'Pigmentation Treatment', 'Wax', 'Threading', 'Bleach', 'D-Tan'];
+const CUSTOM_SERVICES: string[] = [];
 
-interface LineItemRow {
+type ServiceCategory = 'hair' | 'skin' | 'hair_and_skin' | 'custom';
+type PaymentStatus   = 'paid' | 'pending' | 'partial';
+
+interface LineItem {
+  id: string; // local key
   service_name: string;
+  category: ServiceCategory | '';
   quantity: number;
   unit_price: number;
-  discount: number;
-  staff_name?: string;
+  item_discount: number;
+  staff_name: string;
 }
+
+function newLine(): LineItem {
+  return { id: crypto.randomUUID(), service_name: '', category: '', quantity: 1, unit_price: 0, item_discount: 0, staff_name: '' };
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function statusBadge(s: PaymentStatus) {
+  const map: Record<PaymentStatus, string> = {
+    paid:    'bg-green-100 text-green-800 border-green-200',
+    pending: 'bg-red-100 text-red-800 border-red-200',
+    partial: 'bg-amber-100 text-amber-800 border-amber-200',
+  };
+  return map[s] ?? 'bg-gray-100 text-gray-700';
+}
+
+function fmtDate(d: string) {
+  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// Print-only CSS injected once into <head>
+(function injectPrintStyles() {
+  if (typeof document === 'undefined') return;
+  const id = 'billing-print-style';
+  if (document.getElementById(id)) return;
+  const s = document.createElement('style');
+  s.id = id;
+  s.textContent = `
+    @media print {
+      body > * { display: none !important; }
+      #invoice-print-area { display: block !important; }
+      #invoice-print-area { position: fixed; inset: 0; background: white; padding: 32px; font-family: sans-serif; font-size: 13px; color: #111; }
+    }
+    #invoice-print-area { display: none; }
+  `;
+  document.head.appendChild(s);
+})();
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function BillingPage() {
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const location = useLocation();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
-  // State management
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  // ── List state ──
+  const [invoices, setInvoices]         = useState<Invoice[]>([]);
+  const [listLoading, setListLoading]   = useState(true);
+  const [searchQuery, setSearchQuery]   = useState('');
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all');
-  const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month' | 'all'>('all');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [dateFilter, setDateFilter]     = useState<'today' | 'week' | 'month' | 'all'>('all');
+  const [currentPage, setCurrentPage]   = useState(1);
 
-  // Modal state
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [selectedInvoiceItems, setSelectedInvoiceItems] = useState<InvoiceItem[]>([]);
+  // ── Stats ──
+  const [todayRevenue, setTodayRevenue]   = useState(0);
+  const [monthRevenue, setMonthRevenue]   = useState(0);
+  const [pendingAmt, setPendingAmt]       = useState(0);
 
-  // Form state
-  const [clientName, setClientName] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [lineItems, setLineItems] = useState<LineItemRow[]>([
-    { service_name: '', quantity: 1, unit_price: 0, discount: 0, staff_name: '' },
-  ]);
-  const [discount, setDiscount] = useState(0);
-  const [taxPercent, setTaxPercent] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('pending');
-  const [amountPaid, setAmountPaid] = useState(0);
-  const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  // ── Create modal ──
+  const [showCreate, setShowCreate]       = useState(false);
+  // Step 1 = client search, Step 2 = bill form
+  const [createStep, setCreateStep]       = useState<1 | 2>(1);
 
-  // Summary stats
-  const [todayRevenue, setTodayRevenue] = useState(0);
-  const [monthlyRevenue, setMonthlyRevenue] = useState(0);
-  const [pendingAmount, setPendingAmount] = useState(0);
+  // Client search inside modal
+  const [searchMode, setSearchMode]       = useState<'phone' | 'name'>('phone');
+  const [clientQuery, setClientQuery]     = useState('');
+  const [clientResults, setClientResults] = useState<Client[]>([]);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [clientHistory, setClientHistory] = useState<Transaction[]>([]);
+  const [clientSearching, setClientSearching] = useState(false);
+  const [showHistory, setShowHistory]     = useState(false);
 
-  // Fetch invoices
+  // Bill form
+  const [lineItems, setLineItems]         = useState<LineItem[]>([newLine()]);
+  const [billDiscount, setBillDiscount]   = useState(0);
+  const [couponCode, setCouponCode]       = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponMsg, setCouponMsg]         = useState('');
+  const [couponChecking, setCouponChecking] = useState(false);
+  const [taxPercent, setTaxPercent]       = useState(0);
+  const [payMethod, setPayMethod]         = useState('Cash');
+  const [payStatus, setPayStatus]         = useState<PaymentStatus>('paid');
+  const [amountPaid, setAmountPaid]       = useState(0);
+  const [billNotes, setBillNotes]         = useState('');
+  const [submitting, setSubmitting]       = useState(false);
+  const [submitError, setSubmitError]     = useState('');
+
+  // ── View modal ──
+  const [showView, setShowView]           = useState(false);
+  const [viewInvoice, setViewInvoice]     = useState<Invoice | null>(null);
+  const [viewItems, setViewItems]         = useState<InvoiceItem[]>([]);
+  const [viewLoading, setViewLoading]     = useState(false);
+
+  // Pre-select client if navigated from profile
   useEffect(() => {
-    fetchInvoices();
-    if (role === 'admin') {
-      fetchSummaryStats();
+    if (location.state?.clientId) {
+      loadClientById(location.state.clientId);
     }
-  }, []);
+  }, [location.state]);
 
-  const fetchInvoices = async () => {
-    setLoading(true);
+  // ── Data fetching ──
+  const fetchInvoices = useCallback(async () => {
+    setListLoading(true);
     try {
-      const { data, error } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('invoices').select('*').order('invoice_date', { ascending: false });
       if (error) throw error;
       setInvoices(data || []);
     } catch (err) {
-      console.error('Error fetching invoices:', err);
+      console.error(err);
     } finally {
-      setLoading(false);
+      setListLoading(false);
     }
-  };
+  }, []);
 
-  const fetchSummaryStats = async () => {
+  const fetchStats = useCallback(async () => {
+    if (!isAdmin) return;
     try {
+      const today     = new Date(); today.setHours(0, 0, 0, 0);
+      const mStart    = new Date(today.getFullYear(), today.getMonth(), 1);
+      const [{ data: td }, { data: mo }, { data: pnd }] = await Promise.all([
+        supabase.from('invoices').select('total').eq('payment_status','paid').gte('invoice_date', today.toISOString()),
+        supabase.from('invoices').select('total').eq('payment_status','paid').gte('invoice_date', mStart.toISOString()),
+        supabase.from('invoices').select('total,amount_paid').in('payment_status',['pending','partial']),
+      ]);
+      setTodayRevenue(td?.reduce((s, i) => s + Number(i.total), 0) ?? 0);
+      setMonthRevenue(mo?.reduce((s, i) => s + Number(i.total), 0) ?? 0);
+      setPendingAmt(pnd?.reduce((s, i) => s + (Number(i.total) - Number(i.amount_paid)), 0) ?? 0);
+    } catch (err) { console.error(err); }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    fetchInvoices();
+    fetchStats();
+  }, [fetchInvoices, fetchStats]);
+
+  // ── Client search ──
+  async function searchClient() {
+    const q = clientQuery.trim();
+    if (!q) return;
+    setClientSearching(true);
+    setClientResults([]);
+    try {
+      let query = supabase.from('clients').select('*');
+      if (searchMode === 'phone') {
+        query = query.eq('phone', q);
+      } else {
+        query = query.ilike('name', `%${q}%`).limit(10);
+      }
+      const { data } = await query;
+      setClientResults(data || []);
+    } finally {
+      setClientSearching(false);
+    }
+  }
+
+  async function loadClientById(clientId: string) {
+    const { data } = await supabase.from('clients').select('*').eq('id', clientId).maybeSingle();
+    if (data) {
+      await selectClient(data);
+      setShowCreate(true);
+    }
+  }
+
+  async function selectClient(c: Client) {
+    setSelectedClient(c);
+    setClientQuery(c.name);
+    setClientResults([]);
+    // load recent history
+    const { data } = await supabase
+      .from('transactions').select('*').eq('client_id', c.id)
+      .order('date', { ascending: false }).limit(5);
+    setClientHistory(data || []);
+    setCreateStep(2);
+  }
+
+  // ── Coupon check ──
+  async function applyCoupon() {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) return;
+    setCouponChecking(true);
+    setCouponMsg('');
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', code)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (error || !data) { setCouponMsg('Invalid or expired coupon'); setCouponDiscount(0); return; }
       const today = new Date().toISOString().split('T')[0];
-      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-        .toISOString()
-        .split('T')[0];
+      if (data.valid_until && data.valid_until < today) { setCouponMsg('Coupon expired'); setCouponDiscount(0); return; }
+      if (data.valid_from && data.valid_from > today) { setCouponMsg('Coupon not yet valid'); setCouponDiscount(0); return; }
+      if (data.max_uses && data.uses_count >= data.max_uses) { setCouponMsg('Coupon usage limit reached'); setCouponDiscount(0); return; }
 
-      // Today's revenue
-      const { data: todayData } = await supabase
-        .from('invoices')
-        .select('total')
-        .eq('payment_status', 'paid')
-        .gte('invoice_date', today);
+      // Calculate discount
+      const sub = lineItems.reduce((s, i) => s + Math.max(0, i.quantity * i.unit_price - i.item_discount), 0);
+      if (data.min_amount && sub < data.min_amount) {
+        setCouponMsg(`Min bill of ₹${data.min_amount} required`); setCouponDiscount(0); return;
+      }
+      const disc = data.discount_type === 'percentage'
+        ? Math.round((sub * data.discount_value) / 100)
+        : data.discount_value;
+      setCouponDiscount(disc);
+      setCouponMsg(`Coupon applied! ₹${disc} off`);
+    } finally { setCouponChecking(false); }
+  }
 
-      // Monthly revenue
-      const { data: monthlyData } = await supabase
-        .from('invoices')
-        .select('total')
-        .eq('payment_status', 'paid')
-        .gte('invoice_date', monthStart);
+  // ── Calculations ──
+  const subtotal = useMemo(() =>
+    lineItems.reduce((s, i) => s + Math.max(0, i.quantity * i.unit_price - i.item_discount), 0),
+    [lineItems]);
+  const totalDiscount = billDiscount + couponDiscount;
+  const taxable       = Math.max(0, subtotal - totalDiscount);
+  const taxAmt        = taxable * (taxPercent / 100);
+  const grandTotal    = taxable + taxAmt;
+  const remaining     = payStatus === 'partial' ? Math.max(0, grandTotal - amountPaid) : 0;
 
-      // Pending amount
-      const { data: pendingData } = await supabase
-        .from('invoices')
-        .select('total, amount_paid')
-        .in('payment_status', ['pending', 'partial']);
+  // ── Line item helpers ──
+  function updateLine(id: string, field: keyof LineItem, val: unknown) {
+    setLineItems(prev => prev.map(l => l.id === id ? { ...l, [field]: val } : l));
+  }
+  function addLine() { setLineItems(prev => [...prev, newLine()]); }
+  function removeLine(id: string) {
+    if (lineItems.length > 1) setLineItems(prev => prev.filter(l => l.id !== id));
+  }
 
-      const today_revenue = todayData?.reduce((sum, inv) => sum + (inv.total || 0), 0) || 0;
-      const monthly_revenue = monthlyData?.reduce((sum, inv) => sum + (inv.total || 0), 0) || 0;
-      const pending_amount =
-        pendingData?.reduce((sum, inv) => sum + ((inv.total || 0) - (inv.amount_paid || 0)), 0) || 0;
-
-      setTodayRevenue(today_revenue);
-      setMonthlyRevenue(monthly_revenue);
-      setPendingAmount(pending_amount);
-    } catch (err) {
-      console.error('Error fetching summary stats:', err);
+  function quickAddService(name: string, category: ServiceCategory) {
+    // If last line is empty, fill it; otherwise add new
+    const last = lineItems[lineItems.length - 1];
+    if (!last.service_name) {
+      updateLine(last.id, 'service_name', name);
+      updateLine(last.id, 'category', category);
+    } else {
+      setLineItems(prev => [...prev, { ...newLine(), service_name: name, category }]);
     }
-  };
+  }
 
-  // Filter and paginate invoices
-  const filteredInvoices = useMemo(() => {
-    let filtered = [...invoices];
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((inv) => inv.payment_status === statusFilter);
-    }
-
-    // Date filter
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (dateFilter === 'today') {
-      filtered = filtered.filter((inv) => {
-        const invDate = new Date(inv.invoice_date);
-        invDate.setHours(0, 0, 0, 0);
-        return invDate.getTime() === today.getTime();
-      });
-    } else if (dateFilter === 'week') {
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - today.getDay());
-      filtered = filtered.filter((inv) => new Date(inv.invoice_date) >= weekStart);
-    } else if (dateFilter === 'month') {
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      filtered = filtered.filter((inv) => new Date(inv.invoice_date) >= monthStart);
-    }
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (inv) =>
-          inv.client_name.toLowerCase().includes(query) ||
-          inv.client_phone.includes(query) ||
-          inv.invoice_number.includes(query)
-      );
-    }
-
-    return filtered;
-  }, [invoices, statusFilter, dateFilter, searchQuery]);
-
-  const paginatedInvoices = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredInvoices.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredInvoices, currentPage]);
-
-  const totalPages = Math.ceil(filteredInvoices.length / ITEMS_PER_PAGE);
-
-  // Calculate line items total
-  const lineItemsTotal = useMemo(() => {
-    return lineItems.reduce((sum, item) => {
-      const itemTotal = item.quantity * item.unit_price - item.discount;
-      return sum + Math.max(0, itemTotal);
-    }, 0);
-  }, [lineItems]);
-
-  const subtotal = lineItemsTotal;
-  const taxAmount = (subtotal - discount) * (taxPercent / 100);
-  const grandTotal = subtotal - discount + taxAmount;
-
-  // Handle line item changes
-  const updateLineItem = (index: number, field: keyof LineItemRow, value: any) => {
-    const updated = [...lineItems];
-    updated[index] = { ...updated[index], [field]: value };
-    setLineItems(updated);
-  };
-
-  const addLineItem = () => {
-    setLineItems([...lineItems, { service_name: '', quantity: 1, unit_price: 0, discount: 0, staff_name: '' }]);
-  };
-
-  const removeLineItem = (index: number) => {
-    if (lineItems.length > 1) {
-      setLineItems(lineItems.filter((_, i) => i !== index));
-    }
-  };
-
-  // Handle create invoice
-  const handleCreateInvoice = async () => {
-    if (!clientName.trim() || !clientPhone.trim()) {
-      alert('Client name and phone are required');
-      return;
-    }
-
-    if (lineItems.some((item) => !item.service_name.trim() || item.unit_price <= 0)) {
-      alert('All line items must have service name and unit price');
-      return;
-    }
-
-    if (paymentStatus === 'partial' && amountPaid <= 0) {
-      alert('Amount paid must be greater than 0 for partial payments');
-      return;
-    }
+  // ── Submit ──
+  async function handleSubmit() {
+    if (!selectedClient) { setSubmitError('Please select a client'); return; }
+    const validLines = lineItems.filter(l => l.service_name.trim() && l.unit_price > 0);
+    if (validLines.length === 0) { setSubmitError('Add at least one service with a price'); return; }
+    if (payStatus === 'partial' && amountPaid <= 0) { setSubmitError('Enter amount paid for partial payment'); return; }
+    if (payStatus === 'partial' && amountPaid >= grandTotal) { setSubmitError('Amount paid equals total — use "Paid" status instead'); return; }
 
     setSubmitting(true);
+    setSubmitError('');
     try {
-      // Get next invoice number
-      const { data: nextNumberData, error: rpcError } = await supabase.rpc('next_invoice_number');
-      if (rpcError) throw rpcError;
+      const { data: numData, error: rpcErr } = await supabase.rpc('next_invoice_number');
+      if (rpcErr) throw rpcErr;
 
-      const invoice_number = nextNumberData || 'INV-001';
+      const effectiveAmountPaid = payStatus === 'paid' ? grandTotal : payStatus === 'pending' ? 0 : amountPaid;
 
-      // Create invoice
-      const invoiceData = {
-        invoice_number,
-        client_name: clientName,
-        client_phone: clientPhone,
+      const { data: inv, error: invErr } = await supabase.from('invoices').insert({
+        invoice_number: numData,
+        client_id:      selectedClient.id,
+        client_name:    selectedClient.name,
+        client_phone:   selectedClient.phone,
         subtotal,
-        discount,
-        tax: taxAmount,
-        total: grandTotal,
-        payment_method: paymentMethod,
-        payment_status: paymentStatus,
-        amount_paid: paymentStatus === 'paid' ? grandTotal : amountPaid,
-        notes: notes || null,
-        invoice_date: new Date().toISOString().split('T')[0],
-        created_by: user?.id,
-      };
+        discount:       totalDiscount,
+        tax:            taxAmt,
+        total:          grandTotal,
+        payment_method: payMethod,
+        payment_status: payStatus,
+        amount_paid:    effectiveAmountPaid,
+        coupon_code:    couponCode.trim() || null,
+        coupon_discount: couponDiscount || null,
+        notes:          billNotes.trim() || null,
+        invoice_date:   new Date().toISOString(),
+        created_by:     user?.id,
+      }).select().single();
+      if (invErr) throw invErr;
 
-      const { data: invoiceResult, error: invoiceError } = await supabase
-        .from('invoices')
-        .insert([invoiceData])
-        .select()
-        .single();
-
-      if (invoiceError) throw invoiceError;
-
-      // Create invoice items
-      const itemsToInsert = lineItems.map((item) => ({
-        invoice_id: invoiceResult.id,
-        service_name: item.service_name,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        discount: item.discount,
-        total: item.quantity * item.unit_price - item.discount,
-        staff_name: item.staff_name || null,
+      const itemsToInsert = validLines.map(l => ({
+        invoice_id:   inv.id,
+        service_name: l.service_name,
+        quantity:     l.quantity,
+        unit_price:   l.unit_price,
+        discount:     l.item_discount,
+        total:        Math.max(0, l.quantity * l.unit_price - l.item_discount),
+        staff_name:   l.staff_name || null,
       }));
+      const { error: itmErr } = await supabase.from('invoice_items').insert(itemsToInsert);
+      if (itmErr) throw itmErr;
 
-      const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert);
-      if (itemsError) throw itemsError;
-
-      // Reset form and close modal
-      setClientName('');
-      setClientPhone('');
-      setLineItems([{ service_name: '', quantity: 1, unit_price: 0, discount: 0, staff_name: '' }]);
-      setDiscount(0);
-      setTaxPercent(0);
-      setPaymentMethod('Cash');
-      setPaymentStatus('pending');
-      setAmountPaid(0);
-      setNotes('');
-      setShowCreateModal(false);
-
-      // Refresh invoices
-      await fetchInvoices();
-      if (role === 'admin') {
-        await fetchSummaryStats();
+      // Also record in payments table if not fully pending
+      if (payStatus !== 'pending') {
+        await supabase.from('payments').insert({
+          invoice_id:     inv.id,
+          amount:         effectiveAmountPaid,
+          payment_method: payMethod,
+          payment_date:   new Date().toISOString(),
+          created_by:     user?.id,
+        });
       }
-    } catch (err) {
-      console.error('Error creating invoice:', err);
-      alert('Failed to create invoice');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
-  // Handle view invoice
-  const handleViewInvoice = async (invoice: Invoice) => {
-    try {
-      const { data: items, error } = await supabase
-        .from('invoice_items')
-        .select('*')
-        .eq('invoice_id', invoice.id);
-
-      if (error) throw error;
-
-      setSelectedInvoice(invoice);
-      setSelectedInvoiceItems(items || []);
-      setShowViewModal(true);
-    } catch (err) {
-      console.error('Error fetching invoice items:', err);
-    }
-  };
-
-  // Handle delete invoice
-  const handleDeleteInvoice = async (invoiceId: string) => {
-    if (!confirm('Are you sure you want to delete this invoice?')) return;
-
-    try {
-      // Delete invoice items first
-      await supabase.from('invoice_items').delete().eq('invoice_id', invoiceId);
-
-      // Delete invoice
-      const { error } = await supabase.from('invoices').delete().eq('id', invoiceId);
-      if (error) throw error;
-
-      await fetchInvoices();
-      if (role === 'admin') {
-        await fetchSummaryStats();
+      // Also record in transactions table for treatment history continuity
+      for (const l of validLines) {
+        await supabase.from('transactions').insert({
+          client_id:       selectedClient.id,
+          treatment_name:  l.service_name,
+          price:           Math.max(0, l.quantity * l.unit_price - l.item_discount),
+          notes:           billNotes.trim() || null,
+          date:            new Date().toISOString(),
+          staff_name:      l.staff_name || null,
+          service_category: l.category || null,
+          payment_method:  payMethod,
+          payment_status:  payStatus,
+        });
       }
+
+      // Increment coupon usage
+      if (couponCode.trim() && couponDiscount > 0) {
+        await supabase.rpc('increment_coupon_usage', { coupon_code: couponCode.trim().toUpperCase() }).maybeSingle();
+      }
+
+      // Open the just-created invoice
+      resetCreateForm();
+      await fetchInvoices();
+      await fetchStats();
+      await openInvoice(inv as Invoice);
     } catch (err) {
-      console.error('Error deleting invoice:', err);
-      alert('Failed to delete invoice');
-    }
-  };
+      setSubmitError(err instanceof Error ? err.message : 'Failed to create bill');
+    } finally { setSubmitting(false); }
+  }
 
-  const getStatusColor = (status: PaymentStatus) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-red-100 text-red-800';
-      case 'partial':
-        return 'bg-amber-100 text-amber-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+  function resetCreateForm() {
+    setShowCreate(false);
+    setCreateStep(1);
+    setSelectedClient(null);
+    setClientQuery('');
+    setClientResults([]);
+    setClientHistory([]);
+    setShowHistory(false);
+    setLineItems([newLine()]);
+    setBillDiscount(0);
+    setCouponCode('');
+    setCouponDiscount(0);
+    setCouponMsg('');
+    setTaxPercent(0);
+    setPayMethod('Cash');
+    setPayStatus('paid');
+    setAmountPaid(0);
+    setBillNotes('');
+    setSubmitError('');
+  }
 
-  const getStatusBadgeText = (status: PaymentStatus) => {
-    switch (status) {
-      case 'paid':
-        return 'Paid';
-      case 'pending':
-        return 'Pending';
-      case 'partial':
-        return 'Partial';
-      default:
-        return status;
+  async function openInvoice(inv: Invoice) {
+    setViewLoading(true);
+    setViewInvoice(inv);
+    setShowView(true);
+    try {
+      const { data } = await supabase.from('invoice_items').select('*').eq('invoice_id', inv.id);
+      setViewItems(data || []);
+    } finally { setViewLoading(false); }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Delete this invoice? This cannot be undone.')) return;
+    await supabase.from('invoice_items').delete().eq('invoice_id', id);
+    await supabase.from('payments').delete().eq('invoice_id', id);
+    await supabase.from('invoices').delete().eq('id', id);
+    await fetchInvoices();
+    await fetchStats();
+  }
+
+  // ── Filters ──
+  const filtered = useMemo(() => {
+    let list = [...invoices];
+    if (statusFilter !== 'all') list = list.filter(i => i.payment_status === statusFilter);
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    if (dateFilter === 'today')  list = list.filter(i => new Date(i.invoice_date) >= now);
+    if (dateFilter === 'week') {
+      const ws = new Date(now); ws.setDate(now.getDate() - now.getDay());
+      list = list.filter(i => new Date(i.invoice_date) >= ws);
     }
-  };
+    if (dateFilter === 'month') {
+      const ms = new Date(now.getFullYear(), now.getMonth(), 1);
+      list = list.filter(i => new Date(i.invoice_date) >= ms);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(i =>
+        i.client_name.toLowerCase().includes(q) ||
+        i.client_phone.includes(q) ||
+        i.invoice_number.toLowerCase().includes(q));
+    }
+    return list;
+  }, [invoices, statusFilter, dateFilter, searchQuery]);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated  = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white';
+
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-              </button>
-              <div className="flex items-center gap-3">
-                <img src="/Image_logo.png" alt="Logo" className="h-8 w-8 object-contain" />
-                <h1 className="text-2xl font-bold text-gray-900">Billing</h1>
-              </div>
-            </div>
-            {(role === 'admin' || role === 'operator') && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition"
-              >
-                <Plus className="w-5 h-5" />
-                Create Invoice
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
 
-      {/* Summary Stats - Admin Only */}
-      {role === 'admin' && (
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg p-6 border border-teal-200">
-                <p className="text-teal-600 text-sm font-semibold uppercase tracking-wider">Today's Revenue</p>
-                <p className="text-3xl font-bold text-teal-900 mt-2">₹{todayRevenue.toLocaleString()}</p>
-              </div>
-              <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-6 border border-amber-200">
-                <p className="text-amber-600 text-sm font-semibold uppercase tracking-wider">Monthly Revenue</p>
-                <p className="text-3xl font-bold text-amber-900 mt-2">₹{monthlyRevenue.toLocaleString()}</p>
-              </div>
-              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-6 border border-red-200">
-                <p className="text-red-600 text-sm font-semibold uppercase tracking-wider">Pending Amount</p>
-                <p className="text-3xl font-bold text-red-900 mt-2">₹{pendingAmount.toLocaleString()}</p>
-              </div>
+      {/* ── Header ── */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <img src="/Image_logo.png" alt="Logo" className="h-9 w-auto object-contain" />
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 leading-tight">Billing</h1>
+              <p className="text-xs text-gray-400">Invoices & Payments</p>
+            </div>
+          </div>
+          <button onClick={() => { resetCreateForm(); setShowCreate(true); }}
+            className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-lg transition font-semibold text-sm shadow-md shadow-teal-600/20">
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">New Bill</span>
+            <span className="sm:hidden">New</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ── Stats (admin) ── */}
+      {isAdmin && (
+        <div className="border-b border-gray-200 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-5 border border-teal-200">
+              <p className="text-teal-600 text-xs font-semibold uppercase tracking-wider">Today's Revenue</p>
+              <p className="text-3xl font-bold text-teal-900 mt-1">₹{todayRevenue.toLocaleString('en-IN')}</p>
+            </div>
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-5 border border-amber-200">
+              <p className="text-amber-600 text-xs font-semibold uppercase tracking-wider">Monthly Revenue</p>
+              <p className="text-3xl font-bold text-amber-900 mt-1">₹{monthRevenue.toLocaleString('en-IN')}</p>
+            </div>
+            <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-5 border border-red-200">
+              <p className="text-red-600 text-xs font-semibold uppercase tracking-wider">Pending Amount</p>
+              <p className="text-3xl font-bold text-red-900 mt-1">₹{pendingAmt.toLocaleString('en-IN')}</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Filters and Search */}
+      {/* ── Filters ── */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by client name, phone, or invoice number..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value as PaymentStatus | 'all');
-                  setCurrentPage(1);
-                }}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              >
-                <option value="all">All Status</option>
-                <option value="paid">Paid</option>
-                <option value="pending">Pending</option>
-                <option value="partial">Partial</option>
-              </select>
-
-              <select
-                value={dateFilter}
-                onChange={(e) => {
-                  setDateFilter(e.target.value as 'today' | 'week' | 'month' | 'all');
-                  setCurrentPage(1);
-                }}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              >
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-              </select>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input type="text" placeholder="Search invoice, client, phone..."
+              value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" />
           </div>
+          <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value as PaymentStatus | 'all'); setCurrentPage(1); }}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+            <option value="all">All Status</option>
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+            <option value="partial">Partial</option>
+          </select>
+          <select value={dateFilter} onChange={e => { setDateFilter(e.target.value as typeof dateFilter); setCurrentPage(1); }}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+          <button onClick={() => { fetchInvoices(); fetchStats(); }}
+            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-500" title="Refresh">
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Invoice List */}
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Loading invoices...</p>
+      {/* ── List ── */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {listLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
           </div>
-        ) : paginatedInvoices.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <p className="text-gray-500">No invoices found</p>
+        ) : paginated.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <Receipt className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">{filtered.length === 0 && invoices.length > 0 ? 'No invoices match filters' : 'No invoices yet. Create your first bill!'}</p>
           </div>
         ) : (
           <>
-            {/* Table - Desktop */}
-            <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                      Invoice #
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                      Client
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                      Method
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-900 uppercase tracking-wider">
-                      Actions
-                    </th>
+            {/* Desktop table */}
+            <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    {['Invoice #', 'Client', 'Date', 'Services', 'Total', 'Method', 'Status', 'Actions'].map(h => (
+                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {paginatedInvoices.map((invoice) => (
-                    <tr key={invoice.id} className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-4 text-sm font-semibold text-teal-600">{invoice.invoice_number}</td>
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{invoice.client_name}</p>
-                          <p className="text-xs text-gray-500">{invoice.client_phone}</p>
-                        </div>
+                <tbody className="divide-y divide-gray-100">
+                  {paginated.map(inv => (
+                    <tr key={inv.id} className="hover:bg-gray-50/60 transition">
+                      <td className="px-4 py-3 font-semibold text-teal-700">{inv.invoice_number}</td>
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-gray-900">{inv.client_name}</p>
+                        <p className="text-xs text-gray-500">{inv.client_phone}</p>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {new Date(invoice.invoice_date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-semibold text-gray-900 text-right">
-                        ₹{(invoice.total || 0).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{invoice.payment_method || '-'}</td>
-                      <td className="px-6 py-4 text-sm">
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(invoice.payment_status)}`}>
-                          {getStatusBadgeText(invoice.payment_status)}
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(inv.invoice_date)}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs max-w-[140px] truncate">—</td>
+                      <td className="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">₹{Number(inv.total).toLocaleString('en-IN')}</td>
+                      <td className="px-4 py-3 text-gray-600">{inv.payment_method || '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${statusBadge(inv.payment_status)}`}>
+                          {inv.payment_status.charAt(0).toUpperCase() + inv.payment_status.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleViewInvoice(invoice)}
-                            className="p-2 hover:bg-teal-50 text-teal-600 rounded transition"
-                            title="View invoice"
-                          >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => openInvoice(inv)}
+                            className="p-1.5 hover:bg-teal-50 text-teal-600 rounded-lg transition" title="View">
                             <Eye className="w-4 h-4" />
                           </button>
-                          {role === 'admin' && (
-                            <button
-                              onClick={() => handleDeleteInvoice(invoice.id)}
-                              className="p-2 hover:bg-red-50 text-red-600 rounded transition"
-                              title="Delete invoice"
-                            >
+                          {isAdmin && (
+                            <button onClick={() => handleDelete(inv.id)}
+                              className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition" title="Delete">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
@@ -554,48 +563,32 @@ export function BillingPage() {
               </table>
             </div>
 
-            {/* Mobile Card View */}
-            <div className="md:hidden space-y-4">
-              {paginatedInvoices.map((invoice) => (
-                <div key={invoice.id} className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {paginated.map(inv => (
+                <div key={inv.id} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3 shadow-sm">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm font-semibold text-teal-600">{invoice.invoice_number}</p>
-                      <p className="text-sm font-medium text-gray-900 mt-1">{invoice.client_name}</p>
-                      <p className="text-xs text-gray-500">{invoice.client_phone}</p>
+                      <p className="text-sm font-bold text-teal-700">{inv.invoice_number}</p>
+                      <p className="font-semibold text-gray-900 mt-0.5">{inv.client_name}</p>
+                      <p className="text-xs text-gray-500">{inv.client_phone}</p>
                     </div>
-                    <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${getStatusColor(invoice.payment_status)}`}>
-                      {getStatusBadgeText(invoice.payment_status)}
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${statusBadge(inv.payment_status)}`}>
+                      {inv.payment_status.charAt(0).toUpperCase() + inv.payment_status.slice(1)}
                     </span>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <p className="text-gray-500">Date</p>
-                      <p className="font-medium text-gray-900">{new Date(invoice.invoice_date).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Total</p>
-                      <p className="font-medium text-gray-900">₹{(invoice.total || 0).toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Method</p>
-                      <p className="font-medium text-gray-900">{invoice.payment_method || '-'}</p>
-                    </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">{fmtDate(inv.invoice_date)}</span>
+                    <span className="font-bold text-gray-900">₹{Number(inv.total).toLocaleString('en-IN')}</span>
                   </div>
-
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      onClick={() => handleViewInvoice(invoice)}
-                      className="flex-1 py-2 bg-teal-50 text-teal-600 rounded font-medium text-sm hover:bg-teal-100 transition"
-                    >
-                      View
+                  <div className="flex gap-2 pt-1">
+                    <button onClick={() => openInvoice(inv)}
+                      className="flex-1 py-2 bg-teal-50 text-teal-700 rounded-lg text-sm font-semibold hover:bg-teal-100 transition">
+                      View Invoice
                     </button>
-                    {role === 'admin' && (
-                      <button
-                        onClick={() => handleDeleteInvoice(invoice.id)}
-                        className="flex-1 py-2 bg-red-50 text-red-600 rounded font-medium text-sm hover:bg-red-100 transition"
-                      >
+                    {isAdmin && (
+                      <button onClick={() => handleDelete(inv.id)}
+                        className="py-2 px-4 bg-red-50 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-100 transition">
                         Delete
                       </button>
                     )}
@@ -606,434 +599,543 @@ export function BillingPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 mt-6">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="w-5 h-5" />
+              <div className="flex items-center justify-center gap-3 mt-6">
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-
-                <span className="text-sm text-gray-600">
-                  Page {currentPage} of {totalPages}
-                </span>
-
-                <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight className="w-5 h-5" />
+                <span className="text-sm text-gray-600">Page {currentPage} of {totalPages} · {filtered.length} records</span>
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}
           </>
         )}
-      </div>
+      </main>
 
-      {/* Create Invoice Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-t-lg sm:rounded-lg w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between bg-white border-b border-gray-200 sticky top-0 p-6">
-              <h2 className="text-xl font-bold text-gray-900">Create New Invoice</h2>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded transition"
-              >
-                <X className="w-5 h-5" />
+      {/* ══════════════════════════════════════════════════════════════════════
+           CREATE BILL DRAWER
+      ════════════════════════════════════════════════════════════════════════ */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={resetCreateForm} />
+          <div className="relative w-full max-w-2xl bg-white h-full flex flex-col shadow-2xl overflow-hidden">
+
+            {/* Drawer header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                {createStep === 2 && (
+                  <button onClick={() => setCreateStep(1)} className="p-1.5 hover:bg-gray-100 rounded-lg transition">
+                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  </button>
+                )}
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    {createStep === 1 ? 'Select Client' : 'Create Bill'}
+                  </h2>
+                  <p className="text-xs text-gray-500">
+                    {createStep === 1 ? 'Search by phone or name' : selectedClient?.name}
+                  </p>
+                </div>
+              </div>
+              <button onClick={resetCreateForm} className="p-2 hover:bg-gray-100 rounded-lg transition">
+                <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-6">
-              {/* Client Information */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Client Information</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="Client Name *"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Phone Number *"
-                    value={clientPhone}
-                    onChange={(e) => setClientPhone(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
+            {/* Step indicator */}
+            <div className="flex border-b border-gray-100">
+              {[{ n: 1, label: 'Client' }, { n: 2, label: 'Bill' }].map(s => (
+                <div key={s.n} className={`flex-1 py-2.5 text-center text-xs font-semibold transition ${createStep === s.n ? 'border-b-2 border-teal-600 text-teal-700' : 'text-gray-400'}`}>
+                  {s.n}. {s.label}
                 </div>
-              </div>
+              ))}
+            </div>
 
-              {/* Line Items */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">Services</h3>
-                  <button
-                    onClick={addLineItem}
-                    className="flex items-center gap-1 text-teal-600 hover:text-teal-700 text-sm font-medium"
-                  >
-                    <Plus className="w-4 h-4" /> Add Service
-                  </button>
+            <div className="flex-1 overflow-y-auto">
+
+              {/* ── STEP 1: Client Search ── */}
+              {createStep === 1 && (
+                <div className="p-6 space-y-5">
+                  {/* Mode toggle */}
+                  <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-fit">
+                    {(['phone', 'name'] as const).map(m => (
+                      <button key={m} onClick={() => { setSearchMode(m); setClientQuery(''); setClientResults([]); }}
+                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === m ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                        {m === 'phone' ? <Phone className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
+                        {m === 'phone' ? 'By Phone' : 'By Name'}
+                      </button>
+                    ))}
+                  </div>
+
+                  <form onSubmit={e => { e.preventDefault(); searchClient(); }} className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                      <input type={searchMode === 'phone' ? 'tel' : 'text'} value={clientQuery}
+                        onChange={e => setClientQuery(e.target.value)}
+                        placeholder={searchMode === 'phone' ? '10-digit phone' : 'Client name'}
+                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+                    </div>
+                    <button type="submit" disabled={clientSearching}
+                      className="px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold text-sm hover:bg-teal-700 disabled:bg-gray-400 transition flex items-center gap-1.5">
+                      {clientSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                      Find
+                    </button>
+                  </form>
+
+                  {clientResults.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{clientResults.length} found</p>
+                      {clientResults.map(c => (
+                        <button key={c.id} onClick={() => selectClient(c)}
+                          className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-teal-50 rounded-xl border border-gray-200 hover:border-teal-300 transition text-left group">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-teal-500 flex items-center justify-center shrink-0">
+                              <span className="text-white text-sm font-bold">{c.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900 group-hover:text-teal-800">
+                                {c.name}
+                                {c.is_golden && <span className="ml-1.5 text-amber-500 text-xs">★ VIP</span>}
+                              </p>
+                              <p className="text-xs text-gray-500">{c.phone}{c.gender ? ` · ${c.gender}` : ''}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-teal-600" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {clientResults.length === 0 && clientQuery.trim() && !clientSearching && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-center">
+                      <p className="text-amber-800 font-medium text-sm">No client found</p>
+                      <button onClick={() => navigate('/clients/new', { state: { phone: searchMode === 'phone' ? clientQuery : '' } })}
+                        className="mt-3 inline-flex items-center gap-1.5 text-teal-700 font-semibold text-sm hover:underline">
+                        <Plus className="w-4 h-4" /> Create new client profile
+                      </button>
+                    </div>
+                  )}
                 </div>
+              )}
 
-                <div className="space-y-3 overflow-x-auto">
-                  {lineItems.map((item, index) => (
-                    <div key={index} className="grid grid-cols-2 sm:grid-cols-6 gap-2">
-                      <input
-                        type="text"
-                        placeholder="Service Name"
-                        value={item.service_name}
-                        onChange={(e) => updateLineItem(index, 'service_name', e.target.value)}
-                        className="col-span-2 sm:col-span-2 px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Qty"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => updateLineItem(index, 'quantity', Math.max(1, parseInt(e.target.value) || 1))}
-                        className="px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Price"
-                        min="0"
-                        step="0.01"
-                        value={item.unit_price}
-                        onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                        className="px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Staff"
-                        value={item.staff_name || ''}
-                        onChange={(e) => updateLineItem(index, 'staff_name', e.target.value)}
-                        className="hidden sm:block px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
-                      <div className="col-span-2 sm:col-span-1 flex items-center justify-between gap-2">
-                        <span className="text-sm font-medium">
-                          ₹{(item.quantity * item.unit_price - item.discount).toLocaleString()}
-                        </span>
-                        {lineItems.length > 1 && (
-                          <button
-                            onClick={() => removeLineItem(index)}
-                            className="p-1 hover:bg-red-50 text-red-600 rounded"
-                          >
-                            <X className="w-4 h-4" />
+              {/* ── STEP 2: Bill Form ── */}
+              {createStep === 2 && selectedClient && (
+                <div className="p-6 space-y-6">
+
+                  {/* Client card */}
+                  <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-teal-900">{selectedClient.name}</p>
+                        {selectedClient.is_golden && <span className="text-xs bg-amber-100 text-amber-700 border border-amber-300 px-1.5 py-0.5 rounded font-bold">★ VIP</span>}
+                      </div>
+                      <p className="text-teal-700 text-sm">{selectedClient.phone}</p>
+                      {selectedClient.profession && <p className="text-teal-600 text-xs capitalize mt-0.5">{selectedClient.profession.replace('_',' ')}</p>}
+                    </div>
+                    <button onClick={() => { setShowHistory(h => !h); }}
+                      className="text-xs text-teal-600 hover:text-teal-800 font-medium flex items-center gap-0.5">
+                      History {showHistory ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+
+                  {/* Previous history snippet */}
+                  {showHistory && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Recent Treatments</p>
+                      {clientHistory.length > 0 ? clientHistory.map(t => (
+                        <div key={t.id} className="flex justify-between text-sm">
+                          <span className="text-gray-700">{t.treatment_name}</span>
+                          <span className="text-gray-500 text-xs">{fmtDate(t.date)} · ₹{Number(t.price).toLocaleString('en-IN')}</span>
+                        </div>
+                      )) : <p className="text-gray-400 text-sm">No previous treatments</p>}
+                    </div>
+                  )}
+
+                  {/* Quick-add service buttons */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick Add Services</p>
+                    <div>
+                      <p className="text-xs text-teal-700 font-medium mb-1.5 flex items-center gap-1">✂ Hair</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {HAIR_SERVICES.map(s => (
+                          <button key={s} type="button" onClick={() => quickAddService(s, 'hair')}
+                            className="px-2.5 py-1 text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-full border border-teal-200 transition font-medium">
+                            + {s}
                           </button>
-                        )}
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div>
+                      <p className="text-xs text-rose-700 font-medium mb-1.5 flex items-center gap-1">✦ Skin</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {SKIN_SERVICES.map(s => (
+                          <button key={s} type="button" onClick={() => quickAddService(s, 'skin')}
+                            className="px-2.5 py-1 text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-full border border-rose-200 transition font-medium">
+                            + {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-              {/* Totals */}
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-gray-600">Discount (₹)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={discount}
-                      onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded mt-1 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-600">Tax %</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={taxPercent}
-                      onChange={(e) => setTaxPercent(parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded mt-1 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
+                  {/* Line items */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-800">Services in This Bill</p>
+                      <button onClick={addLine}
+                        className="text-xs text-teal-600 hover:text-teal-800 font-semibold flex items-center gap-1 transition">
+                        <Plus className="w-3.5 h-3.5" /> Add Row
+                      </button>
+                    </div>
 
-                <div className="border-t border-gray-200 pt-3 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Subtotal</span>
-                    <span className="text-sm font-medium">₹{subtotal.toLocaleString()}</span>
+                    {lineItems.map((item, idx) => (
+                      <div key={item.id} className="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-gray-500">Service {idx + 1}</span>
+                          {lineItems.length > 1 && (
+                            <button onClick={() => removeLine(item.id)} className="p-1 hover:bg-red-50 text-red-500 rounded-lg transition">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="col-span-2">
+                            <input type="text" placeholder="Service name *" value={item.service_name}
+                              onChange={e => updateLine(item.id, 'service_name', e.target.value)}
+                              className={inputCls} />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500 mb-1 block">Category</label>
+                            <select value={item.category} onChange={e => updateLine(item.id, 'category', e.target.value)}
+                              className={inputCls}>
+                              <option value="">Select</option>
+                              <option value="hair">Hair</option>
+                              <option value="skin">Skin</option>
+                              <option value="hair_and_skin">Hair & Skin</option>
+                              <option value="custom">Custom</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500 mb-1 block">Staff Name</label>
+                            <input type="text" placeholder="Who did this?" value={item.staff_name}
+                              onChange={e => updateLine(item.id, 'staff_name', e.target.value)}
+                              className={inputCls} />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500 mb-1 block">Price (₹) *</label>
+                            <input type="number" min="0" step="0.01" placeholder="0.00"
+                              value={item.unit_price || ''}
+                              onChange={e => updateLine(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
+                              className={inputCls} />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500 mb-1 block">Qty</label>
+                            <input type="number" min="1" placeholder="1"
+                              value={item.quantity}
+                              onChange={e => updateLine(item.id, 'quantity', Math.max(1, parseInt(e.target.value) || 1))}
+                              className={inputCls} />
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center pt-1 border-t border-gray-200">
+                          <span className="text-xs text-gray-500">Item Total</span>
+                          <span className="font-bold text-teal-700">₹{Math.max(0, item.quantity * item.unit_price - item.item_discount).toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Discount</span>
-                      <span className="text-sm font-medium">-₹{discount.toLocaleString()}</span>
+
+                  {/* Discount & Coupon */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Discounts & Coupon</p>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Manual Discount (₹)</label>
+                        <input type="number" min="0" step="0.01" value={billDiscount || ''}
+                          onChange={e => setBillDiscount(parseFloat(e.target.value) || 0)}
+                          className={inputCls} placeholder="0.00" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Tax %</label>
+                        <input type="number" min="0" max="100" step="0.01" value={taxPercent || ''}
+                          onChange={e => setTaxPercent(parseFloat(e.target.value) || 0)}
+                          className={inputCls} placeholder="0" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Coupon Code</label>
+                      <div className="flex gap-2">
+                        <input type="text" placeholder="Enter coupon code" value={couponCode}
+                          onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponDiscount(0); setCouponMsg(''); }}
+                          className={`${inputCls} flex-1`} />
+                        <button type="button" onClick={applyCoupon} disabled={couponChecking || !couponCode.trim()}
+                          className="px-3 py-2 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700 disabled:bg-gray-300 transition flex items-center gap-1">
+                          {couponChecking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Tag className="w-3.5 h-3.5" />}
+                          Apply
+                        </button>
+                      </div>
+                      {couponMsg && (
+                        <p className={`text-xs mt-1.5 font-medium ${couponDiscount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {couponMsg}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Bill summary */}
+                    <div className="border-t border-gray-200 pt-3 space-y-1.5 text-sm">
+                      <div className="flex justify-between text-gray-600">
+                        <span>Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span>
+                      </div>
+                      {billDiscount > 0 && (
+                        <div className="flex justify-between text-green-700">
+                          <span>Discount</span><span>−₹{billDiscount.toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
+                      {couponDiscount > 0 && (
+                        <div className="flex justify-between text-green-700">
+                          <span>Coupon ({couponCode})</span><span>−₹{couponDiscount.toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
+                      {taxAmt > 0 && (
+                        <div className="flex justify-between text-gray-600">
+                          <span>Tax ({taxPercent}%)</span><span>₹{taxAmt.toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-bold text-base pt-1.5 border-t border-gray-300 text-teal-900">
+                        <span>Grand Total</span><span>₹{grandTotal.toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Method</label>
+                        <select value={payMethod} onChange={e => setPayMethod(e.target.value)} className={inputCls}>
+                          <option value="Cash">Cash</option>
+                          <option value="UPI">UPI</option>
+                          <option value="Card">Card</option>
+                          <option value="Online">Online Transfer</option>
+                          <option value="Pending">Pending</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Status</label>
+                        <select value={payStatus} onChange={e => setPayStatus(e.target.value as PaymentStatus)} className={inputCls}>
+                          <option value="paid">Paid ✓</option>
+                          <option value="partial">Partial Payment</option>
+                          <option value="pending">Pending</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {payStatus === 'partial' && (
+                      <div className="grid grid-cols-2 gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                        <div>
+                          <label className="text-xs text-amber-700 mb-1 block font-medium">Amount Paid (₹)</label>
+                          <input type="number" min="0" max={grandTotal} step="0.01" value={amountPaid || ''}
+                            onChange={e => setAmountPaid(parseFloat(e.target.value) || 0)}
+                            className={inputCls} placeholder="0.00" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-red-600 mb-1 block font-medium">Remaining (₹)</label>
+                          <div className="px-3 py-2 border border-red-200 rounded-lg bg-red-50 text-red-700 font-bold text-sm">
+                            ₹{remaining.toLocaleString('en-IN')}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1.5 block font-semibold uppercase tracking-wide">Notes (optional)</label>
+                    <textarea rows={2} value={billNotes} onChange={e => setBillNotes(e.target.value)}
+                      placeholder="Any notes for this bill..."
+                      className={inputCls + ' resize-none'} />
+                  </div>
+
+                  {submitError && (
+                    <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+                      <AlertCircle className="w-4 h-4 shrink-0" />{submitError}
                     </div>
                   )}
-                  {taxAmount > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Tax</span>
-                      <span className="text-sm font-medium">₹{taxAmount.toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between bg-teal-50 p-2 rounded border border-teal-200">
-                    <span className="font-semibold text-teal-900">Total</span>
-                    <span className="font-bold text-lg text-teal-900">₹{grandTotal.toLocaleString()}</span>
-                  </div>
                 </div>
-              </div>
-
-              {/* Payment Information */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Payment Information</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="Cash">Cash</option>
-                    <option value="Card">Card</option>
-                    <option value="UPI">UPI</option>
-                    <option value="Online">Online Transfer</option>
-                  </select>
-
-                  <select
-                    value={paymentStatus}
-                    onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  >
-                    <option value="paid">Paid</option>
-                    <option value="pending">Pending</option>
-                    <option value="partial">Partial</option>
-                  </select>
-                </div>
-
-                {paymentStatus === 'partial' && (
-                  <input
-                    type="number"
-                    placeholder="Amount Paid (₹)"
-                    min="0"
-                    step="0.01"
-                    max={grandTotal}
-                    value={amountPaid}
-                    onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                )}
-              </div>
-
-              {/* Notes */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Notes</label>
-                <textarea
-                  placeholder="Add any notes for this invoice..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
-                />
-              </div>
+              )}
             </div>
 
-            {/* Modal Footer */}
-            <div className="bg-gray-50 border-t border-gray-200 p-6 flex gap-3 sticky bottom-0">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateInvoice}
-                disabled={submitting}
-                className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? 'Creating...' : 'Create Invoice'}
-              </button>
-            </div>
+            {/* Drawer footer */}
+            {createStep === 2 && (
+              <div className="border-t border-gray-200 bg-white px-6 py-4 flex gap-3">
+                <button onClick={resetCreateForm}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+                  Cancel
+                </button>
+                <button onClick={handleSubmit} disabled={submitting}
+                  className="flex-1 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition disabled:bg-gray-400 flex items-center justify-center gap-2 text-sm shadow-md shadow-teal-600/20">
+                  {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><CheckCircle2 className="w-4 h-4" /> Generate Bill</>}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* View Invoice Modal */}
-      {showViewModal && selectedInvoice && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-t-lg sm:rounded-lg w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between bg-white border-b border-gray-200 sticky top-0 p-6">
-              <h2 className="text-xl font-bold text-gray-900">Invoice #{selectedInvoice.invoice_number}</h2>
-              <button
-                onClick={() => setShowViewModal(false)}
-                className="p-2 hover:bg-gray-100 rounded transition"
-              >
+      {/* ══════════════════════════════════════════════════════════════════════
+           VIEW / PRINT INVOICE MODAL
+      ════════════════════════════════════════════════════════════════════════ */}
+      {showView && viewInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowView(false)} />
+          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="font-bold text-gray-900">Invoice {viewInvoice.invoice_number}</h2>
+              <button onClick={() => setShowView(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Invoice Content - Print Ready */}
-            <div className="p-6 space-y-6" id="invoice-print-content">
-              {/* Salon Header */}
-              <div className="text-center border-b border-gray-300 pb-6">
-                <div className="flex justify-center mb-4">
-                  <img src="/Image_logo.png" alt="Logo" className="h-12 w-12 object-contain" />
-                </div>
-                <h1 className="text-3xl font-bold text-gray-900">Image Skinn & Hair</h1>
-                <p className="text-gray-600 text-sm mt-2">Premium Salon & Hair Care</p>
-              </div>
+            {/* Invoice body (scrollable) */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5" id="invoice-print-area">
+              {viewLoading ? (
+                <div className="flex justify-center py-12"><Loader2 className="w-7 h-7 animate-spin text-teal-600" /></div>
+              ) : (
+                <>
+                  {/* Salon header */}
+                  <div className="text-center pb-5 border-b border-gray-200">
+                    <img src="/Image_logo.png" alt="Logo" className="h-12 w-auto mx-auto mb-2 object-contain" />
+                    <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Image Skinn & Hair</h1>
+                    <p className="text-gray-500 text-sm mt-0.5">Premium Salon & Hair Care</p>
+                  </div>
 
-              {/* Invoice Info */}
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Invoice Number</p>
-                  <p className="text-lg font-bold text-teal-600 mt-1">{selectedInvoice.invoice_number}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">Invoice Date</p>
-                  <p className="text-lg font-semibold text-gray-900 mt-1">
-                    {new Date(selectedInvoice.invoice_date).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Client Details */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Client Information</p>
-                <div className="space-y-2">
-                  <p className="font-semibold text-gray-900">{selectedInvoice.client_name}</p>
-                  <p className="text-gray-600 text-sm">Phone: {selectedInvoice.client_phone}</p>
-                </div>
-              </div>
-
-              {/* Line Items Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b-2 border-teal-600">
-                      <th className="text-left py-2 font-semibold text-gray-900">Service</th>
-                      <th className="text-center py-2 font-semibold text-gray-900">Qty</th>
-                      <th className="text-right py-2 font-semibold text-gray-900">Unit Price</th>
-                      <th className="text-right py-2 font-semibold text-gray-900">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {selectedInvoiceItems.map((item) => (
-                      <tr key={item.id}>
-                        <td className="py-3 text-gray-900">
-                          <div>
-                            <p className="font-medium">{item.service_name}</p>
-                            {item.staff_name && <p className="text-xs text-gray-500">By: {item.staff_name}</p>}
-                          </div>
-                        </td>
-                        <td className="py-3 text-center text-gray-600">{item.quantity}</td>
-                        <td className="py-3 text-right text-gray-600">₹{(item.unit_price || 0).toLocaleString()}</td>
-                        <td className="py-3 text-right font-medium text-gray-900">
-                          ₹{((item.quantity || 1) * (item.unit_price || 0) - (item.discount || 0)).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Totals */}
-              <div className="flex justify-end">
-                <div className="w-full sm:w-80 space-y-2 bg-gray-50 rounded-lg p-4">
+                  {/* Invoice meta */}
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium text-gray-900">₹{(selectedInvoice.subtotal || 0).toLocaleString()}</span>
+                    <div>
+                      <p className="text-gray-500 text-xs uppercase tracking-wide">Invoice No.</p>
+                      <p className="font-bold text-teal-700 text-lg">{viewInvoice.invoice_number}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-500 text-xs uppercase tracking-wide">Date</p>
+                      <p className="font-semibold text-gray-900">{fmtDate(viewInvoice.invoice_date)}</p>
+                    </div>
                   </div>
-                  {selectedInvoice.discount > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Discount</span>
-                      <span className="font-medium text-gray-900">-₹{(selectedInvoice.discount || 0).toLocaleString()}</span>
+
+                  {/* Client */}
+                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Bill To</p>
+                    <p className="font-bold text-gray-900 text-base">{viewInvoice.client_name}</p>
+                    <p className="text-gray-600 text-sm">📞 {viewInvoice.client_phone}</p>
+                  </div>
+
+                  {/* Items table */}
+                  <div className="overflow-x-auto rounded-xl border border-gray-200">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-teal-600 text-white">
+                          <th className="px-4 py-2.5 text-left font-semibold">Service</th>
+                          <th className="px-3 py-2.5 text-center font-semibold">Qty</th>
+                          <th className="px-3 py-2.5 text-right font-semibold">Rate</th>
+                          <th className="px-3 py-2.5 text-right font-semibold">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {viewItems.map(item => (
+                          <tr key={item.id} className="even:bg-gray-50">
+                            <td className="px-4 py-2.5">
+                              <p className="font-medium text-gray-900">{item.service_name}</p>
+                              {item.staff_name && <p className="text-xs text-gray-500">By {item.staff_name}</p>}
+                            </td>
+                            <td className="px-3 py-2.5 text-center text-gray-600">{item.quantity}</td>
+                            <td className="px-3 py-2.5 text-right text-gray-600">₹{Number(item.unit_price).toLocaleString('en-IN')}</td>
+                            <td className="px-3 py-2.5 text-right font-semibold text-gray-900">₹{Number(item.total).toLocaleString('en-IN')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Totals */}
+                  <div className="flex justify-end">
+                    <div className="w-64 space-y-1.5 text-sm">
+                      <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>₹{Number(viewInvoice.subtotal).toLocaleString('en-IN')}</span></div>
+                      {Number(viewInvoice.discount) > 0 && (
+                        <div className="flex justify-between text-green-700"><span>Discount</span><span>−₹{Number(viewInvoice.discount).toLocaleString('en-IN')}</span></div>
+                      )}
+                      {Number(viewInvoice.tax) > 0 && (
+                        <div className="flex justify-between text-gray-600"><span>Tax</span><span>₹{Number(viewInvoice.tax).toLocaleString('en-IN')}</span></div>
+                      )}
+                      <div className="flex justify-between font-bold text-base pt-1.5 border-t border-gray-300">
+                        <span>Total</span><span className="text-teal-700">₹{Number(viewInvoice.total).toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment info */}
+                  <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Method</p>
+                      <p className="font-semibold text-gray-900 mt-0.5">{viewInvoice.payment_method || '—'}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Status</p>
+                      <span className={`inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusBadge(viewInvoice.payment_status)}`}>
+                        {viewInvoice.payment_status.charAt(0).toUpperCase() + viewInvoice.payment_status.slice(1)}
+                      </span>
+                    </div>
+                    {viewInvoice.payment_status !== 'paid' && (
+                      <>
+                        <div>
+                          <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Paid</p>
+                          <p className="font-semibold text-gray-900 mt-0.5">₹{Number(viewInvoice.amount_paid).toLocaleString('en-IN')}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-red-500 font-semibold uppercase tracking-wide">Outstanding</p>
+                          <p className="font-bold text-red-600 mt-0.5">₹{(Number(viewInvoice.total) - Number(viewInvoice.amount_paid)).toLocaleString('en-IN')}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {viewInvoice.notes && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                      <p className="text-xs text-amber-700 font-semibold uppercase tracking-wide mb-1">Notes</p>
+                      <p className="text-gray-700 text-sm">{viewInvoice.notes}</p>
                     </div>
                   )}
-                  {selectedInvoice.tax > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Tax</span>
-                      <span className="font-medium text-gray-900">₹{(selectedInvoice.tax || 0).toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div className="border-t border-gray-300 pt-2 flex justify-between">
-                    <span className="font-bold text-gray-900">Total</span>
-                    <span className="font-bold text-lg text-teal-600">₹{(selectedInvoice.total || 0).toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Payment Info */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-teal-50 rounded-lg border border-teal-200">
-                <div>
-                  <p className="text-xs text-teal-600 uppercase tracking-wider font-semibold">Payment Method</p>
-                  <p className="font-medium text-gray-900 mt-1">{selectedInvoice.payment_method || '-'}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-teal-600 uppercase tracking-wider font-semibold">Payment Status</p>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mt-1 ${getStatusColor(selectedInvoice.payment_status)}`}
-                  >
-                    {getStatusBadgeText(selectedInvoice.payment_status)}
-                  </span>
-                </div>
-              </div>
-
-              {selectedInvoice.notes && (
-                <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                  <p className="text-xs text-amber-700 uppercase tracking-wider font-semibold">Notes</p>
-                  <p className="text-gray-700 mt-2">{selectedInvoice.notes}</p>
-                </div>
-              )}
-
-              {/* Amount Paid Info */}
-              {selectedInvoice.payment_status !== 'paid' && (
-                <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-red-700 uppercase tracking-wider font-semibold">Amount Paid</p>
-                      <p className="font-medium text-gray-900 mt-1">₹{(selectedInvoice.amount_paid || 0).toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-red-700 uppercase tracking-wider font-semibold">Outstanding</p>
-                      <p className="font-medium text-red-700 mt-1">
-                        ₹{((selectedInvoice.total || 0) - (selectedInvoice.amount_paid || 0)).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  <p className="text-center text-xs text-gray-400 pt-2">Thank you for visiting Image Skinn & Hair!</p>
+                </>
               )}
             </div>
 
-            {/* Modal Footer with Actions */}
-            <div className="bg-gray-50 border-t border-gray-200 p-6 flex flex-col sm:flex-row gap-3 sticky bottom-0">
+            {/* Action buttons */}
+            <div className="border-t border-gray-200 px-6 py-4 flex flex-col sm:flex-row gap-2 bg-white">
               <button
                 onClick={() => window.print()}
-                className="flex items-center justify-center gap-2 flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-              >
-                <Printer className="w-4 h-4" />
-                Print / PDF
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition text-sm">
+                <Printer className="w-4 h-4" /> Print / Save PDF
               </button>
-
               <button
                 onClick={() => {
-                  const whatsappText = `Invoice ${selectedInvoice.invoice_number} Total ₹${selectedInvoice.total}`;
-                  const whatsappUrl = `https://wa.me/${selectedInvoice.client_phone}?text=${encodeURIComponent(whatsappText)}`;
-                  window.open(whatsappUrl, '_blank');
+                  if (!viewInvoice) return;
+                  const name = viewInvoice.client_name;
+                  const phone = viewInvoice.client_phone.replace(/\D/g, '');
+                  const amount = Number(viewInvoice.total).toLocaleString('en-IN');
+                  const invNo = viewInvoice.invoice_number;
+                  const status = viewInvoice.payment_status;
+                  const text = `Hello ${name},\n\nThank you for visiting Image Spa & Hair! 💫\n\nYour invoice *${invNo}* has been generated.\n\n💰 *Total Amount: ₹${amount}*\n📋 Status: ${status.charAt(0).toUpperCase() + status.slice(1)}\n\nWe look forward to serving you again!\n\n— Image Skinn & Hair`;
+                  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
                 }}
-                className="flex items-center justify-center gap-2 flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
-              >
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp
-              </button>
-
-              <button
-                onClick={() => setShowViewModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition font-medium"
-              >
-                Close
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition text-sm">
+                <MessageCircle className="w-4 h-4" /> WhatsApp
               </button>
             </div>
           </div>
