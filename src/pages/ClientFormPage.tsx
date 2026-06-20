@@ -19,6 +19,7 @@ interface FormData {
   dob: string;
   gender: string;
   profession: string;
+  customProfession: string;
   address: string;
   notes: string;
   service_type: string;
@@ -46,6 +47,7 @@ export function ClientFormPage() {
     dob: '',
     gender: '',
     profession: '',
+    customProfession: '',
     address: '',
     notes: '',
     service_type: '',
@@ -129,7 +131,9 @@ export function ClientFormPage() {
           phone: form.phone.trim(),
           dob: form.dob || null,
           gender: form.gender || null,
-          profession: form.profession || null,
+          profession: form.profession === 'custom'
+            ? (form.customProfession.trim() || null)
+            : (form.profession || null),
           address: form.address || null,
           notes: form.notes || null,
           service_type: form.service_type || null,
@@ -233,7 +237,20 @@ export function ClientFormPage() {
                     <option value="housewife">Housewife</option>
                     <option value="business">Business</option>
                     <option value="working_professional">Working Professional</option>
+                    <option value="student">Student</option>
+                    <option value="doctor">Doctor (Dr.)</option>
+                    <option value="custom">Custom...</option>
                   </select>
+                  {form.profession === 'custom' && (
+                    <input
+                      type="text"
+                      name="customProfession"
+                      value={form.customProfession}
+                      onChange={handleChange}
+                      placeholder="Enter profession..."
+                      className={`${inputCls} mt-2`}
+                    />
+                  )}
                 </div>
                 <div>
                   <label className={labelCls}>Address</label>

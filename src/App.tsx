@@ -11,6 +11,10 @@ import { UserManagementPage } from './pages/UserManagementPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AdminClientListPage } from './pages/AdminClientListPage';
 import { AdminMasterDataPage } from './pages/AdminMasterDataPage';
+import { AppointmentsPage } from './pages/AppointmentsPage';
+import { BillingPage } from './pages/BillingPage';
+import { ReportsPage } from './pages/ReportsPage';
+import { InquiryPage } from './pages/InquiryPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -104,6 +108,10 @@ function AppRoutes() {
       <Route path="/clients/:id" element={<ProtectedRoute><ClientProfilePage /></ProtectedRoute>} />
       <Route path="/admin/clients" element={<AdminRoute><AdminClientListPage /></AdminRoute>} />
       <Route path="/admin/master-data" element={<AdminRoute><AdminMasterDataPage /></AdminRoute>} />
+      <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
+      <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+      <Route path="/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />
+      <Route path="/inquiries" element={<ProtectedRoute><InquiryPage /></ProtectedRoute>} />
       <Route path="/admin/users" element={<AdminRoute><UserManagementPage /></AdminRoute>} />
       <Route path="/settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />

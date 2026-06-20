@@ -1,67 +1,116 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Loader2, ChevronLeft, ExternalLink, CalendarDays, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Search, Plus, Loader2, ChevronLeft, ExternalLink, CalendarDays,
+  ChevronDown, ChevronUp, Phone, User,
+} from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Client, Transaction } from '../lib/types';
 
 const PREVIEW_COUNT = 4;
 
+type SearchMode = 'phone' | 'name';
+
 export function ClientSearchPage() {
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
+  const [searchMode, setSearchMode] = useState<SearchMode>('phone');
+  const [query, setQuery] = useState('');
   const [client, setClient] = useState<Client | null>(null);
+  const [nameResults, setNameResults] = useState<Client[]>([]);
   const [treatments, setTreatments] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState('');
   const [showAll, setShowAll] = useState(false);
 
+  function reset() {
+    setClient(null);
+    setNameResults([]);
+    setTreatments([]);
+    setNotFound(false);
+    setError('');
+    setShowAll(false);
+  }
+
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setNotFound(false);
-    setClient(null);
-    setTreatments([]);
-    setShowAll(false);
+    reset();
 
-    const trimmedPhone = phone.trim();
-    if (!trimmedPhone) {
-      setError('Please enter a phone number');
-      setLoading(false);
-      return;
-    }
-    if (!/^\d{10}$/.test(trimmedPhone)) {
-      setError('Phone number must be exactly 10 digits');
+    const q = query.trim();
+    if (!q) {
+      setError('Please enter a search term');
       setLoading(false);
       return;
     }
 
-    try {
-      const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('phone', trimmedPhone)
-        .maybeSingle();
-
-      if (clientError) throw clientError;
-
-      if (clientData) {
-        setClient(clientData);
-        const { data: txData } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('client_id', clientData.id)
-          .order('date', { ascending: false });
-        setTreatments(txData || []);
-      } else {
-        setNotFound(true);
+    if (searchMode === 'phone') {
+      if (!/^\d{10}$/.test(q)) {
+        setError('Phone number must be exactly 10 digits');
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Search failed');
-    } finally {
-      setLoading(false);
+      try {
+        const { data, error: err } = await supabase
+          .from('clients')
+          .select('*')
+          .eq('phone', q)
+          .maybeSingle();
+        if (err) throw err;
+        if (data) {
+          setClient(data);
+          await loadTreatments(data.id);
+        } else {
+          setNotFound(true);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Search failed');
+      }
+    } else {
+      // Name search — partial match
+      if (q.length < 2) {
+        setError('Enter at least 2 characters');
+        setLoading(false);
+        return;
+      }
+      try {
+        const { data, error: err } = await supabase
+          .from('clients')
+          .select('*')
+          .ilike('name', `%${q}%`)
+          .order('name')
+          .limit(20);
+        if (err) throw err;
+        if (data && data.length > 0) {
+          if (data.length === 1) {
+            setClient(data[0]);
+            await loadTreatments(data[0].id);
+          } else {
+            setNameResults(data);
+          }
+        } else {
+          setNotFound(true);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Search failed');
+      }
     }
+    setLoading(false);
+  }
+
+  async function selectNameResult(c: Client) {
+    setNameResults([]);
+    setClient(c);
+    await loadTreatments(c.id);
+  }
+
+  async function loadTreatments(clientId: string) {
+    const { data } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('date', { ascending: false });
+    setTreatments(data || []);
   }
 
   const visibleTreatments = showAll ? treatments : treatments.slice(0, PREVIEW_COUNT);
@@ -84,16 +133,31 @@ export function ClientSearchPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Search Box */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-5">Find Client by Phone</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Find Client</h2>
+
+          {/* Mode toggle */}
+          <div className="flex gap-2 mb-4 p-1 bg-gray-100 rounded-lg w-fit">
+            <button
+              onClick={() => { setSearchMode('phone'); reset(); setQuery(''); }}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'phone' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+              <Phone className="w-3.5 h-3.5" /> Phone
+            </button>
+            <button
+              onClick={() => { setSearchMode('name'); reset(); setQuery(''); }}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'name' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+              <User className="w-3.5 h-3.5" /> Name
+            </button>
+          </div>
+
           <form onSubmit={handleSearch}>
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <input
-                  type="tel"
-                  value={phone}
-                  onChange={e => { setPhone(e.target.value); setError(''); }}
-                  placeholder="Enter 10-digit phone number"
+                  type={searchMode === 'phone' ? 'tel' : 'text'}
+                  value={query}
+                  onChange={e => { setQuery(e.target.value); setError(''); }}
+                  placeholder={searchMode === 'phone' ? 'Enter 10-digit phone number' : 'Enter client name (min 2 chars)'}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition"
                 />
               </div>
@@ -107,22 +171,43 @@ export function ClientSearchPage() {
           </form>
 
           {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
+            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
           )}
         </div>
 
-        {/* Client found */}
+        {/* Multiple name results */}
+        {nameResults.length > 1 && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-bold text-gray-900 mb-3">{nameResults.length} clients found</h3>
+            <div className="space-y-2">
+              {nameResults.map(c => (
+                <button key={c.id} onClick={() => selectNameResult(c)}
+                  className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-teal-50 rounded-lg border border-gray-200 hover:border-teal-300 transition text-left group">
+                  <div>
+                    <p className="font-semibold text-gray-900 group-hover:text-teal-800">{c.name}</p>
+                    <p className="text-xs text-gray-500">{c.phone}{c.gender ? ` · ${c.gender}` : ''}</p>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-teal-600 shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Single client result */}
         {client && (
           <div className="space-y-4">
-            {/* Client summary */}
             <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <p className="font-bold text-teal-900 text-lg">{client.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-teal-900 text-lg">{client.name}</p>
+                  {client.is_golden && (
+                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full border border-amber-300">★ VIP</span>
+                  )}
+                </div>
                 <p className="text-teal-700 text-sm">
-                  {client.phone}{client.gender ? ` • ${client.gender}` : ''}
-                  {client.profession ? ` • ${client.profession.replace('_', ' ')}` : ''}
+                  {client.phone}{client.gender ? ` · ${client.gender}` : ''}
+                  {client.profession ? ` · ${client.profession.replace('_', ' ')}` : ''}
                 </p>
               </div>
               <button
@@ -134,7 +219,7 @@ export function ClientSearchPage() {
               </button>
             </div>
 
-            {/* Treatment History — preview */}
+            {/* Treatment History */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
@@ -147,10 +232,8 @@ export function ClientSearchPage() {
                   )}
                 </h3>
                 {hasMore && showAll && (
-                  <button
-                    onClick={() => setShowAll(false)}
-                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-teal-700 transition"
-                  >
+                  <button onClick={() => setShowAll(false)}
+                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-teal-700 transition">
                     <ChevronUp className="w-3.5 h-3.5" /> Show less
                   </button>
                 )}
@@ -163,15 +246,19 @@ export function ClientSearchPage() {
                       <div key={tx.id}
                         className={`flex items-start justify-between p-3 rounded-lg border transition ${idx === 0 ? 'bg-teal-50 border-teal-200' : 'bg-gray-50 border-gray-200'}`}>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-semibold text-gray-900 text-sm">{tx.treatment_name}</p>
                             {idx === 0 && (
                               <span className="text-xs bg-teal-600 text-white px-1.5 py-0.5 rounded font-medium">Latest</span>
                             )}
+                            {tx.payment_status === 'pending' && (
+                              <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">Pending</span>
+                            )}
                           </div>
                           <p className="text-xs text-gray-500 mt-0.5">
                             {new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            {tx.notes ? ` • ${tx.notes}` : ''}
+                            {tx.staff_name ? ` · ${tx.staff_name}` : ''}
+                            {tx.notes ? ` · ${tx.notes}` : ''}
                           </p>
                         </div>
                         <span className="text-sm font-bold text-teal-700 whitespace-nowrap ml-4 shrink-0">
@@ -181,26 +268,20 @@ export function ClientSearchPage() {
                     ))}
                   </div>
 
-                  {/* View All / collapse */}
                   {hasMore && !showAll && (
                     <div className="mt-4 pt-4 border-t border-gray-100">
-                      <button
-                        onClick={() => setShowAll(true)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-teal-700 hover:text-teal-800 hover:bg-teal-50 rounded-lg border border-teal-200 hover:border-teal-300 transition"
-                      >
+                      <button onClick={() => setShowAll(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-teal-700 hover:text-teal-800 hover:bg-teal-50 rounded-lg border border-teal-200 hover:border-teal-300 transition">
                         <ChevronDown className="w-4 h-4" />
                         View All History ({treatments.length} records)
                       </button>
                     </div>
                   )}
 
-                  {/* Full profile link when expanded */}
                   {showAll && (
                     <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-                      <button
-                        onClick={() => navigate(`/clients/${client.id}`)}
-                        className="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 font-medium transition"
-                      >
+                      <button onClick={() => navigate(`/clients/${client.id}`)}
+                        className="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 font-medium transition">
                         <ExternalLink className="w-4 h-4" />
                         Open full profile for complete details
                       </button>
@@ -219,10 +300,10 @@ export function ClientSearchPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-base font-semibold text-gray-900 mb-2">Client Not Found</h3>
             <p className="text-gray-600 text-sm mb-5">
-              No client found with phone number <strong>{phone}</strong>. Create a new profile?
+              No client found for <strong>{query}</strong>. Create a new profile?
             </p>
             <button
-              onClick={() => navigate('/clients/new', { state: { phone } })}
+              onClick={() => navigate('/clients/new', { state: { phone: searchMode === 'phone' ? query : '' } })}
               className="w-full px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
               <Plus className="w-5 h-5" />
               Create New Client

@@ -29,7 +29,7 @@ const HAIR_CONDITIONS = [
 // ─── Small helpers ────────────────────────────────────────────────────────────
 
 function professionLabel(p: string) {
-  return ({ housewife: 'Housewife', business: 'Business', working_professional: 'Working Professional' } as Record<string, string>)[p] ?? p;
+  return ({ housewife: 'Housewife', business: 'Business', working_professional: 'Working Professional', student: 'Student', doctor: 'Doctor (Dr.)' } as Record<string, string>)[p] ?? p;
 }
 function serviceTypeLabel(s: string) {
   return ({ hair: 'Hair', skin: 'Skin', hair_and_skin: 'Hair & Skin' } as Record<string, string>)[s] ?? s;
@@ -436,9 +436,29 @@ export function ClientProfilePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10 w-auto object-contain" />
-            <h1 className="text-xl font-bold text-gray-900">{client.name}</h1>
+            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              {client.name}
+              {client.is_golden && (
+                <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full border border-amber-300">★ VIP</span>
+              )}
+            </h1>
           </div>
           <div className="flex items-center gap-2">
+            {/* Golden / VIP toggle (admin only) */}
+            {isAdmin && client && (
+              <button
+                onClick={async () => {
+                  const newVal = !client.is_golden;
+                  await supabase.from('clients').update({ is_golden: newVal }).eq('id', client.id);
+                  setClient(prev => prev ? { ...prev, is_golden: newVal } : prev);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border transition ${client.is_golden ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-50' : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50 border-gray-200 hover:border-amber-300'}`}
+                title={client.is_golden ? 'Remove VIP status' : 'Mark as VIP'}
+              >
+                <span className="text-base leading-none">{client.is_golden ? '★' : '☆'}</span>
+                <span className="hidden sm:inline">{client.is_golden ? 'VIP' : 'Mark VIP'}</span>
+              </button>
+            )}
             {isAdmin && (
               <button
                 onClick={() => { setDeleteConfirmText(''); setShowDeleteModal(true); }}
@@ -488,7 +508,13 @@ export function ClientProfilePage() {
                       options={[{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }, { value: 'other', label: 'Other' }]} />
                     <FieldSelect label="Profession" name="profession" value={basicForm.profession}
                       onChange={e => setBasicForm(p => ({ ...p, profession: e.target.value }))}
-                      options={[{ value: 'housewife', label: 'Housewife' }, { value: 'business', label: 'Business' }, { value: 'working_professional', label: 'Working Professional' }]} />
+                      options={[
+                        { value: 'housewife', label: 'Housewife' },
+                        { value: 'business', label: 'Business' },
+                        { value: 'working_professional', label: 'Working Professional' },
+                        { value: 'student', label: 'Student' },
+                        { value: 'doctor', label: 'Doctor (Dr.)' },
+                      ]} />
                     <FieldInput label="Address" name="address" value={basicForm.address}
                       onChange={e => setBasicForm(p => ({ ...p, address: e.target.value }))} placeholder="Address" />
                   </div>
