@@ -10,14 +10,21 @@ import { useAuth } from '../context/AuthContext';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
+const HAIR_SERVICE_OPTIONS = [
+  'Hair Cut', 'Hair Colour', 'Highlight', 'Smoothing', 'Keratin',
+  'Bluetox', 'Nano Plastia', 'Root Touch-up', 'Hair Spa', 'Blow Dry',
+];
+const SKIN_SERVICE_OPTIONS = [
+  'Cleanup', 'Facial', 'Pimple Treatment', 'Pigmentation Treatment',
+  'Wax', 'Threading', 'Bleach', 'D-Tan', 'Manicure', 'Pedicure',
+];
+
+// kept for backward compat with existing select
 const TREATMENTS = [
   'Hair Cut', 'Hair Colour', 'Facial', 'Manicure',
   'Pedicure', 'Keratin', 'Bluetox', 'Nano Plastia', 'Highlighting',
   'Smoothing', 'Cleanup', 'Pimple Treatment', 'Pigmentation Treatment',
 ];
-
-const HAIR_SERVICES = ['Hair Cut', 'Hair Colour', 'Smoothing', 'Highlight'];
-const SKIN_SERVICES = ['Cleanup', 'Facial', 'Pimple Treatment', 'Pigmentation Treatment'];
 
 const HAIR_CONDITIONS = [
   'Lack of Hair Volume', 'Hair Thinning', 'Excessive Hair Fall',
@@ -178,7 +185,24 @@ export function ClientProfilePage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
 
-  // Treatment / feedback forms
+  // Service entry form (new rich form)
+  const [showServiceEntry, setShowServiceEntry] = useState(false);
+  const [serviceEntry, setServiceEntry] = useState({
+    service_category: 'hair' as 'hair' | 'skin' | 'hair_and_skin' | 'custom',
+    treatment_name: '',
+    custom_name: '',
+    price: '',
+    staff_name: '',
+    notes: '',
+    date: new Date().toISOString().split('T')[0],
+    payment_status: 'paid' as 'paid' | 'pending' | 'partial',
+    payment_method: 'Cash',
+  });
+  const [serviceEntryError, setServiceEntryError] = useState('');
+  const [serviceEntrySaving, setServiceEntrySaving] = useState(false);
+  const [serviceEntryEditId, setServiceEntryEditId] = useState<string | null>(null);
+
+  // Legacy form (kept for backward compat — hidden, replaced by above)
   const [showAddTreatment, setShowAddTreatment] = useState(false);
   const [treatmentForm, setTreatmentForm] = useState({ treatment_name: '', price: '', notes: '' });
   const [showAddFeedback, setShowAddFeedback] = useState(false);
@@ -338,6 +362,84 @@ export function ClientProfilePage() {
 
   const showHair = serviceForm.service_type === 'hair' || serviceForm.service_type === 'hair_and_skin';
   const showSkin = serviceForm.service_type === 'skin' || serviceForm.service_type === 'hair_and_skin';
+
+  // ── Service Entry (rich form) ──
+
+  function openNewServiceEntry() {
+    setServiceEntryEditId(null);
+    setServiceEntry({
+      service_category: 'hair',
+      treatment_name: '',
+      custom_name: '',
+      price: '',
+      staff_name: '',
+      notes: '',
+      date: new Date().toISOString().split('T')[0],
+      payment_status: 'paid',
+      payment_method: 'Cash',
+    });
+    setServiceEntryError('');
+    setShowServiceEntry(true);
+  }
+
+  function openEditServiceEntry(tx: Transaction) {
+    setServiceEntryEditId(tx.id);
+    setServiceEntry({
+      service_category: (tx.service_category as 'hair' | 'skin' | 'hair_and_skin' | 'custom') || 'custom',
+      treatment_name: tx.treatment_name,
+      custom_name: '',
+      price: String(tx.price),
+      staff_name: tx.staff_name || '',
+      notes: tx.notes || '',
+      date: tx.date ? tx.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      payment_status: (tx.payment_status as 'paid' | 'pending' | 'partial') || 'paid',
+      payment_method: tx.payment_method || 'Cash',
+    });
+    setServiceEntryError('');
+    setShowServiceEntry(true);
+  }
+
+  async function handleSaveServiceEntry() {
+    if (!client) return;
+    const finalName = serviceEntry.service_category === 'custom'
+      ? serviceEntry.custom_name.trim()
+      : serviceEntry.treatment_name.trim();
+    if (!finalName) { setServiceEntryError('Service name is required'); return; }
+    if (!serviceEntry.price || parseFloat(serviceEntry.price) < 0) { setServiceEntryError('Enter a valid price'); return; }
+
+    setServiceEntrySaving(true);
+    setServiceEntryError('');
+    try {
+      const payload = {
+        client_id:        client.id,
+        treatment_name:   finalName,
+        service_category: serviceEntry.service_category,
+        price:            parseFloat(serviceEntry.price),
+        staff_name:       serviceEntry.staff_name.trim() || null,
+        notes:            serviceEntry.notes.trim() || null,
+        date:             new Date(serviceEntry.date + 'T' + new Date().toTimeString().slice(0, 8)).toISOString(),
+        payment_status:   serviceEntry.payment_status,
+        payment_method:   serviceEntry.payment_method,
+        discount:         0,
+      };
+
+      if (serviceEntryEditId) {
+        const { error } = await supabase.from('transactions').update(payload).eq('id', serviceEntryEditId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('transactions').insert(payload);
+        if (error) throw error;
+      }
+
+      setShowServiceEntry(false);
+      setServiceEntryEditId(null);
+      fetchData();
+    } catch (err) {
+      setServiceEntryError(err instanceof Error ? err.message : 'Failed to save');
+    } finally {
+      setServiceEntrySaving(false);
+    }
+  }
 
   // ── Treatment / feedback ──
 
@@ -809,64 +911,305 @@ export function ClientProfilePage() {
               </div>
             )}
 
-            {/* ── Treatment History (unchanged behaviour) ── */}
+            {/* ── Service History ── */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">Treatment History</h2>
-                <button onClick={() => setShowAddTreatment(true)}
-                  className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition flex items-center gap-1">
-                  <Plus className="w-4 h-4" /> Add Treatment
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Service History</h2>
+                  {transactions.length > 0 && (
+                    <p className="text-xs text-gray-400 mt-0.5">{transactions.length} visit{transactions.length !== 1 ? 's' : ''} recorded</p>
+                  )}
+                </div>
+                <button
+                  onClick={openNewServiceEntry}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition shadow-sm shadow-teal-600/20">
+                  <Plus className="w-4 h-4" /> New Service Entry
                 </button>
               </div>
 
-              {showAddTreatment && (
-                <form onSubmit={handleAddTreatment} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="space-y-3">
-                    <select value={treatmentForm.treatment_name}
-                      onChange={e => setTreatmentForm(p => ({ ...p, treatment_name: e.target.value }))}
-                      required className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition">
-                      <option value="">Select treatment</option>
-                      {TREATMENTS.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                    <input type="number" placeholder="Price (₹)" value={treatmentForm.price}
-                      onChange={e => setTreatmentForm(p => ({ ...p, price: e.target.value }))}
-                      required step="0.01" min="0" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition" />
-                    <textarea placeholder="Notes (optional)" value={treatmentForm.notes}
-                      onChange={e => setTreatmentForm(p => ({ ...p, notes: e.target.value }))}
-                      rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition" />
-                    <div className="flex gap-2">
-                      <button type="submit" className="flex-1 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition text-sm">
-                        Save Treatment
-                      </button>
-                      <button type="button" onClick={() => setShowAddTreatment(false)}
-                        className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition text-sm">
-                        Cancel
-                      </button>
+              {/* ── Service Entry Modal/Drawer ── */}
+              {showServiceEntry && (
+                <div className="mb-6 bg-gradient-to-br from-teal-50 to-gray-50 border-2 border-teal-200 rounded-2xl p-5 space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                      <ClipboardList className="w-4 h-4 text-teal-600" />
+                      {serviceEntryEditId ? 'Edit Service Entry' : 'New Service Entry'}
+                    </h3>
+                    <button onClick={() => { setShowServiceEntry(false); setServiceEntryEditId(null); }}
+                      className="p-1.5 hover:bg-gray-200 rounded-lg transition">
+                      <X className="w-4 h-4 text-gray-500" />
+                    </button>
+                  </div>
+
+                  {/* Service category tabs */}
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Service Type</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {([
+                        { v: 'hair',         label: '✂ Hair',       cls: 'teal' },
+                        { v: 'skin',         label: '✦ Skin',       cls: 'rose' },
+                        { v: 'hair_and_skin',label: '✂✦ Hair & Skin', cls: 'blue' },
+                        { v: 'custom',       label: '★ Custom',     cls: 'amber' },
+                      ] as const).map(opt => (
+                        <button key={opt.v} type="button"
+                          onClick={() => setServiceEntry(p => ({ ...p, service_category: opt.v, treatment_name: '' }))}
+                          className={`py-2 px-3 rounded-xl text-xs font-semibold border-2 transition ${
+                            serviceEntry.service_category === opt.v
+                              ? opt.cls === 'teal'  ? 'bg-teal-600 text-white border-teal-600'
+                              : opt.cls === 'rose'  ? 'bg-rose-600 text-white border-rose-600'
+                              : opt.cls === 'blue'  ? 'bg-blue-600 text-white border-blue-600'
+                              :                       'bg-amber-500 text-white border-amber-500'
+                              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                          }`}>
+                          {opt.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                </form>
+
+                  {/* Service name — quick-pick chips + optional free text */}
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Treatment / Service Name</p>
+                    {serviceEntry.service_category === 'hair' && (
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {HAIR_SERVICE_OPTIONS.map(s => (
+                          <button key={s} type="button"
+                            onClick={() => setServiceEntry(p => ({ ...p, treatment_name: s }))}
+                            className={`px-2.5 py-1 text-xs rounded-full border font-medium transition ${
+                              serviceEntry.treatment_name === s
+                                ? 'bg-teal-600 text-white border-teal-600'
+                                : 'bg-white text-teal-700 border-teal-200 hover:bg-teal-50'
+                            }`}>{s}</button>
+                        ))}
+                      </div>
+                    )}
+                    {serviceEntry.service_category === 'skin' && (
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {SKIN_SERVICE_OPTIONS.map(s => (
+                          <button key={s} type="button"
+                            onClick={() => setServiceEntry(p => ({ ...p, treatment_name: s }))}
+                            className={`px-2.5 py-1 text-xs rounded-full border font-medium transition ${
+                              serviceEntry.treatment_name === s
+                                ? 'bg-rose-600 text-white border-rose-600'
+                                : 'bg-white text-rose-700 border-rose-200 hover:bg-rose-50'
+                            }`}>{s}</button>
+                        ))}
+                      </div>
+                    )}
+                    {serviceEntry.service_category === 'hair_and_skin' && (
+                      <div className="space-y-2 mb-2">
+                        <div>
+                          <p className="text-xs text-teal-700 font-medium mb-1">✂ Hair</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {HAIR_SERVICE_OPTIONS.map(s => (
+                              <button key={s} type="button"
+                                onClick={() => setServiceEntry(p => ({ ...p, treatment_name: s }))}
+                                className={`px-2.5 py-1 text-xs rounded-full border font-medium transition ${
+                                  serviceEntry.treatment_name === s
+                                    ? 'bg-teal-600 text-white border-teal-600'
+                                    : 'bg-white text-teal-700 border-teal-200 hover:bg-teal-50'
+                                }`}>{s}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-rose-700 font-medium mb-1">✦ Skin</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {SKIN_SERVICE_OPTIONS.map(s => (
+                              <button key={s} type="button"
+                                onClick={() => setServiceEntry(p => ({ ...p, treatment_name: s }))}
+                                className={`px-2.5 py-1 text-xs rounded-full border font-medium transition ${
+                                  serviceEntry.treatment_name === s
+                                    ? 'bg-rose-600 text-white border-rose-600'
+                                    : 'bg-white text-rose-700 border-rose-200 hover:bg-rose-50'
+                                }`}>{s}</button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {serviceEntry.service_category === 'custom' ? (
+                      <input type="text" placeholder="Enter custom service name *"
+                        value={serviceEntry.custom_name}
+                        onChange={e => setServiceEntry(p => ({ ...p, custom_name: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                    ) : (
+                      <input type="text" placeholder="Or type a custom name..."
+                        value={serviceEntry.treatment_name}
+                        onChange={e => setServiceEntry(p => ({ ...p, treatment_name: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                    )}
+                  </div>
+
+                  {/* Price, Date, Staff row */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Price (₹) *</label>
+                      <input type="number" min="0" step="0.01" placeholder="0.00"
+                        value={serviceEntry.price}
+                        onChange={e => setServiceEntry(p => ({ ...p, price: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Date *</label>
+                      <input type="date" value={serviceEntry.date}
+                        max={new Date().toISOString().split('T')[0]}
+                        onChange={e => setServiceEntry(p => ({ ...p, date: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Staff / Operator</label>
+                      <input type="text" placeholder="Who performed this?"
+                        value={serviceEntry.staff_name}
+                        onChange={e => setServiceEntry(p => ({ ...p, staff_name: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                    </div>
+                  </div>
+
+                  {/* Payment */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Payment Method</label>
+                      <select value={serviceEntry.payment_method}
+                        onChange={e => setServiceEntry(p => ({ ...p, payment_method: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white">
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Card">Card</option>
+                        <option value="Online">Online Transfer</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Payment Status</label>
+                      <select value={serviceEntry.payment_status}
+                        onChange={e => setServiceEntry(p => ({ ...p, payment_status: e.target.value as 'paid' | 'pending' | 'partial' }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white">
+                        <option value="paid">Paid</option>
+                        <option value="partial">Partial</option>
+                        <option value="pending">Pending</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Treatment Notes</label>
+                    <textarea rows={2} placeholder="Products used, observations, next visit recommendations..."
+                      value={serviceEntry.notes}
+                      onChange={e => setServiceEntry(p => ({ ...p, notes: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white resize-none" />
+                  </div>
+
+                  {serviceEntryError && (
+                    <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-center gap-2">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />{serviceEntryError}
+                    </p>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <button type="button" onClick={() => { setShowServiceEntry(false); setServiceEntryEditId(null); }}
+                      disabled={serviceEntrySaving}
+                      className="flex-1 px-3 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition text-sm disabled:opacity-50">
+                      Cancel
+                    </button>
+                    <button type="button" onClick={handleSaveServiceEntry}
+                      disabled={serviceEntrySaving}
+                      className="flex-1 px-3 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition text-sm disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm">
+                      {serviceEntrySaving
+                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                        : <><Check className="w-4 h-4" /> {serviceEntryEditId ? 'Update Entry' : 'Save Entry'}</>}
+                    </button>
+                  </div>
+                </div>
               )}
 
+              {/* ── History list ── */}
               <div className="space-y-2">
-                {transactions.length > 0 ? transactions.map(trans => (
-                  <div key={trans.id} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm">{trans.treatment_name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        ₹{Number(trans.price).toFixed(2)} &bull;&nbsp;
-                        {new Date(trans.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                      {trans.notes && <p className="text-xs text-gray-600 mt-1">{trans.notes}</p>}
+                {transactions.length > 0 ? transactions.map((trans, idx) => (
+                  <div key={trans.id}
+                    className={`rounded-xl border transition ${idx === 0 ? 'border-teal-200 bg-teal-50/60' : 'border-gray-200 bg-gray-50/60 hover:border-gray-300'}`}>
+                    <div className="flex items-start gap-3 p-3.5">
+                      {/* Category icon badge */}
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base ${
+                        trans.service_category === 'skin' ? 'bg-rose-100 text-rose-700' :
+                        trans.service_category === 'hair_and_skin' ? 'bg-blue-100 text-blue-700' :
+                        trans.service_category === 'custom' ? 'bg-amber-100 text-amber-700' :
+                        'bg-teal-100 text-teal-700'
+                      }`}>
+                        {trans.service_category === 'skin' ? '✦' :
+                         trans.service_category === 'hair_and_skin' ? '✂' :
+                         trans.service_category === 'custom' ? '★' : '✂'}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold text-gray-900 text-sm">{trans.treatment_name}</p>
+                              {idx === 0 && (
+                                <span className="text-xs bg-teal-600 text-white px-1.5 py-0.5 rounded font-medium leading-none">Latest</span>
+                              )}
+                              {trans.payment_status === 'pending' && (
+                                <span className="text-xs bg-red-100 text-red-700 border border-red-200 px-1.5 py-0.5 rounded font-medium leading-none">Pending</span>
+                              )}
+                              {trans.payment_status === 'partial' && (
+                                <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-medium leading-none">Partial</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className="text-xs text-gray-500">
+                                {new Date(trans.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                              {trans.staff_name && (
+                                <span className="text-xs text-gray-400">· by {trans.staff_name}</span>
+                              )}
+                              {trans.payment_method && (
+                                <span className="text-xs text-gray-400">· {trans.payment_method}</span>
+                              )}
+                              {trans.service_category && (
+                                <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full border capitalize ${
+                                  trans.service_category === 'skin' ? 'bg-rose-50 text-rose-600 border-rose-200' :
+                                  trans.service_category === 'hair_and_skin' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                  trans.service_category === 'custom' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                  'bg-teal-50 text-teal-600 border-teal-200'
+                                }`}>{trans.service_category.replace('_', ' & ')}</span>
+                              )}
+                            </div>
+                            {trans.notes && (
+                              <p className="text-xs text-gray-600 mt-1 bg-white/70 rounded px-2 py-1 border border-gray-100">{trans.notes}</p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-bold text-gray-900 text-sm">₹{Number(trans.price).toLocaleString('en-IN')}</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                    {/* Admin actions */}
                     {isAdmin && (
-                      <button onClick={() => handleDeleteTransaction(trans.id)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition ml-2 flex-shrink-0">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex border-t border-gray-200/80 divide-x divide-gray-200/80">
+                        <button
+                          onClick={() => openEditServiceEntry(trans)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-500 hover:text-teal-700 hover:bg-teal-50/50 transition rounded-bl-xl">
+                          <Pencil className="w-3 h-3" /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTransaction(trans.id)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-500 hover:text-red-600 hover:bg-red-50/50 transition rounded-br-xl">
+                          <Trash2 className="w-3 h-3" /> Delete
+                        </button>
+                      </div>
                     )}
                   </div>
                 )) : (
-                  <p className="text-center text-gray-500 text-sm py-6">No treatments recorded yet</p>
+                  <div className="text-center py-10">
+                    <div className="w-14 h-14 rounded-full bg-teal-50 flex items-center justify-center mx-auto mb-3">
+                      <ClipboardList className="w-7 h-7 text-teal-400" />
+                    </div>
+                    <p className="text-gray-500 text-sm font-medium">No service entries yet</p>
+                    <p className="text-gray-400 text-xs mt-1">Click "New Service Entry" to record this client's first visit</p>
+                  </div>
                 )}
               </div>
             </div>
