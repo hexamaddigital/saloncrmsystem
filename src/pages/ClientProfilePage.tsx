@@ -19,6 +19,10 @@ const SKIN_SERVICE_OPTIONS = [
   'Wax', 'Threading', 'Bleach', 'D-Tan', 'Manicure', 'Pedicure',
 ];
 
+// Used for filtering stored client service_items in profile display
+const HAIR_SERVICES = HAIR_SERVICE_OPTIONS;
+const SKIN_SERVICES = SKIN_SERVICE_OPTIONS;
+
 // kept for backward compat with existing select
 const TREATMENTS = [
   'Hair Cut', 'Hair Colour', 'Facial', 'Manicure',
@@ -164,6 +168,7 @@ export function ClientProfilePage() {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
 
   // Basic info edit state
   const [editingBasic, setEditingBasic] = useState(false);
@@ -211,6 +216,7 @@ export function ClientProfilePage() {
   useEffect(() => { if (id) fetchData(); }, [id]);
 
   async function fetchData() {
+    setFetchError('');
     try {
       const { data: clientData, error: clientError } = await supabase
         .from('clients').select('*').eq('id', id).maybeSingle();
@@ -234,6 +240,7 @@ export function ClientProfilePage() {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      setFetchError(error instanceof Error ? error.message : 'Failed to load client data');
     } finally {
       setLoading(false);
     }
@@ -513,13 +520,27 @@ export function ClientProfilePage() {
 
   if (!client) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 text-lg">Client not found</p>
-          <button onClick={() => navigate('/dashboard')}
-            className="mt-4 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
-            Go to Dashboard
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
+          </div>
+          <p className="text-gray-800 font-semibold text-lg mb-1">
+            {fetchError ? 'Failed to load profile' : 'Client not found'}
+          </p>
+          {fetchError && <p className="text-gray-500 text-sm mb-4">{fetchError}</p>}
+          <div className="flex gap-2 justify-center mt-4">
+            {fetchError && (
+              <button onClick={() => { setLoading(true); fetchData(); }}
+                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 font-semibold text-sm">
+                Retry
+              </button>
+            )}
+            <button onClick={() => navigate(-1)}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold text-sm">
+              Go Back
+            </button>
+          </div>
         </div>
       </div>
     );
