@@ -15,6 +15,15 @@ import { AppointmentsPage } from './pages/AppointmentsPage';
 import { BillingPage } from './pages/BillingPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { InquiryPage } from './pages/InquiryPage';
+import { MembershipManagementPage } from './pages/MembershipManagementPage';
+import { LoyaltyManagementPage } from './pages/LoyaltyManagementPage';
+import { CouponManagementPage } from './pages/CouponManagementPage';
+import { ReminderManagementPage } from './pages/ReminderManagementPage';
+import { QrMenuPage } from './pages/QrMenuPage';
+import { PublicMenuPage } from './pages/PublicMenuPage';
+import { FeedbackManagementPage } from './pages/FeedbackManagementPage';
+import { AdvancedReportsPage } from './pages/AdvancedReportsPage';
+import { AuditLogPage } from './pages/AuditLogPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -22,19 +31,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block">
-            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
+        <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-
+  if (!user) return <Navigate to="/login" />;
   return <>{children}</>;
 }
 
@@ -44,18 +46,12 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block">
-            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
+        <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
+  if (!user) return <Navigate to="/login" />;
 
   if (user.role !== 'admin') {
     return (
@@ -68,10 +64,8 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
           <p className="text-gray-600 mb-6">You do not have permission to access this page.</p>
-          <button
-            onClick={() => window.location.href = '/dashboard'}
-            className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition"
-          >
+          <button onClick={() => window.location.href = '/dashboard'}
+            className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition">
             Go to Dashboard
           </button>
         </div>
@@ -88,32 +82,43 @@ function AppRoutes() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block">
-            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
+        <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
     <Routes>
+      {/* Public (no auth) */}
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
       <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" /> : <ForgotPasswordPage />} />
       <Route path="/reset-password" element={user ? <Navigate to="/dashboard" /> : <ResetPasswordPage />} />
+      <Route path="/menu" element={<PublicMenuPage />} />
+
+      {/* Operator + Admin */}
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/clients/search" element={<ProtectedRoute><ClientSearchPage /></ProtectedRoute>} />
       <Route path="/clients/new" element={<ProtectedRoute><ClientFormPage /></ProtectedRoute>} />
       <Route path="/clients/:id" element={<ProtectedRoute><ClientProfilePage /></ProtectedRoute>} />
-      <Route path="/admin/clients" element={<AdminRoute><AdminClientListPage /></AdminRoute>} />
-      <Route path="/admin/master-data" element={<AdminRoute><AdminMasterDataPage /></AdminRoute>} />
       <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
-      <Route path="/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />
       <Route path="/inquiries" element={<ProtectedRoute><InquiryPage /></ProtectedRoute>} />
+
+      {/* Admin only */}
+      <Route path="/admin/clients" element={<AdminRoute><AdminClientListPage /></AdminRoute>} />
+      <Route path="/admin/master-data" element={<AdminRoute><AdminMasterDataPage /></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><UserManagementPage /></AdminRoute>} />
+      <Route path="/admin/memberships" element={<AdminRoute><MembershipManagementPage /></AdminRoute>} />
+      <Route path="/admin/loyalty" element={<AdminRoute><LoyaltyManagementPage /></AdminRoute>} />
+      <Route path="/admin/coupons" element={<AdminRoute><CouponManagementPage /></AdminRoute>} />
+      <Route path="/admin/reminders" element={<AdminRoute><ReminderManagementPage /></AdminRoute>} />
+      <Route path="/admin/qr-menu" element={<AdminRoute><QrMenuPage /></AdminRoute>} />
+      <Route path="/admin/feedback" element={<AdminRoute><FeedbackManagementPage /></AdminRoute>} />
+      <Route path="/admin/reports" element={<AdminRoute><AdvancedReportsPage /></AdminRoute>} />
+      <Route path="/admin/audit" element={<AdminRoute><AuditLogPage /></AdminRoute>} />
+      <Route path="/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />
       <Route path="/settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
+
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
     </Routes>
   );

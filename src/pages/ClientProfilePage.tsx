@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ChevronLeft, Plus, Loader2, Trash2, Star,
+  ChevronLeft, Plus, Loader2, Trash2, Star, Award,
   Scissors, Sparkles, ClipboardList, Pencil, X, Check, AlertTriangle, Receipt, ExternalLink,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { Client, Transaction, Feedback, HealthProfile, HairProfile, Invoice } from '../lib/types';
+import { Client, Transaction, Feedback, HealthProfile, HairProfile, Invoice, ClientMembership } from '../lib/types';
 import { useAuth } from '../context/AuthContext';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -167,6 +167,7 @@ export function ClientProfilePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [activeMembership, setActiveMembership] = useState<ClientMembership | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
 
@@ -241,6 +242,11 @@ export function ClientProfilePage() {
         setTransactions(transData || []);
         setFeedback(feedbackData || []);
         setInvoices(invoiceData || []);
+        // Active membership
+        const { data: memData } = await supabase.from('client_memberships')
+          .select('*').eq('client_id', clientData.id).eq('status', 'active')
+          .gt('expires_at', new Date().toISOString()).order('expires_at', { ascending: false }).limit(1).maybeSingle();
+        setActiveMembership(memData || null);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -1370,8 +1376,37 @@ export function ClientProfilePage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN — Feedback */}
+          {/* RIGHT COLUMN — Membership + Feedback */}
           <div className="space-y-6">
+
+            {/* Active membership */}
+            {activeMembership && (
+              <div className="bg-gradient-to-br from-teal-500 to-emerald-600 rounded-xl shadow-sm p-5 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <Award className="w-4 h-4 text-teal-200" />
+                  <span className="text-xs font-bold uppercase tracking-wide text-teal-100">Active Membership</span>
+                </div>
+                <p className="text-lg font-extrabold">{activeMembership.membership_name}</p>
+                <p className="text-teal-100 text-xs mt-1">
+                  Expires {new Date(activeMembership.expires_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  {' · '}{Math.max(0, Math.ceil((new Date(activeMembership.expires_at).getTime() - Date.now()) / 86400000))} days left
+                </p>
+                {activeMembership.notes && <p className="text-teal-200 text-xs mt-1">{activeMembership.notes}</p>}
+              </div>
+            )}
+
+            {/* Loyalty points */}
+            {(client.loyalty_points ?? 0) > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border border-amber-100 p-5">
+                <div className="flex items-center gap-2 mb-1">
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+                  <span className="text-xs font-bold uppercase tracking-wide text-gray-500">Loyalty Points</span>
+                </div>
+                <p className="text-3xl font-extrabold text-amber-600">{client.loyalty_points}</p>
+                <p className="text-xs text-gray-400 mt-0.5">Points earned from services</p>
+              </div>
+            )}
+
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900">Feedback</h2>

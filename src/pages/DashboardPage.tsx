@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   BarChart3, Users, TrendingUp, LogOut, Settings, UserCog, Database,
   Search, Plus, CalendarDays, Receipt, MessageSquare, BarChart2,
+  Award, Star, Tag, Bell, QrCode, MessageCircle, Shield,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -21,12 +22,8 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
-    totalClients: 0,
-    dailySales: 0,
-    monthlySales: 0,
-    popularTreatments: [],
-    todayAppointments: 0,
-    pendingInvoices: 0,
+    totalClients: 0, dailySales: 0, monthlySales: 0,
+    popularTreatments: [], todayAppointments: 0, pendingInvoices: 0,
   });
 
   const isAdmin = user?.role === 'admin';
@@ -38,92 +35,62 @@ export function DashboardPage() {
 
   async function fetchStats() {
     try {
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
-
-      const { data: monthTransactions } = await supabase
-        .from('transactions')
-        .select('treatment_name')
-        .gte('date', monthStart.toISOString());
-
+      const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+      const { data: monthTransactions } = await supabase.from('transactions').select('treatment_name').gte('date', monthStart.toISOString());
       const treatmentCounts = (monthTransactions || []).reduce((acc, t) => {
-        const existing = acc.find(item => item.name === t.treatment_name);
-        if (existing) existing.count++;
-        else acc.push({ name: t.treatment_name, count: 1 });
+        const existing = acc.find((item: any) => item.name === t.treatment_name);
+        if (existing) existing.count++; else acc.push({ name: t.treatment_name, count: 1 });
         return acc;
-      }, [] as Array<{ name: string; count: number }>).sort((a, b) => b.count - a.count).slice(0, 5);
+      }, [] as Array<{ name: string; count: number }>).sort((a: any, b: any) => b.count - a.count).slice(0, 5);
 
-      // Today's appointments count (available to all)
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const todayEnd = new Date();
-      todayEnd.setHours(23, 59, 59, 999);
-      const { count: apptCount } = await supabase
-        .from('appointments')
-        .select('*', { count: 'exact' })
-        .gte('scheduled_at', todayStart.toISOString())
-        .lte('scheduled_at', todayEnd.toISOString())
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
+      const { count: apptCount } = await supabase.from('appointments').select('*', { count: 'exact' })
+        .gte('scheduled_at', todayStart.toISOString()).lte('scheduled_at', todayEnd.toISOString())
         .in('status', ['scheduled', 'confirmed', 'in_progress']);
 
       if (isAdmin) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const [
-          { count: clientCount },
-          { data: todayTx },
-          { data: monthSales },
-          { count: pendingCount },
-        ] = await Promise.all([
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const [{ count: clientCount }, { data: todayTx }, { data: monthSales }, { count: pendingCount }] = await Promise.all([
           supabase.from('clients').select('*', { count: 'exact' }),
           supabase.from('transactions').select('price').gte('date', today.toISOString()),
           supabase.from('transactions').select('price').gte('date', monthStart.toISOString()),
           supabase.from('invoices').select('*', { count: 'exact' }).eq('payment_status', 'pending'),
         ]);
-
-        const dailySales = todayTx?.reduce((s, t) => s + (t.price || 0), 0) || 0;
-        const monthlySales = monthSales?.reduce((s, t) => s + (t.price || 0), 0) || 0;
-
         setStats({
           totalClients: clientCount || 0,
-          dailySales,
-          monthlySales,
+          dailySales: todayTx?.reduce((s, t) => s + (t.price || 0), 0) || 0,
+          monthlySales: monthSales?.reduce((s, t) => s + (t.price || 0), 0) || 0,
           popularTreatments: treatmentCounts,
           todayAppointments: apptCount || 0,
           pendingInvoices: pendingCount || 0,
         });
       } else {
-        setStats(prev => ({
-          ...prev,
-          popularTreatments: treatmentCounts,
-          todayAppointments: apptCount || 0,
-        }));
+        setStats(prev => ({ ...prev, popularTreatments: treatmentCounts, todayAppointments: apptCount || 0 }));
       }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
+    } catch (error) { console.error('Error fetching stats:', error); }
   }
 
-  async function handleLogout() {
-    await signOut();
-    navigate('/login');
-  }
+  async function handleLogout() { await signOut(); navigate('/login'); }
 
-  // Quick-action modules — shown to all roles
   const operatorModules = [
-    { label: 'Search Client', desc: 'Find by phone or name', path: '/clients/search', icon: <Search className="w-6 h-6" />, color: 'from-teal-50 to-teal-100 border-teal-200', btnColor: 'bg-teal-600' },
-    { label: 'Add New Client', desc: 'Create a new profile', path: '/clients/new', icon: <Plus className="w-6 h-6" />, color: 'from-blue-50 to-blue-100 border-blue-200', btnColor: 'bg-blue-600' },
-    { label: 'Appointments', desc: `${stats.todayAppointments} today`, path: '/appointments', icon: <CalendarDays className="w-6 h-6" />, color: 'from-violet-50 to-violet-100 border-violet-200', btnColor: 'bg-violet-600' },
-    { label: 'Billing', desc: 'Invoices & payments', path: '/billing', icon: <Receipt className="w-6 h-6" />, color: 'from-amber-50 to-amber-100 border-amber-200', btnColor: 'bg-amber-600' },
-    { label: 'Inquiries', desc: 'Leads & follow-ups', path: '/inquiries', icon: <MessageSquare className="w-6 h-6" />, color: 'from-green-50 to-green-100 border-green-200', btnColor: 'bg-green-600' },
+    { label: 'Search Client',  desc: 'Find by phone or name',    path: '/clients/search', icon: <Search className="w-6 h-6" />,      color: 'from-teal-50 to-teal-100 border-teal-200',       btnColor: 'bg-teal-600' },
+    { label: 'Add New Client', desc: 'Create a new profile',     path: '/clients/new',    icon: <Plus className="w-6 h-6" />,        color: 'from-blue-50 to-blue-100 border-blue-200',       btnColor: 'bg-blue-600' },
+    { label: 'Appointments',   desc: `${stats.todayAppointments} today`, path: '/appointments', icon: <CalendarDays className="w-6 h-6" />, color: 'from-violet-50 to-violet-100 border-violet-200', btnColor: 'bg-violet-600' },
+    { label: 'Billing',        desc: 'Invoices & payments',      path: '/billing',        icon: <Receipt className="w-6 h-6" />,     color: 'from-amber-50 to-amber-100 border-amber-200',    btnColor: 'bg-amber-600' },
+    { label: 'Inquiries',      desc: 'Leads & follow-ups',       path: '/inquiries',      icon: <MessageSquare className="w-6 h-6" />, color: 'from-green-50 to-green-100 border-green-200',  btnColor: 'bg-green-600' },
   ];
 
   const adminOnlyModules = [
-    { label: 'Reports', desc: 'Analytics & export', path: '/reports', icon: <BarChart2 className="w-6 h-6" />, color: 'from-rose-50 to-rose-100 border-rose-200', btnColor: 'bg-rose-600' },
+    { label: 'Memberships',    desc: 'Plans & client memberships', path: '/admin/memberships', icon: <Award className="w-6 h-6" />,       color: 'from-teal-50 to-emerald-100 border-emerald-200',  btnColor: 'bg-emerald-600' },
+    { label: 'Loyalty Points', desc: 'Rewards & point rules',     path: '/admin/loyalty',     icon: <Star className="w-6 h-6" />,        color: 'from-amber-50 to-yellow-100 border-yellow-200',   btnColor: 'bg-yellow-600' },
+    { label: 'Coupons',        desc: 'Discount codes',            path: '/admin/coupons',     icon: <Tag className="w-6 h-6" />,         color: 'from-rose-50 to-rose-100 border-rose-200',        btnColor: 'bg-rose-600' },
+    { label: 'Reminders',      desc: 'Alerts & follow-ups',       path: '/admin/reminders',   icon: <Bell className="w-6 h-6" />,        color: 'from-orange-50 to-orange-100 border-orange-200',  btnColor: 'bg-orange-600' },
+    { label: 'QR Menu',        desc: 'Public service menu',       path: '/admin/qr-menu',     icon: <QrCode className="w-6 h-6" />,      color: 'from-cyan-50 to-cyan-100 border-cyan-200',        btnColor: 'bg-cyan-600' },
+    { label: 'Feedback',       desc: 'Reviews & ratings',         path: '/admin/feedback',    icon: <MessageCircle className="w-6 h-6" />, color: 'from-pink-50 to-pink-100 border-pink-200',      btnColor: 'bg-pink-600' },
+    { label: 'Reports',        desc: 'Analytics & export',        path: '/admin/reports',     icon: <BarChart2 className="w-6 h-6" />,   color: 'from-indigo-50 to-indigo-100 border-indigo-200',  btnColor: 'bg-indigo-600' },
+    { label: 'Audit Log',      desc: 'Change history',            path: '/admin/audit',       icon: <Shield className="w-6 h-6" />,      color: 'from-gray-50 to-slate-100 border-slate-200',      btnColor: 'bg-slate-600' },
   ];
-
-  const modules = isAdmin ? [...operatorModules, ...adminOnlyModules] : operatorModules;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -150,7 +117,7 @@ export function DashboardPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-        {/* ── Stats bar (admin) ── */}
+        {/* Admin stats */}
         {isAdmin && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             <button onClick={() => navigate('/admin/clients')}
@@ -185,7 +152,7 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* ── Operator stats ── */}
+        {/* Operator stats */}
         {!isAdmin && (
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
@@ -207,11 +174,11 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* ── Module grid ── */}
+        {/* Operator modules */}
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Access</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {modules.map(mod => (
+            {operatorModules.map(mod => (
               <button key={mod.path} onClick={() => navigate(mod.path)}
                 className={`group relative overflow-hidden bg-gradient-to-br ${mod.color} rounded-xl p-6 transition border cursor-pointer text-left hover:shadow-md`}>
                 <div className="flex items-start justify-between mb-4">
@@ -221,15 +188,33 @@ export function DashboardPage() {
                 </div>
                 <h3 className="text-lg font-bold text-gray-900">{mod.label}</h3>
                 <p className="text-gray-600 text-sm mt-1">{mod.desc}</p>
-                <div className={`mt-4 inline-block px-4 py-1.5 ${mod.btnColor} text-white rounded-lg text-sm font-semibold shadow-md`}>
-                  Open →
-                </div>
+                <div className={`mt-4 inline-block px-4 py-1.5 ${mod.btnColor} text-white rounded-lg text-sm font-semibold shadow-md`}>Open →</div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* ── Popular treatments (admin) ── */}
+        {/* Admin-only modules */}
+        {isAdmin && (
+          <div>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Admin Control Panel</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {adminOnlyModules.map(mod => (
+                <button key={mod.path} onClick={() => navigate(mod.path)}
+                  className={`group relative overflow-hidden bg-gradient-to-br ${mod.color} rounded-xl p-5 transition border cursor-pointer text-left hover:shadow-md`}>
+                  <div className={`w-10 h-10 ${mod.btnColor} bg-opacity-10 rounded-xl flex items-center justify-center text-gray-700 group-hover:scale-110 transition mb-3`}>
+                    {mod.icon}
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900">{mod.label}</h3>
+                  <p className="text-gray-500 text-xs mt-1">{mod.desc}</p>
+                  <div className={`mt-3 inline-block px-3 py-1 ${mod.btnColor} text-white rounded-lg text-xs font-semibold`}>Open →</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Popular treatments (admin) */}
         {isAdmin && stats.popularTreatments.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-base font-bold text-gray-900 mb-4">Popular Treatments This Month</h3>
