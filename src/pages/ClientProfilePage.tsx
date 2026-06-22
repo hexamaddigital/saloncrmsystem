@@ -190,13 +190,17 @@ export function ClientProfilePage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
 
-  // Service entry form (new rich form)
+  // Service entry form (new rich form — multi-select)
   const [showServiceEntry, setShowServiceEntry] = useState(false);
   const [serviceEntry, setServiceEntry] = useState({
     service_category: 'hair' as 'hair' | 'skin' | 'hair_and_skin' | 'custom',
-    treatment_name: '',
+    // multi-select: list of selected service chip names
+    selected_services: [] as string[],
+    // per-service price map  { 'Hair Cut': '500', 'Facial': '800' }
+    service_prices: {} as Record<string, string>,
+    // used only when service_category === 'custom' or editing a single saved entry
     custom_name: '',
-    price: '',
+    custom_price: '',
     staff_name: '',
     notes: '',
     date: new Date().toISOString().split('T')[0],
@@ -370,32 +374,43 @@ export function ClientProfilePage() {
   const showHair = serviceForm.service_type === 'hair' || serviceForm.service_type === 'hair_and_skin';
   const showSkin = serviceForm.service_type === 'skin' || serviceForm.service_type === 'hair_and_skin';
 
-  // ── Service Entry (rich form) ──
+  // ── Service Entry (rich multi-select form) ──
 
-  function openNewServiceEntry() {
-    setServiceEntryEditId(null);
-    setServiceEntry({
-      service_category: 'hair',
-      treatment_name: '',
+  function blankServiceEntry() {
+    return {
+      service_category: 'hair' as const,
+      selected_services: [] as string[],
+      service_prices: {} as Record<string, string>,
       custom_name: '',
-      price: '',
+      custom_price: '',
       staff_name: '',
       notes: '',
       date: new Date().toISOString().split('T')[0],
-      payment_status: 'paid',
+      payment_status: 'paid' as const,
       payment_method: 'Cash',
-    });
+    };
+  }
+
+  function openNewServiceEntry() {
+    setServiceEntryEditId(null);
+    setServiceEntry(blankServiceEntry());
     setServiceEntryError('');
     setShowServiceEntry(true);
   }
 
   function openEditServiceEntry(tx: Transaction) {
+    // Editing a saved single transaction — load it as a single pre-selected item
     setServiceEntryEditId(tx.id);
+    const cat = (tx.service_category as 'hair' | 'skin' | 'hair_and_skin' | 'custom') || 'custom';
+    const name = tx.treatment_name;
+    const isCustom = cat === 'custom' || (!HAIR_SERVICE_OPTIONS.includes(name) && !SKIN_SERVICE_OPTIONS.includes(name));
     setServiceEntry({
-      service_category: (tx.service_category as 'hair' | 'skin' | 'hair_and_skin' | 'custom') || 'custom',
-      treatment_name: tx.treatment_name,
-      custom_name: '',
-      price: String(tx.price),
+      ...blankServiceEntry(),
+      service_category: isCustom ? 'custom' : cat,
+      selected_services: isCustom ? [] : [name],
+      service_prices: isCustom ? {} : { [name]: String(tx.price) },
+      custom_name: isCustom ? name : '',
+      custom_price: isCustom ? String(tx.price) : '',
       staff_name: tx.staff_name || '',
       notes: tx.notes || '',
       date: tx.date ? tx.date.split('T')[0] : new Date().toISOString().split('T')[0],
@@ -406,40 +421,124 @@ export function ClientProfilePage() {
     setShowServiceEntry(true);
   }
 
+  function toggleServiceChip(name: string) {
+    setServiceEntry(p => {
+      const already = p.selected_services.includes(name);
+      const newSelected = already
+        ? p.selected_services.filter(s => s !== name)
+        : [...p.selected_services, name];
+      const newPrices = { ...p.service_prices };
+      if (!already && !(name in newPrices)) newPrices[name] = '';
+      if (already) delete newPrices[name];
+      return { ...p, selected_services: newSelected, service_prices: newPrices };
+    });
+  }
+
+  function setServicePrice(name: string, val: string) {
+    setServiceEntry(p => ({ ...p, service_prices: { ...p.service_prices, [name]: val } }));
+  }
+
+  // Total across all selected services (for display)
+  function calcTotal(): number {
+    if (serviceEntry.service_category === 'custom') {
+      return parseFloat(serviceEntry.custom_price) || 0;
+    }
+    return serviceEntry.selected_services.reduce((sum, name) => {
+      return sum + (parseFloat(serviceEntry.service_prices[name] || '0') || 0);
+    }, 0);
+  }
+
   async function handleSaveServiceEntry() {
     if (!client) return;
-    const finalName = serviceEntry.service_category === 'custom'
-      ? serviceEntry.custom_name.trim()
-      : serviceEntry.treatment_name.trim();
-    if (!finalName) { setServiceEntryError('Service name is required'); return; }
-    if (!serviceEntry.price || parseFloat(serviceEntry.price) < 0) { setServiceEntryError('Enter a valid price'); return; }
+    setServiceEntryError('');
+
+    const isoDate = new Date(serviceEntry.date + 'T' + new Date().toTimeString().slice(0, 8)).toISOString();
+    const commonFields = {
+      client_id:      client.id,
+      staff_name:     serviceEntry.staff_name.trim() || null,
+      notes:          serviceEntry.notes.trim() || null,
+      date:           isoDate,
+      payment_status: serviceEntry.payment_status,
+      payment_method: serviceEntry.payment_method,
+      discount:       0,
+    };
+
+    if (serviceEntry.service_category === 'custom') {
+      // Single custom service
+      const name = serviceEntry.custom_name.trim();
+      if (!name) { setServiceEntryError('Enter a custom service name'); return; }
+      const price = parseFloat(serviceEntry.custom_price);
+      if (isNaN(price) || price < 0) { setServiceEntryError('Enter a valid price'); return; }
+
+      setServiceEntrySaving(true);
+      try {
+        const payload = { ...commonFields, treatment_name: name, service_category: 'custom', price };
+        if (serviceEntryEditId) {
+          const { error } = await supabase.from('transactions').update(payload).eq('id', serviceEntryEditId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('transactions').insert(payload);
+          if (error) throw error;
+        }
+        setShowServiceEntry(false);
+        setServiceEntryEditId(null);
+        fetchData();
+      } catch (err) {
+        setServiceEntryError(err instanceof Error ? err.message : 'Failed to save');
+      } finally {
+        setServiceEntrySaving(false);
+      }
+      return;
+    }
+
+    // Multi-select preset services
+    if (serviceEntryEditId) {
+      // Editing an existing record — treat as single update
+      const selected = serviceEntry.selected_services;
+      if (selected.length === 0) { setServiceEntryError('Select at least one service'); return; }
+      const name = selected[0];
+      const price = parseFloat(serviceEntry.service_prices[name] || '');
+      if (isNaN(price) || price < 0) { setServiceEntryError(`Enter a valid price for ${name}`); return; }
+      setServiceEntrySaving(true);
+      try {
+        const { error } = await supabase.from('transactions')
+          .update({ ...commonFields, treatment_name: name, service_category: serviceEntry.service_category, price })
+          .eq('id', serviceEntryEditId);
+        if (error) throw error;
+        setShowServiceEntry(false);
+        setServiceEntryEditId(null);
+        fetchData();
+      } catch (err) {
+        setServiceEntryError(err instanceof Error ? err.message : 'Failed to save');
+      } finally {
+        setServiceEntrySaving(false);
+      }
+      return;
+    }
+
+    // New entry — insert one row per selected service
+    const selected = serviceEntry.selected_services;
+    if (selected.length === 0) { setServiceEntryError('Select at least one service'); return; }
+
+    for (const name of selected) {
+      const price = parseFloat(serviceEntry.service_prices[name] || '');
+      if (isNaN(price) || price < 0) {
+        setServiceEntryError(`Enter a valid price for "${name}"`);
+        return;
+      }
+    }
 
     setServiceEntrySaving(true);
-    setServiceEntryError('');
     try {
-      const payload = {
-        client_id:        client.id,
-        treatment_name:   finalName,
+      const rows = selected.map(name => ({
+        ...commonFields,
+        treatment_name:   name,
         service_category: serviceEntry.service_category,
-        price:            parseFloat(serviceEntry.price),
-        staff_name:       serviceEntry.staff_name.trim() || null,
-        notes:            serviceEntry.notes.trim() || null,
-        date:             new Date(serviceEntry.date + 'T' + new Date().toTimeString().slice(0, 8)).toISOString(),
-        payment_status:   serviceEntry.payment_status,
-        payment_method:   serviceEntry.payment_method,
-        discount:         0,
-      };
-
-      if (serviceEntryEditId) {
-        const { error } = await supabase.from('transactions').update(payload).eq('id', serviceEntryEditId);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('transactions').insert(payload);
-        if (error) throw error;
-      }
-
+        price:            parseFloat(serviceEntry.service_prices[name]),
+      }));
+      const { error } = await supabase.from('transactions').insert(rows);
+      if (error) throw error;
       setShowServiceEntry(false);
-      setServiceEntryEditId(null);
       fetchData();
     } catch (err) {
       setServiceEntryError(err instanceof Error ? err.message : 'Failed to save');
@@ -967,13 +1066,18 @@ export function ClientProfilePage() {
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Service Type</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {([
-                        { v: 'hair',         label: '✂ Hair',       cls: 'teal' },
-                        { v: 'skin',         label: '✦ Skin',       cls: 'rose' },
-                        { v: 'hair_and_skin',label: '✂✦ Hair & Skin', cls: 'blue' },
-                        { v: 'custom',       label: '★ Custom',     cls: 'amber' },
+                        { v: 'hair',          label: '✂ Hair',          cls: 'teal'  },
+                        { v: 'skin',          label: '✦ Skin',          cls: 'rose'  },
+                        { v: 'hair_and_skin', label: '✂✦ Hair & Skin',  cls: 'blue'  },
+                        { v: 'custom',        label: '★ Custom',        cls: 'amber' },
                       ] as const).map(opt => (
                         <button key={opt.v} type="button"
-                          onClick={() => setServiceEntry(p => ({ ...p, service_category: opt.v, treatment_name: '' }))}
+                          onClick={() => setServiceEntry(p => ({
+                            ...p,
+                            service_category: opt.v,
+                            selected_services: [],
+                            service_prices: {},
+                          }))}
                           className={`py-2 px-3 rounded-xl text-xs font-semibold border-2 transition ${
                             serviceEntry.service_category === opt.v
                               ? opt.cls === 'teal'  ? 'bg-teal-600 text-white border-teal-600'
@@ -988,90 +1092,112 @@ export function ClientProfilePage() {
                     </div>
                   </div>
 
-                  {/* Service name — quick-pick chips + optional free text */}
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Treatment / Service Name</p>
-                    {serviceEntry.service_category === 'hair' && (
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {HAIR_SERVICE_OPTIONS.map(s => (
-                          <button key={s} type="button"
-                            onClick={() => setServiceEntry(p => ({ ...p, treatment_name: s }))}
-                            className={`px-2.5 py-1 text-xs rounded-full border font-medium transition ${
-                              serviceEntry.treatment_name === s
-                                ? 'bg-teal-600 text-white border-teal-600'
-                                : 'bg-white text-teal-700 border-teal-200 hover:bg-teal-50'
-                            }`}>{s}</button>
-                        ))}
-                      </div>
-                    )}
-                    {serviceEntry.service_category === 'skin' && (
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {SKIN_SERVICE_OPTIONS.map(s => (
-                          <button key={s} type="button"
-                            onClick={() => setServiceEntry(p => ({ ...p, treatment_name: s }))}
-                            className={`px-2.5 py-1 text-xs rounded-full border font-medium transition ${
-                              serviceEntry.treatment_name === s
-                                ? 'bg-rose-600 text-white border-rose-600'
-                                : 'bg-white text-rose-700 border-rose-200 hover:bg-rose-50'
-                            }`}>{s}</button>
-                        ))}
-                      </div>
-                    )}
-                    {serviceEntry.service_category === 'hair_and_skin' && (
-                      <div className="space-y-2 mb-2">
+                  {/* ── Service chip multi-select ── */}
+                  {serviceEntry.service_category !== 'custom' && (
+                    <div className="space-y-3">
+                      {(serviceEntry.service_category === 'hair' || serviceEntry.service_category === 'hair_and_skin') && (
                         <div>
-                          <p className="text-xs text-teal-700 font-medium mb-1">✂ Hair</p>
+                          <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1.5">
+                            ✂ Hair Services <span className="text-gray-400 font-normal normal-case">(tap to select multiple)</span>
+                          </p>
                           <div className="flex flex-wrap gap-1.5">
-                            {HAIR_SERVICE_OPTIONS.map(s => (
-                              <button key={s} type="button"
-                                onClick={() => setServiceEntry(p => ({ ...p, treatment_name: s }))}
-                                className={`px-2.5 py-1 text-xs rounded-full border font-medium transition ${
-                                  serviceEntry.treatment_name === s
-                                    ? 'bg-teal-600 text-white border-teal-600'
-                                    : 'bg-white text-teal-700 border-teal-200 hover:bg-teal-50'
-                                }`}>{s}</button>
-                            ))}
+                            {HAIR_SERVICE_OPTIONS.map(s => {
+                              const active = serviceEntry.selected_services.includes(s);
+                              return (
+                                <button key={s} type="button" onClick={() => toggleServiceChip(s)}
+                                  className={`px-2.5 py-1 text-xs rounded-full border font-medium transition select-none ${
+                                    active
+                                      ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                                      : 'bg-white text-teal-700 border-teal-200 hover:bg-teal-50'
+                                  }`}>
+                                  {active && <span className="mr-1">✓</span>}{s}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
+                      )}
+                      {(serviceEntry.service_category === 'skin' || serviceEntry.service_category === 'hair_and_skin') && (
                         <div>
-                          <p className="text-xs text-rose-700 font-medium mb-1">✦ Skin</p>
+                          <p className="text-xs font-semibold text-rose-700 uppercase tracking-wide mb-1.5">
+                            ✦ Skin Services <span className="text-gray-400 font-normal normal-case">(tap to select multiple)</span>
+                          </p>
                           <div className="flex flex-wrap gap-1.5">
-                            {SKIN_SERVICE_OPTIONS.map(s => (
-                              <button key={s} type="button"
-                                onClick={() => setServiceEntry(p => ({ ...p, treatment_name: s }))}
-                                className={`px-2.5 py-1 text-xs rounded-full border font-medium transition ${
-                                  serviceEntry.treatment_name === s
-                                    ? 'bg-rose-600 text-white border-rose-600'
-                                    : 'bg-white text-rose-700 border-rose-200 hover:bg-rose-50'
-                                }`}>{s}</button>
-                            ))}
+                            {SKIN_SERVICE_OPTIONS.map(s => {
+                              const active = serviceEntry.selected_services.includes(s);
+                              return (
+                                <button key={s} type="button" onClick={() => toggleServiceChip(s)}
+                                  className={`px-2.5 py-1 text-xs rounded-full border font-medium transition select-none ${
+                                    active
+                                      ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                                      : 'bg-white text-rose-700 border-rose-200 hover:bg-rose-50'
+                                  }`}>
+                                  {active && <span className="mr-1">✓</span>}{s}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {serviceEntry.service_category === 'custom' ? (
-                      <input type="text" placeholder="Enter custom service name *"
-                        value={serviceEntry.custom_name}
-                        onChange={e => setServiceEntry(p => ({ ...p, custom_name: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
-                    ) : (
-                      <input type="text" placeholder="Or type a custom name..."
-                        value={serviceEntry.treatment_name}
-                        onChange={e => setServiceEntry(p => ({ ...p, treatment_name: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
-                    )}
-                  </div>
-
-                  {/* Price, Date, Staff row */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Price (₹) *</label>
-                      <input type="number" min="0" step="0.01" placeholder="0.00"
-                        value={serviceEntry.price}
-                        onChange={e => setServiceEntry(p => ({ ...p, price: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                      {/* Selected services — price per item */}
+                      {serviceEntry.selected_services.length > 0 && (
+                        <div className="bg-white border border-gray-200 rounded-xl p-3 space-y-2">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Selected Services &amp; Prices</p>
+                          {serviceEntry.selected_services.map(name => (
+                            <div key={name} className="flex items-center gap-2">
+                              <span className="flex-1 text-sm font-medium text-gray-800 truncate">{name}</span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <span className="text-sm text-gray-500">₹</span>
+                                <input
+                                  type="number" min="0" step="0.01" placeholder="0"
+                                  value={serviceEntry.service_prices[name] ?? ''}
+                                  onChange={e => setServicePrice(name, e.target.value)}
+                                  className="w-24 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white text-right"
+                                />
+                              </div>
+                              <button type="button" onClick={() => toggleServiceChip(name)}
+                                className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition shrink-0"
+                                title="Remove">
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                              {serviceEntry.selected_services.length} service{serviceEntry.selected_services.length !== 1 ? 's' : ''} selected
+                            </span>
+                            <span className="text-sm font-bold text-teal-700">
+                              Total: ₹{calcTotal().toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                  )}
+
+                  {/* Custom service input */}
+                  {serviceEntry.service_category === 'custom' && (
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Service Name *</p>
+                        <input type="text" placeholder="Enter custom service name"
+                          value={serviceEntry.custom_name}
+                          onChange={e => setServiceEntry(p => ({ ...p, custom_name: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Price (₹) *</p>
+                        <input type="number" min="0" step="0.01" placeholder="0.00"
+                          value={serviceEntry.custom_price}
+                          onChange={e => setServiceEntry(p => ({ ...p, custom_price: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Date, Staff row */}
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Date *</label>
                       <input type="date" value={serviceEntry.date}
@@ -1079,7 +1205,7 @@ export function ClientProfilePage() {
                         onChange={e => setServiceEntry(p => ({ ...p, date: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
                     </div>
-                    <div className="col-span-2 sm:col-span-1">
+                    <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Staff / Operator</label>
                       <input type="text" placeholder="Who performed this?"
                         value={serviceEntry.staff_name}
@@ -1128,6 +1254,14 @@ export function ClientProfilePage() {
                     </p>
                   )}
 
+                  {/* Summary bar shown when multiple services are selected */}
+                  {serviceEntry.selected_services.length > 1 && (
+                    <div className="bg-teal-600 text-white rounded-xl px-4 py-2.5 flex items-center justify-between text-sm font-semibold">
+                      <span>{serviceEntry.selected_services.length} services will be saved as separate records</span>
+                      <span>₹{calcTotal().toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+
                   <div className="flex gap-2 pt-1">
                     <button type="button" onClick={() => { setShowServiceEntry(false); setServiceEntryEditId(null); }}
                       disabled={serviceEntrySaving}
@@ -1139,7 +1273,7 @@ export function ClientProfilePage() {
                       className="flex-1 px-3 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition text-sm disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm">
                       {serviceEntrySaving
                         ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
-                        : <><Check className="w-4 h-4" /> {serviceEntryEditId ? 'Update Entry' : 'Save Entry'}</>}
+                        : <><Check className="w-4 h-4" /> {serviceEntryEditId ? 'Update Entry' : `Save ${serviceEntry.selected_services.length > 1 ? `${serviceEntry.selected_services.length} Services` : 'Entry'}`}</>}
                     </button>
                   </div>
                 </div>
