@@ -2,12 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, Plus, Pencil, Trash2, X, Check, Loader2, AlertTriangle,
-  Award, Search, UserPlus, CalendarDays, RefreshCw,
+  Award, Search, UserPlus, CalendarDays, RefreshCw, History, Gift, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Membership, ClientMembership, Client } from '../lib/types';
 
 type Tab = 'plans' | 'clients';
+
+interface ClientMemRow extends ClientMembership {
+  client_name?: string;
+  client_phone?: string;
+  benefits?: string | null;
+}
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -46,9 +52,18 @@ export function MembershipManagementPage() {
   const [assignError, setAssignError] = useState('');
 
   // Client memberships
-  const [clientMems, setClientMems] = useState<(ClientMembership & { client_name?: string; client_phone?: string })[]>([]);
+  const [clientMems, setClientMems] = useState<ClientMemRow[]>([]);
   const [memsLoading, setMemsLoading] = useState(false);
   const [memSearch, setMemSearch] = useState('');
+
+  // History modal
+  const [historyClient, setHistoryClient] = useState<ClientMemRow | null>(null);
+  const [historyRows, setHistoryRows] = useState<ClientMemRow[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Renew modal
+  const [renewTarget, setRenewTarget] = useState<ClientMemRow | null>(null);
+  const [renewing, setRenewing] = useState(false);
 
   const fetchPlans = useCallback(async () => {
     setPlansLoading(true);
@@ -61,12 +76,13 @@ export function MembershipManagementPage() {
     setMemsLoading(true);
     const { data } = await supabase
       .from('client_memberships')
-      .select('*, clients(name, phone)')
+      .select('*, clients(name, phone), memberships!inner(benefits)')
       .order('created_at', { ascending: false });
     setClientMems((data || []).map((r: any) => ({
       ...r,
       client_name: r.clients?.name,
       client_phone: r.clients?.phone,
+      benefits: r.memberships?.benefits ?? null,
     })));
     setMemsLoading(false);
   }, []);
@@ -141,24 +157,46 @@ export function MembershipManagementPage() {
     } finally { setAssigning(false); }
   }
 
-  async function renewMembership(cm: ClientMembership) {
-    const plan = plans.find(p => p.id === cm.membership_id);
-    if (!plan) { alert('Plan not found'); return; }
-    const base = cm.status === 'active' && new Date(cm.expires_at) > new Date()
-      ? new Date(cm.expires_at) : new Date();
-    const expires_at = new Date(base.getTime() + plan.validity_days * 86400000).toISOString();
-    await supabase.from('client_memberships').insert({
-      client_id: cm.client_id, membership_id: plan.id,
-      membership_name: plan.name, started_at: new Date().toISOString(),
-      expires_at, amount_paid: plan.price, status: 'active',
-      notes: 'Renewed',
-    });
-    fetchClientMems();
+  async function confirmRenew() {
+    if (!renewTarget) return;
+    const plan = plans.find(p => p.id === renewTarget.membership_id);
+    if (!plan) { alert('Plan not found — the plan may have been deleted.'); setRenewTarget(null); return; }
+    setRenewing(true);
+    try {
+      const base = renewTarget.status === 'active' && new Date(renewTarget.expires_at) > new Date()
+        ? new Date(renewTarget.expires_at) : new Date();
+      const expires_at = new Date(base.getTime() + plan.validity_days * 86400000).toISOString();
+      const { error } = await supabase.from('client_memberships').insert({
+        client_id: renewTarget.client_id, membership_id: plan.id,
+        membership_name: plan.name, started_at: new Date().toISOString(),
+        expires_at, amount_paid: plan.price, status: 'active',
+        notes: 'Renewed',
+      });
+      if (error) throw error;
+      setRenewTarget(null);
+      fetchClientMems();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to renew');
+    } finally { setRenewing(false); }
+  }
+
+  async function openHistory(cm: ClientMemRow) {
+    setHistoryClient(cm);
+    setHistoryLoading(true);
+    const { data } = await supabase
+      .from('client_memberships')
+      .select('*, memberships!inner(benefits)')
+      .eq('client_id', cm.client_id)
+      .order('created_at', { ascending: false });
+    setHistoryRows((data || []).map((r: any) => ({ ...r, benefits: r.memberships?.benefits ?? null })));
+    setHistoryLoading(false);
   }
 
   const filteredMems = clientMems.filter(m =>
     !memSearch || m.client_name?.toLowerCase().includes(memSearch.toLowerCase()) ||
     m.client_phone?.includes(memSearch));
+
+  const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -214,22 +252,22 @@ export function MembershipManagementPage() {
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Plan Name *</label>
                     <input type="text" value={form.name || ''} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" placeholder="e.g. Gold Membership" />
+                      className={inputCls} placeholder="e.g. Gold Membership" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Price (₹) *</label>
                     <input type="number" min="0" value={form.price || ''} onChange={e => setForm(p => ({ ...p, price: Number(e.target.value) }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+                      className={inputCls} />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Validity (days) *</label>
                     <input type="number" min="1" value={form.validity_days || ''} onChange={e => setForm(p => ({ ...p, validity_days: Number(e.target.value) }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+                      className={inputCls} />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Discount %</label>
                     <input type="number" min="0" max="100" value={form.discount_pct || ''} onChange={e => setForm(p => ({ ...p, discount_pct: Number(e.target.value) }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+                      className={inputCls} />
                   </div>
                   <div className="flex items-center gap-2 pt-5">
                     <input type="checkbox" id="plan-active" checked={form.is_active ?? true} onChange={e => setForm(p => ({ ...p, is_active: e.target.checked }))} className="w-4 h-4 accent-teal-600" />
@@ -238,12 +276,12 @@ export function MembershipManagementPage() {
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Description</label>
                     <input type="text" value={form.description || ''} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" placeholder="Short description" />
+                      className={inputCls} placeholder="Short description" />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Benefits / Included Services</label>
                     <textarea rows={2} value={form.benefits || ''} onChange={e => setForm(p => ({ ...p, benefits: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none resize-none" placeholder="e.g. 2 Free Facials, 10% off all services..." />
+                      className={`${inputCls} resize-none`} placeholder="e.g. 2 Free Facials, 10% off all services..." />
                   </div>
                 </div>
                 {formError && (
@@ -285,7 +323,12 @@ export function MembershipManagementPage() {
                       <div><p className="text-gray-400 text-xs">Validity</p><p className="font-semibold text-gray-900">{p.validity_days} days</p></div>
                       {p.discount_pct ? <div><p className="text-gray-400 text-xs">Discount</p><p className="font-semibold text-green-600">{p.discount_pct}%</p></div> : null}
                     </div>
-                    {p.benefits && <p className="text-xs text-gray-600 bg-gray-50 rounded-lg px-3 py-2">{p.benefits}</p>}
+                    {p.benefits && (
+                      <div className="text-xs text-gray-600 bg-teal-50 rounded-lg px-3 py-2 flex items-start gap-1.5">
+                        <Gift className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
+                        <span>{p.benefits}</span>
+                      </div>
+                    )}
                     <div className="flex gap-2 mt-auto pt-2 border-t border-gray-100">
                       <button onClick={() => openEdit(p)} className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs font-semibold text-gray-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg border border-gray-200 hover:border-teal-300 transition">
                         <Pencil className="w-3.5 h-3.5" /> Edit
@@ -313,7 +356,7 @@ export function MembershipManagementPage() {
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Select Plan *</label>
                   <select value={assignPlanId} onChange={e => setAssignPlanId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                    className={inputCls}>
                     <option value="">— choose plan —</option>
                     {plans.filter(p => p.is_active).map(p => (
                       <option key={p.id} value={p.id}>{p.name} — ₹{Number(p.price).toLocaleString('en-IN')} / {p.validity_days}d</option>
@@ -350,7 +393,7 @@ export function MembershipManagementPage() {
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Notes</label>
                   <input type="text" value={assignNotes} onChange={e => setAssignNotes(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" placeholder="Optional note" />
+                    className={inputCls} placeholder="Optional note" />
                 </div>
                 {assignError && (
                   <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-center gap-2">
@@ -385,31 +428,43 @@ export function MembershipManagementPage() {
                     const left = daysLeft(m.expires_at);
                     const isExpiring = left <= 7 && left > 0;
                     return (
-                      <div key={m.id} className="flex items-start sm:items-center gap-4 p-4 hover:bg-gray-50 transition flex-col sm:flex-row">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-gray-900">{m.client_name}</span>
-                            <span className="text-xs text-gray-500">{m.client_phone}</span>
+                      <div key={m.id} className="p-4 hover:bg-gray-50 transition">
+                        <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-gray-900">{m.client_name}</span>
+                              <span className="text-xs text-gray-500">{m.client_phone}</span>
+                            </div>
+                            <p className="text-sm text-teal-700 font-medium mt-0.5">{m.membership_name}</p>
+                            <p className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                              <CalendarDays className="w-3 h-3" />
+                              {fmtDate(m.started_at)} → {fmtDate(m.expires_at)}
+                            </p>
+                            {m.benefits && (
+                              <p className="text-xs text-gray-600 mt-1.5 flex items-start gap-1.5">
+                                <Gift className="w-3 h-3 text-teal-600 shrink-0 mt-0.5" />
+                                <span>{m.benefits}</span>
+                              </p>
+                            )}
                           </div>
-                          <p className="text-sm text-teal-700 font-medium mt-0.5">{m.membership_name}</p>
-                          <p className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                            <CalendarDays className="w-3 h-3" />
-                            {fmtDate(m.started_at)} → {fmtDate(m.expires_at)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                            m.status === 'active' && left > 0
-                              ? isExpiring ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                              : 'bg-red-100 text-red-700'}`}>
-                            {m.status === 'active' && left > 0
-                              ? isExpiring ? `Expiring in ${left}d` : `Active · ${left}d left`
-                              : left <= 0 ? 'Expired' : 'Cancelled'}
-                          </span>
-                          <button onClick={() => renewMembership(m)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-50 rounded-lg border border-teal-200 hover:border-teal-400 transition">
-                            <RefreshCw className="w-3 h-3" /> Renew
-                          </button>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                              m.status === 'active' && left > 0
+                                ? isExpiring ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'}`}>
+                              {m.status === 'active' && left > 0
+                                ? isExpiring ? `Expiring in ${left}d` : `Active · ${left}d left`
+                                : left <= 0 ? 'Expired' : 'Cancelled'}
+                            </span>
+                            <button onClick={() => openHistory(m)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition">
+                              <History className="w-3 h-3" /> History
+                            </button>
+                            <button onClick={() => setRenewTarget(m)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-50 rounded-lg border border-teal-200 hover:border-teal-400 transition">
+                              <RefreshCw className="w-3 h-3" /> Renew
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -420,6 +475,106 @@ export function MembershipManagementPage() {
           </>
         )}
       </main>
+
+      {/* Renew confirmation modal */}
+      {renewTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 text-teal-600" />
+                <h2 className="font-bold text-gray-900">Renew Membership</h2>
+              </div>
+              <button onClick={() => setRenewTarget(null)} className="p-1.5 hover:bg-gray-100 rounded-lg transition"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-teal-50 border border-teal-100 rounded-xl p-4 space-y-2">
+                <div className="flex justify-between text-sm"><span className="text-gray-500">Client</span><span className="font-semibold text-gray-900">{renewTarget.client_name}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-500">Plan</span><span className="font-semibold text-teal-700">{renewTarget.membership_name}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-500">Current expiry</span><span className="font-medium text-gray-700">{fmtDate(renewTarget.expires_at)}</span></div>
+                {(() => {
+                  const plan = plans.find(p => p.id === renewTarget.membership_id);
+                  if (!plan) return <p className="text-xs text-red-600">Plan no longer exists.</p>;
+                  const base = renewTarget.status === 'active' && new Date(renewTarget.expires_at) > new Date()
+                    ? new Date(renewTarget.expires_at) : new Date();
+                  const newExp = new Date(base.getTime() + plan.validity_days * 86400000);
+                  return <div className="flex justify-between text-sm"><span className="text-gray-500">New expiry</span><span className="font-bold text-teal-700">{fmtDate(newExp.toISOString())}</span></div>;
+                })()}
+              </div>
+              <p className="text-xs text-gray-500">
+                {renewTarget.status === 'active' && new Date(renewTarget.expires_at) > new Date()
+                  ? 'The new period will be added to the end of the current membership.'
+                  : 'The new membership period starts from today.'}
+              </p>
+              <div className="flex gap-2">
+                <button onClick={() => setRenewTarget(null)} disabled={renewing} className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition text-sm">Cancel</button>
+                <button onClick={confirmRenew} disabled={renewing} className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition text-sm disabled:bg-gray-400 flex items-center justify-center gap-2">
+                  {renewing ? <><Loader2 className="w-4 h-4 animate-spin" /> Renewing...</> : <><RefreshCw className="w-4 h-4" /> Confirm Renew</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* History modal */}
+      {historyClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white">
+              <div className="flex items-center gap-2">
+                <History className="w-5 h-5 text-teal-600" />
+                <div>
+                  <h2 className="font-bold text-gray-900">Membership History</h2>
+                  <p className="text-xs text-gray-500">{historyClient.client_name} · {historyClient.client_phone}</p>
+                </div>
+              </div>
+              <button onClick={() => { setHistoryClient(null); setHistoryRows([]); }} className="p-1.5 hover:bg-gray-100 rounded-lg transition"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 space-y-3">
+              {historyLoading ? (
+                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-teal-600" /></div>
+              ) : historyRows.length === 0 ? (
+                <p className="text-center text-gray-400 text-sm py-8">No history found.</p>
+              ) : (
+                historyRows.map((h, idx) => {
+                  const left = daysLeft(h.expires_at);
+                  const isExpiring = left <= 7 && left > 0;
+                  return (
+                    <div key={h.id} className={`rounded-xl border p-4 ${idx === 0 ? 'border-teal-200 bg-teal-50' : 'border-gray-200 bg-gray-50'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-sm text-gray-900">{h.membership_name}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                          h.status === 'active' && left > 0
+                            ? isExpiring ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'}`}>
+                          {h.status === 'active' && left > 0
+                            ? isExpiring ? `Expiring in ${left}d` : `${left}d left`
+                            : left <= 0 ? 'Expired' : 'Cancelled'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                        <CalendarDays className="w-3 h-3" />
+                        {fmtDate(h.started_at)} → {fmtDate(h.expires_at)}
+                      </div>
+                      {h.benefits && (
+                        <p className="text-xs text-gray-600 flex items-start gap-1.5 mb-1">
+                          <Gift className="w-3 h-3 text-teal-600 shrink-0 mt-0.5" />
+                          <span>{h.benefits}</span>
+                        </p>
+                      )}
+                      <div className="flex gap-4 text-xs text-gray-500">
+                        <span>Paid: <strong className="text-gray-700">₹{Number(h.amount_paid).toLocaleString('en-IN')}</strong></span>
+                        {h.notes && <span>· {h.notes}</span>}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
