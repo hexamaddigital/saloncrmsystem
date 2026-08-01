@@ -79,6 +79,7 @@ export function DashboardPage() {
     { label: 'Appointments',   desc: `${stats.todayAppointments} today`, path: '/appointments', icon: <CalendarDays className="w-6 h-6" />, color: 'from-violet-50 to-violet-100 border-violet-200', btnColor: 'bg-violet-600' },
     { label: 'Billing',        desc: 'Invoices & payments',      path: '/billing',        icon: <Receipt className="w-6 h-6" />,     color: 'from-amber-50 to-amber-100 border-amber-200',    btnColor: 'bg-amber-600' },
     { label: 'Inquiries',      desc: 'Leads & follow-ups',       path: '/inquiries',      icon: <MessageSquare className="w-6 h-6" />, color: 'from-green-50 to-green-100 border-green-200',  btnColor: 'bg-green-600' },
+    { label: 'QR Menu',        desc: 'View & scan public menu',   path: '/admin/qr-menu',  icon: <QrCode className="w-6 h-6" />,       color: 'from-cyan-50 to-cyan-100 border-cyan-200',    btnColor: 'bg-cyan-600' },
   ];
 
   const adminOnlyModules = [

@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, QrCode, Plus, Pencil, Trash2, X, Check, Loader2, AlertTriangle,
-  ToggleLeft, ToggleRight, RefreshCw,
+  ToggleLeft, ToggleRight, RefreshCw, Download, Printer, Link as LinkIcon, Eye,
 } from 'lucide-react';
+import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 interface QrMenu { id: string; title: string; subtitle?: string; footer_note?: string; is_active: boolean; }
 interface QrMenuItem { id: string; menu_id: string; category: string; name: string; description?: string; price?: number; duration_min?: number; is_active: boolean; sort_order: number; }
@@ -22,6 +24,9 @@ const CATEGORIES = ['Hair', 'Skin', 'Hair & Skin', 'Nail', 'Makeup', 'Packages',
 
 export function QrMenuPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   const [menu, setMenu] = useState<QrMenu | null>(null);
   const [items, setItems] = useState<QrMenuItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +42,12 @@ export function QrMenuPage() {
   const [itemError, setItemError] = useState('');
   const [itemSaving, setItemSaving] = useState(false);
 
+  // QR code
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const fetchMenu = useCallback(async () => {
     setLoading(true);
     const { data: menus } = await supabase.from('qr_menus').select('*').limit(1).maybeSingle();
@@ -50,6 +61,18 @@ export function QrMenuPage() {
   }, []);
 
   useEffect(() => { fetchMenu(); }, [fetchMenu]);
+
+  // Generate QR code data URL whenever menu is active
+  useEffect(() => {
+    if (menu?.is_active) {
+      const url = `${window.location.origin}/menu`;
+      QRCode.toDataURL(url, { width: 512, margin: 2, color: { dark: '#0f766e', light: '#ffffff' } })
+        .then(setQrDataUrl)
+        .catch(() => setQrDataUrl(''));
+    } else {
+      setQrDataUrl('');
+    }
+  }, [menu?.is_active]);
 
   async function saveMenuSettings() {
     if (!menu) return;
@@ -111,12 +134,65 @@ export function QrMenuPage() {
     fetchMenu();
   }
 
+  // QR code actions
+  function openQrModal() {
+    setShowQrModal(true);
+    setLinkCopied(false);
+    // Draw QR on canvas for printing
+    if (qrCanvasRef.current && qrDataUrl) {
+      const ctx = qrCanvasRef.current.getContext('2d');
+      if (ctx) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.clearRect(0, 0, qrCanvasRef.current!.width, qrCanvasRef.current!.height);
+          ctx.drawImage(img, 0, 0, qrCanvasRef.current!.width, qrCanvasRef.current!.height);
+        };
+        img.src = qrDataUrl;
+      }
+    }
+  }
+
+  function downloadQr() {
+    if (!qrDataUrl) return;
+    const link = document.createElement('a');
+    link.href = qrDataUrl;
+    link.download = 'qr-service-menu.png';
+    link.click();
+  }
+
+  function printQr() {
+    if (!qrDataUrl) return;
+    const win = window.open('', '_blank', 'noopener,noreferrer');
+    if (!win) return;
+    win.document.write(`
+      <html><head><title>QR Code - Service Menu</title>
+      <style>
+        body { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0; font-family:system-ui,sans-serif; }
+        img { width:300px; height:300px; }
+        h2 { color:#0f766e; margin:16px 0 4px; }
+        p { color:#666; font-size:14px; margin:4px 0 0; }
+      </style></head><body>
+      <img src="${qrDataUrl}" alt="QR Code" />
+      <h2>${menu?.title || 'Service Menu'}</h2>
+      <p>Scan to view our live service menu</p>
+      </body></html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 300);
+  }
+
+  function copyMenuLink() {
+    const url = `${window.location.origin}/menu`;
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  }
+
   const grouped = groupBy(items, 'category');
   const activeItems = items.filter(i => i.is_active);
-
-  // Build the public QR URL
   const qrUrl = `${window.location.origin}/menu`;
-
   const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none';
 
   return (
@@ -129,11 +205,14 @@ export function QrMenuPage() {
             </button>
             <QrCode className="w-5 h-5 text-teal-600" />
             <h1 className="text-xl font-bold text-gray-900">QR Service Menu</h1>
+            {!isAdmin && <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">View Only</span>}
           </div>
-          <button onClick={openNewItem}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition shadow-sm">
-            <Plus className="w-4 h-4" /> Add Service
-          </button>
+          {isAdmin && (
+            <button onClick={openNewItem}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition shadow-sm">
+              <Plus className="w-4 h-4" /> Add Service
+            </button>
+          )}
         </div>
       </header>
 
@@ -149,53 +228,72 @@ export function QrMenuPage() {
                   <h3 className="font-bold text-gray-900">Menu Status</h3>
                   <p className="text-sm text-gray-500 mt-0.5">{activeItems.length} active services</p>
                 </div>
-                <button onClick={toggleMenuActive} className="flex items-center gap-2 text-sm font-semibold">
-                  {menu?.is_active
-                    ? <><ToggleRight className="w-8 h-8 text-teal-600" /><span className="text-teal-700">Live</span></>
-                    : <><ToggleLeft className="w-8 h-8 text-gray-400" /><span className="text-gray-500">Offline</span></>}
-                </button>
+                {isAdmin ? (
+                  <button onClick={toggleMenuActive} className="flex items-center gap-2 text-sm font-semibold">
+                    {menu?.is_active
+                      ? <><ToggleRight className="w-8 h-8 text-teal-600" /><span className="text-teal-700">Live</span></>
+                      : <><ToggleLeft className="w-8 h-8 text-gray-400" /><span className="text-gray-500">Offline</span></>}
+                  </button>
+                ) : (
+                  <span className={`flex items-center gap-2 text-sm font-semibold ${menu?.is_active ? 'text-teal-700' : 'text-gray-500'}`}>
+                    {menu?.is_active ? <ToggleRight className="w-8 h-8 text-teal-600" /> : <ToggleLeft className="w-8 h-8 text-gray-400" />}
+                    {menu?.is_active ? 'Live' : 'Offline'}
+                  </span>
+                )}
               </div>
 
               {menu?.is_active && (
                 <div className="bg-teal-50 border border-teal-200 rounded-xl p-4">
                   <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-2">Public Menu URL</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 text-xs bg-white border border-teal-200 rounded-lg px-3 py-2 text-teal-800 font-mono truncate">{qrUrl}</code>
-                    <button onClick={() => navigator.clipboard.writeText(qrUrl)}
-                      className="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition">Copy</button>
-                    <button onClick={() => window.open(qrUrl, '_blank')}
-                      className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition">Preview</button>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <code className="flex-1 min-w-0 text-xs bg-white border border-teal-200 rounded-lg px-3 py-2 text-teal-800 font-mono truncate">{qrUrl}</code>
+                    {isAdmin && (
+                      <button onClick={openQrModal}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
+                        <QrCode className="w-3.5 h-3.5" /> Generate QR Code
+                      </button>
+                    )}
+                    <button onClick={copyMenuLink}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
+                      {linkCopied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><LinkIcon className="w-3.5 h-3.5" /> Copy Menu Link</>}
+                    </button>
+                    <button onClick={() => window.open(qrUrl, '_blank', 'noopener,noreferrer')}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition whitespace-nowrap">
+                      <Eye className="w-3.5 h-3.5" /> Preview
+                    </button>
                   </div>
-                  <p className="text-xs text-teal-600 mt-2">Print or display this URL as a QR code at your salon. Customers can scan to view services.</p>
+                  <p className="text-xs text-teal-600 mt-2">Customers can scan the QR code to view the live menu — no login needed. Operators can also scan or open the link to view.</p>
                 </div>
               )}
             </div>
 
-            {/* Menu settings */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-              <h3 className="font-bold text-gray-900">Menu Settings</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Menu Title</label>
-                  <input type="text" value={menuForm.title} onChange={e => setMenuForm(p => ({ ...p, title: e.target.value }))} className={inputCls} />
+            {/* Menu settings — admin only */}
+            {isAdmin && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                <h3 className="font-bold text-gray-900">Menu Settings</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Menu Title</label>
+                    <input type="text" value={menuForm.title} onChange={e => setMenuForm(p => ({ ...p, title: e.target.value }))} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Subtitle</label>
+                    <input type="text" value={menuForm.subtitle} onChange={e => setMenuForm(p => ({ ...p, subtitle: e.target.value }))} className={inputCls} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Footer Note</label>
+                    <input type="text" value={menuForm.footer_note} onChange={e => setMenuForm(p => ({ ...p, footer_note: e.target.value }))} className={inputCls} />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Subtitle</label>
-                  <input type="text" value={menuForm.subtitle} onChange={e => setMenuForm(p => ({ ...p, subtitle: e.target.value }))} className={inputCls} />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Footer Note</label>
-                  <input type="text" value={menuForm.footer_note} onChange={e => setMenuForm(p => ({ ...p, footer_note: e.target.value }))} className={inputCls} />
-                </div>
+                <button onClick={saveMenuSettings} disabled={menuSaving}
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition disabled:bg-gray-400">
+                  {menuSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Check className="w-4 h-4" /> Save Settings</>}
+                </button>
               </div>
-              <button onClick={saveMenuSettings} disabled={menuSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition disabled:bg-gray-400">
-                {menuSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Check className="w-4 h-4" /> Save Settings</>}
-              </button>
-            </div>
+            )}
 
-            {/* Add/Edit item form */}
-            {showItemForm && (
+            {/* Add/Edit item form — admin only */}
+            {isAdmin && showItemForm && (
               <div className="bg-white rounded-2xl border-2 border-teal-200 p-6 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-gray-900">{editItemId ? 'Edit Service' : 'Add Service'}</h3>
@@ -257,11 +355,15 @@ export function QrMenuPage() {
                         <div className="flex items-center gap-3 shrink-0 text-sm">
                           {it.price != null && <span className="font-bold text-teal-700">₹{it.price}</span>}
                           {it.duration_min && <span className="text-gray-400 text-xs">{it.duration_min}m</span>}
-                          <button onClick={() => toggleItem(it)} className={`p-1 rounded ${it.is_active ? 'text-teal-600 hover:bg-teal-50' : 'text-gray-400 hover:bg-gray-100'}`} title={it.is_active ? 'Hide' : 'Show'}>
-                            {it.is_active ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-                          </button>
-                          <button onClick={() => openEditItem(it)} className="p-1 text-gray-400 hover:text-teal-600 rounded"><Pencil className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => deleteItem(it.id)} className="p-1 text-gray-400 hover:text-red-600 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
+                          {isAdmin && (
+                            <>
+                              <button onClick={() => toggleItem(it)} className={`p-1 rounded ${it.is_active ? 'text-teal-600 hover:bg-teal-50' : 'text-gray-400 hover:bg-gray-100'}`} title={it.is_active ? 'Hide' : 'Show'}>
+                                {it.is_active ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                              </button>
+                              <button onClick={() => openEditItem(it)} className="p-1 text-gray-400 hover:text-teal-600 rounded"><Pencil className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => deleteItem(it.id)} className="p-1 text-gray-400 hover:text-red-600 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -271,13 +373,63 @@ export function QrMenuPage() {
               {items.length === 0 && (
                 <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
                   <QrCode className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No services added yet. Add your first service to the menu.</p>
+                  <p className="text-gray-500">{isAdmin ? 'No services added yet. Add your first service to the menu.' : 'No services listed on the menu yet.'}</p>
                 </div>
               )}
             </div>
           </>
         )}
       </main>
+
+      {/* Hidden canvas for QR printing */}
+      <canvas ref={qrCanvasRef} width={300} height={300} className="hidden" />
+
+      {/* QR Code Modal */}
+      {showQrModal && qrDataUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <QrCode className="w-5 h-5 text-teal-600" />
+                <h2 className="font-bold text-gray-900">QR Code — Service Menu</h2>
+              </div>
+              <button onClick={() => setShowQrModal(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="flex flex-col items-center">
+                <div className="bg-white border-2 border-teal-200 rounded-2xl p-4 shadow-sm">
+                  <img src={qrDataUrl} alt="Service Menu QR Code" className="w-56 h-56" />
+                </div>
+                <p className="text-sm font-bold text-gray-900 mt-4">{menu?.title || 'Service Menu'}</p>
+                <p className="text-xs text-gray-500 mt-1 text-center">Scan to open the live public menu — no login needed</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button onClick={downloadQr}
+                  className="flex items-center justify-center gap-2 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition text-sm">
+                  <Download className="w-4 h-4" /> Download QR
+                </button>
+                <button onClick={printQr}
+                  className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm">
+                  <Printer className="w-4 h-4" /> Print QR
+                </button>
+                <button onClick={copyMenuLink}
+                  className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm">
+                  {linkCopied ? <><Check className="w-4 h-4 text-green-600" /> Copied!</> : <><LinkIcon className="w-4 h-4" /> Copy Link</>}
+                </button>
+              </div>
+
+              <div className="bg-teal-50 border border-teal-100 rounded-xl p-3">
+                <p className="text-xs text-teal-700 leading-relaxed">
+                  This QR code always opens the live public menu. Any service, package, or price changes you make will appear instantly when customers scan it.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

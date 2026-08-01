@@ -112,7 +112,7 @@ function AppRoutes() {
       <Route path="/admin/loyalty" element={<AdminRoute><LoyaltyManagementPage /></AdminRoute>} />
       <Route path="/admin/coupons" element={<AdminRoute><CouponManagementPage /></AdminRoute>} />
       <Route path="/admin/reminders" element={<AdminRoute><ReminderManagementPage /></AdminRoute>} />
-      <Route path="/admin/qr-menu" element={<AdminRoute><QrMenuPage /></AdminRoute>} />
+      <Route path="/admin/qr-menu" element={<ProtectedRoute><QrMenuPage /></ProtectedRoute>} />
       <Route path="/admin/feedback" element={<AdminRoute><FeedbackManagementPage /></AdminRoute>} />
       <Route path="/admin/reports" element={<AdminRoute><AdvancedReportsPage /></AdminRoute>} />
       <Route path="/admin/audit" element={<AdminRoute><AuditLogPage /></AdminRoute>} />
