@@ -109,6 +109,8 @@ export interface Invoice {
   payment_method?: string;
   payment_status: 'paid' | 'pending' | 'partial';
   amount_paid: number;
+  coupon_code?: string | null;
+  coupon_discount?: number | null;
   notes?: string;
   invoice_date: string;
   created_by?: string;

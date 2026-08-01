@@ -89,33 +89,44 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[]): string {
 
   const itemRows = items.map(it => `
     <tr>
-      <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;">
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;">
         <span style="font-weight:600;color:#111827;">${it.service_name}</span>
-        ${it.staff_name ? `<br><span style="font-size:11px;color:#9ca3af;">By: ${it.staff_name}</span>` : ''}
       </td>
-      <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:center;color:#6b7280;">${it.quantity}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:right;color:#374151;">₹${fmt(Number(it.unit_price))}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:700;color:#111827;">₹${fmt(Number(it.total))}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;color:#374151;">${it.staff_name || '—'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:center;color:#6b7280;">${it.quantity}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;color:#374151;">₹${fmt(Number(it.unit_price))}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:700;color:#111827;">₹${fmt(Number(it.total))}</td>
     </tr>`).join('');
 
-  const discountRow = Number(inv.discount) > 0
-    ? `<tr><td colspan="3" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Discount</td><td style="padding:5px 14px;text-align:right;color:#16a34a;font-weight:600;">−₹${fmt(Number(inv.discount))}</td></tr>`
+  // Split discount into manual discount and coupon discount for clarity
+  const couponAmt = Number(inv.coupon_discount) || 0;
+  const manualDiscount = Math.max(0, Number(inv.discount) - couponAmt);
+  const couponCode = inv.coupon_code || '';
+
+  const manualDiscountRow = manualDiscount > 0
+    ? `<tr><td colspan="4" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Discount</td><td style="padding:5px 14px;text-align:right;color:#16a34a;font-weight:600;">−₹${fmt(manualDiscount)}</td></tr>`
+    : '';
+  const couponRow = couponAmt > 0
+    ? `<tr><td colspan="4" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Coupon Applied: ${couponCode}</td><td style="padding:5px 14px;text-align:right;color:#16a34a;font-weight:600;">−₹${fmt(couponAmt)}</td></tr>`
     : '';
   const taxRow = Number(inv.tax) > 0
-    ? `<tr><td colspan="3" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Tax</td><td style="padding:5px 14px;text-align:right;color:#374151;">₹${fmt(Number(inv.tax))}</td></tr>`
+    ? `<tr><td colspan="4" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Tax</td><td style="padding:5px 14px;text-align:right;color:#374151;">₹${fmt(Number(inv.tax))}</td></tr>`
     : '';
 
-  const partialBlock = inv.payment_status !== 'paid' ? `
-    <div style="margin-top:16px;padding:14px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;">
+  const amountPaid = Number(inv.amount_paid) || 0;
+  const balanceDue = Math.max(0, Number(inv.total) - amountPaid);
+  // Always show Amount Paid & Balance Due; for fully paid invoices balance is 0
+  const paymentBreakdownBlock = `
+    <div style="margin-top:16px;padding:14px 16px;background:${inv.payment_status === 'paid' ? '#f0fdf4' : '#fef2f2'};border:1px solid ${inv.payment_status === 'paid' ? '#bbf7d0' : '#fecaca'};border-radius:10px;">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
         <span style="color:#6b7280;font-size:13px;">Amount Paid</span>
-        <strong style="color:#111827;">₹${fmt(Number(inv.amount_paid))}</strong>
+        <strong style="color:#111827;">₹${fmt(amountPaid)}</strong>
       </div>
       <div style="display:flex;justify-content:space-between;">
-        <span style="color:#dc2626;font-weight:700;font-size:13px;">Outstanding Balance</span>
-        <strong style="color:#dc2626;font-size:15px;">₹${fmt(Number(inv.total) - Number(inv.amount_paid))}</strong>
+        <span style="color:${balanceDue > 0 ? '#dc2626' : '#15803d'};font-weight:700;font-size:13px;">Balance Due</span>
+        <strong style="color:${balanceDue > 0 ? '#dc2626' : '#15803d'};font-size:15px;">₹${fmt(balanceDue)}</strong>
       </div>
-    </div>` : '';
+    </div>`;
 
   const notesBlock = inv.notes ? `
     <div style="margin-top:16px;padding:14px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;">
@@ -178,10 +189,11 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[]): string {
     <table>
       <thead>
         <tr style="background:#0d9488;">
-          <th style="padding:11px 14px;text-align:left;color:#fff;">Service</th>
-          <th style="padding:11px 14px;text-align:center;color:#fff;">Qty</th>
-          <th style="padding:11px 14px;text-align:right;color:#fff;">Rate</th>
-          <th style="padding:11px 14px;text-align:right;color:#fff;">Total</th>
+          <th style="padding:11px 12px;text-align:left;color:#fff;">Service</th>
+          <th style="padding:11px 12px;text-align:left;color:#fff;">Staff</th>
+          <th style="padding:11px 12px;text-align:center;color:#fff;">Qty</th>
+          <th style="padding:11px 12px;text-align:right;color:#fff;">Rate</th>
+          <th style="padding:11px 12px;text-align:right;color:#fff;">Total</th>
         </tr>
       </thead>
       <tbody>${itemRows}</tbody>
@@ -192,10 +204,10 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[]): string {
   <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
     <div style="min-width:260px;">
       <table>
-        <tr><td colspan="3" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Subtotal</td><td style="padding:5px 14px;text-align:right;color:#374151;">₹${fmt(Number(inv.subtotal))}</td></tr>
-        ${discountRow}${taxRow}
+        <tr><td colspan="4" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Subtotal</td><td style="padding:5px 14px;text-align:right;color:#374151;">₹${fmt(Number(inv.subtotal))}</td></tr>
+        ${manualDiscountRow}${couponRow}${taxRow}
         <tr>
-          <td colspan="3" style="padding:12px 14px;text-align:right;font-weight:800;font-size:15px;color:#111827;border-top:2px solid #0d9488;">Grand Total</td>
+          <td colspan="4" style="padding:12px 14px;text-align:right;font-weight:800;font-size:15px;color:#111827;border-top:2px solid #0d9488;">Grand Total</td>
           <td style="padding:12px 14px;text-align:right;font-weight:800;font-size:18px;color:#0d9488;border-top:2px solid #0d9488;">₹${fmt(Number(inv.total))}</td>
         </tr>
       </table>
@@ -218,7 +230,7 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[]): string {
     </div>
   </div>
 
-  ${partialBlock}
+  ${paymentBreakdownBlock}
   ${notesBlock}
 
   <!-- Footer -->
@@ -1238,7 +1250,8 @@ export function BillingPage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-teal-600 text-white">
-                          <th className="px-4 py-2.5 text-left font-semibold">Service</th>
+                          <th className="px-3 py-2.5 text-left font-semibold">Service</th>
+                          <th className="px-3 py-2.5 text-left font-semibold">Staff</th>
                           <th className="px-3 py-2.5 text-center font-semibold">Qty</th>
                           <th className="px-3 py-2.5 text-right font-semibold">Rate</th>
                           <th className="px-3 py-2.5 text-right font-semibold">Total</th>
@@ -1247,10 +1260,10 @@ export function BillingPage() {
                       <tbody className="divide-y divide-gray-100">
                         {viewItems.map(item => (
                           <tr key={item.id} className="even:bg-gray-50">
-                            <td className="px-4 py-2.5">
+                            <td className="px-3 py-2.5">
                               <p className="font-medium text-gray-900">{item.service_name}</p>
-                              {item.staff_name && <p className="text-xs text-gray-500">By {item.staff_name}</p>}
                             </td>
+                            <td className="px-3 py-2.5 text-gray-700">{item.staff_name || '—'}</td>
                             <td className="px-3 py-2.5 text-center text-gray-600">{item.quantity}</td>
                             <td className="px-3 py-2.5 text-right text-gray-600">₹{Number(item.unit_price).toLocaleString('en-IN')}</td>
                             <td className="px-3 py-2.5 text-right font-semibold text-gray-900">₹{Number(item.total).toLocaleString('en-IN')}</td>
@@ -1262,16 +1275,26 @@ export function BillingPage() {
 
                   {/* Totals */}
                   <div className="flex justify-end">
-                    <div className="w-64 space-y-1.5 text-sm">
+                    <div className="w-72 space-y-1.5 text-sm">
                       <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>₹{Number(viewInvoice.subtotal).toLocaleString('en-IN')}</span></div>
-                      {Number(viewInvoice.discount) > 0 && (
-                        <div className="flex justify-between text-green-700"><span>Discount</span><span>−₹{Number(viewInvoice.discount).toLocaleString('en-IN')}</span></div>
+                      {(() => {
+                        const cAmt = Number(viewInvoice.coupon_discount) || 0;
+                        const manual = Math.max(0, Number(viewInvoice.discount) - cAmt);
+                        return manual > 0 ? (
+                          <div className="flex justify-between text-green-700"><span>Discount</span><span>−₹{manual.toLocaleString('en-IN')}</span></div>
+                        ) : null;
+                      })()}
+                      {Number(viewInvoice.coupon_discount) > 0 && (
+                        <div className="flex justify-between text-green-700">
+                          <span>Coupon Applied: {viewInvoice.coupon_code}</span>
+                          <span>−₹{Number(viewInvoice.coupon_discount).toLocaleString('en-IN')}</span>
+                        </div>
                       )}
                       {Number(viewInvoice.tax) > 0 && (
                         <div className="flex justify-between text-gray-600"><span>Tax</span><span>₹{Number(viewInvoice.tax).toLocaleString('en-IN')}</span></div>
                       )}
                       <div className="flex justify-between font-bold text-base pt-1.5 border-t border-gray-300">
-                        <span>Total</span><span className="text-teal-700">₹{Number(viewInvoice.total).toLocaleString('en-IN')}</span>
+                        <span>Grand Total</span><span className="text-teal-700">₹{Number(viewInvoice.total).toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </div>
@@ -1288,18 +1311,14 @@ export function BillingPage() {
                         {viewInvoice.payment_status.charAt(0).toUpperCase() + viewInvoice.payment_status.slice(1)}
                       </span>
                     </div>
-                    {viewInvoice.payment_status !== 'paid' && (
-                      <>
-                        <div>
-                          <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Paid</p>
-                          <p className="font-semibold text-gray-900 mt-0.5">₹{Number(viewInvoice.amount_paid).toLocaleString('en-IN')}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-red-500 font-semibold uppercase tracking-wide">Outstanding</p>
-                          <p className="font-bold text-red-600 mt-0.5">₹{(Number(viewInvoice.total) - Number(viewInvoice.amount_paid)).toLocaleString('en-IN')}</p>
-                        </div>
-                      </>
-                    )}
+                    <div>
+                      <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Amount Paid</p>
+                      <p className="font-semibold text-gray-900 mt-0.5">₹{Number(viewInvoice.amount_paid).toLocaleString('en-IN')}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-xs font-semibold uppercase tracking-wide ${(Number(viewInvoice.total) - Number(viewInvoice.amount_paid)) > 0 ? 'text-red-500' : 'text-green-600'}`}>Balance Due</p>
+                      <p className={`font-bold mt-0.5 ${(Number(viewInvoice.total) - Number(viewInvoice.amount_paid)) > 0 ? 'text-red-600' : 'text-green-600'}`}>₹{Math.max(0, Number(viewInvoice.total) - Number(viewInvoice.amount_paid)).toLocaleString('en-IN')}</p>
+                    </div>
                   </div>
 
                   {viewInvoice.notes && (
@@ -1337,12 +1356,14 @@ export function BillingPage() {
                       `*Invoice: ${inv.invoice_number}*\n` +
                       `Date: ${fmtDate(inv.invoice_date)}\n\n` +
                       `*Services:*\n${services}\n\n` +
+                      (Number(inv.coupon_discount) > 0
+                        ? `Coupon Applied: ${inv.coupon_code} (−₹${Number(inv.coupon_discount).toLocaleString('en-IN')})\n`
+                        : '') +
                       (Number(inv.discount) > 0 ? `Discount: −₹${Number(inv.discount).toLocaleString('en-IN')}\n` : '') +
                       `*Total: ₹${Number(inv.total).toLocaleString('en-IN')}*\n` +
                       `Payment: ${inv.payment_method} (${inv.payment_status.charAt(0).toUpperCase() + inv.payment_status.slice(1)})\n` +
-                      (inv.payment_status !== 'paid'
-                        ? `Outstanding: ₹${(Number(inv.total) - Number(inv.amount_paid)).toLocaleString('en-IN')}\n`
-                        : '') +
+                      `Amount Paid: ₹${Number(inv.amount_paid).toLocaleString('en-IN')}\n` +
+                      `Balance Due: ₹${Math.max(0, Number(inv.total) - Number(inv.amount_paid)).toLocaleString('en-IN')}\n` +
                       `\nWe look forward to your next visit! 🌟\n— Image Skinn & Hair`;
                     window.open(buildWhatsAppUrl(inv.client_phone, text), '_blank', 'noopener,noreferrer');
                   }}
