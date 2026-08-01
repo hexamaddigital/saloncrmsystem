@@ -72,7 +72,7 @@ function buildWhatsAppUrl(rawPhone: string, message: string): string {
 //   • Works on Chrome, Firefox, Safari, Edge, mobile Chrome/Safari
 // "Save as PDF" is done via the browser's built-in print → Save as PDF option,
 // which the in-popup "Print" button triggers.
-function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[]): string {
+function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[], logoUrl: string): string {
   const fmt = (n: number) =>
     Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -160,6 +160,7 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[]): string {
 
   <!-- Salon header -->
   <div style="text-align:center;padding-bottom:20px;border-bottom:3px solid #0d9488;margin-bottom:24px;">
+    <img src="${logoUrl}" alt="Image Skinn & Hair" style="height:64px;width:auto;margin:0 auto 8px;display:block;object-fit:contain;" onerror="this.style.display='none'"/>
     <h1 style="color:#111827;">Image Skinn &amp; Hair</h1>
     <p style="color:#6b7280;font-size:12px;margin-top:5px;">Premium Salon &amp; Hair Care</p>
     <p style="color:#9ca3af;font-size:11px;margin-top:2px;">Tax Invoice</p>
@@ -255,7 +256,8 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[]): string {
 }
 
 function openInvoicePrintWindow(inv: Invoice, items: InvoiceItem[]) {
-  const html = buildInvoiceHTML(inv, items);
+  const logoUrl = `${window.location.origin}/Image_logo.png`;
+  const html = buildInvoiceHTML(inv, items, logoUrl);
   const win = window.open('', '_blank', 'width=760,height=960,scrollbars=yes,resizable=yes,menubar=no,toolbar=no');
   if (!win) {
     // Fallback: try without window features (some browsers block popups with features)
