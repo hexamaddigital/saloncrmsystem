@@ -11,6 +11,7 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
   hair: 'Hair',
   skin: 'Skin',
   hair_and_skin: 'Hair & Skin',
+  custom: 'Custom',
 };
 
 const GENDER_LABELS: Record<string, string> = {
@@ -22,12 +23,14 @@ const GENDER_LABELS: Record<string, string> = {
 function serviceColor(type?: string) {
   if (type === 'skin') return 'bg-rose-100 text-rose-700 border-rose-200';
   if (type === 'hair_and_skin') return 'bg-purple-100 text-purple-700 border-purple-200';
+  if (type === 'custom') return 'bg-amber-100 text-amber-700 border-amber-200';
   return 'bg-teal-100 text-teal-700 border-teal-200';
 }
 
 function ServiceIcon({ type }: { type?: string }) {
   if (type === 'skin') return <Sparkles className="w-3 h-3" />;
   if (type === 'hair_and_skin') return <><Scissors className="w-3 h-3" /><Sparkles className="w-3 h-3" /></>;
+  if (type === 'custom') return <Sparkles className="w-3 h-3" />;
   return <Scissors className="w-3 h-3" />;
 }
 
@@ -143,6 +146,7 @@ export function AdminClientListPage() {
               <option value="hair">Hair</option>
               <option value="skin">Skin</option>
               <option value="hair_and_skin">Hair & Skin</option>
+              <option value="custom">Custom</option>
             </select>
 
             {/* Gender filter */}

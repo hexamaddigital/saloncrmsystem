@@ -805,6 +805,21 @@ export function InquiryPage() {
                 >
                   Cancel
                 </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('Delete this inquiry?')) {
+                        handleDeleteInquiry(editingId);
+                        setShowModal(false);
+                      }
+                    }}
+                    className="flex-1 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors font-medium flex items-center justify-center gap-1.5"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                )}
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
