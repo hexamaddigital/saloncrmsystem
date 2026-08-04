@@ -118,7 +118,7 @@ export function ClientSearchPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10 w-auto object-contain" />

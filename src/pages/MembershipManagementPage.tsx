@@ -200,7 +200,7 @@ export function MembershipManagementPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/40 rounded-lg transition">
@@ -521,7 +521,7 @@ export function MembershipManagementPage() {
       {historyClient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="glass-strong rounded-3xl w-full max-w-lg max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/20 sticky top-0 glass-strong">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 sticky top-0 bg-white">
               <div className="flex items-center gap-2">
                 <History className="w-5 h-5 text-teal-600" />
                 <div>
