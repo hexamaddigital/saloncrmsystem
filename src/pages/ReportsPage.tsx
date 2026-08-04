@@ -390,7 +390,7 @@ export function ReportsPage() {
 
   if (loading && summaryStats.totalTransactions === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading reports...</p>
@@ -400,15 +400,15 @@ export function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/40 rounded-lg transition-colors"
                 title="Back to dashboard"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -451,13 +451,13 @@ export function ReportsPage() {
                   type="date"
                   value={filter.startDate}
                   onChange={(e) => setFilter({ ...filter, startDate: e.target.value })}
-                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="px-3 py-1 border border-white/40 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
                 <input
                   type="date"
                   value={filter.endDate}
                   onChange={(e) => setFilter({ ...filter, endDate: e.target.value })}
-                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="px-3 py-1 border border-white/40 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
             )}
@@ -467,7 +467,7 @@ export function ReportsPage() {
               <select
                 value={filter.selectedService}
                 onChange={(e) => handleServiceChange(e.target.value)}
-                className="pl-3 pr-8 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white"
+                className="pl-3 pr-8 py-1 border border-white/40 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white"
               >
                 <option value="All Services">All Services</option>
                 {PREDEFINED_SERVICES.map((service) => (
@@ -487,7 +487,7 @@ export function ReportsPage() {
                 placeholder="Type service name..."
                 value={filter.customServiceInput}
                 onChange={(e) => handleCustomServiceInput(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="px-3 py-1 border border-white/40 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             )}
           </div>
@@ -497,7 +497,7 @@ export function ReportsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-teal-500">
+          <div className="bg-white rounded-lg p-6 border-l-4 border-teal-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
@@ -511,7 +511,7 @@ export function ReportsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-teal-500">
+          <div className="bg-white rounded-lg p-6 border-l-4 border-teal-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Total Transactions</p>
@@ -523,7 +523,7 @@ export function ReportsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-teal-500">
+          <div className="bg-white rounded-lg p-6 border-l-4 border-teal-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Unique Clients Served</p>
@@ -535,7 +535,7 @@ export function ReportsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-teal-500">
+          <div className="bg-white rounded-lg p-6 border-l-4 border-teal-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Average Bill Value</p>
@@ -551,13 +551,13 @@ export function ReportsPage() {
         </div>
 
         {/* Service Breakdown Table */}
-        <div className="bg-white rounded-lg shadow-sm mb-8 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-white rounded-lg mb-8 overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/30">
             <h2 className="text-lg font-bold text-gray-800">Service Breakdown</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-white/30 border-b border-white/30">
                 <tr>
                   {[
                     { key: 'serviceName', label: 'Service Name' },
@@ -571,7 +571,7 @@ export function ReportsPage() {
                       onClick={() =>
                         sortTable(column.key as keyof ServiceBreakdown)
                       }
-                      className="px-6 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors"
+                      className="px-6 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-white/40 transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         {column.label}
@@ -590,7 +590,7 @@ export function ReportsPage() {
                   sortedServiceBreakdown.map((service, index) => (
                     <tr
                       key={index}
-                      className="hover:bg-gray-50 transition-colors"
+                      className="hover:bg-white/40 transition-colors"
                     >
                       <td className="px-6 py-4 text-sm text-gray-800 font-medium">
                         {service.serviceName}
@@ -627,7 +627,7 @@ export function ReportsPage() {
 
         {/* Daily Revenue Chart */}
         {dailyData.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm mb-8 p-6">
+          <div className="bg-white rounded-lg mb-8 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Daily Revenue (Last 7-14 Days)</h2>
             <div className="space-y-3">
               {dailyData.map((day, index) => {
@@ -641,7 +641,7 @@ export function ReportsPage() {
                       })}
                     </div>
                     <div className="flex-1">
-                      <div className="relative h-8 bg-gray-100 rounded-lg overflow-hidden">
+                      <div className="relative h-8 bg-white/40 rounded-lg overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-teal-500 to-teal-600 transition-all duration-300"
                           style={{ width: `${barWidth}%` }}
@@ -663,13 +663,13 @@ export function ReportsPage() {
         )}
 
         {/* Top Clients Table */}
-        <div className="bg-white rounded-lg shadow-sm mb-8 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-white rounded-lg mb-8 overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/30">
             <h2 className="text-lg font-bold text-gray-800">Top Clients</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-white/30 border-b border-white/30">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                     Client Name
@@ -688,7 +688,7 @@ export function ReportsPage() {
               <tbody className="divide-y divide-gray-200">
                 {topClients.length > 0 ? (
                   topClients.map((client, index) => (
-                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                    <tr key={index} className="hover:bg-white/40 transition-colors">
                       <td className="px-6 py-4 text-sm text-gray-800 font-medium">
                         {client.clientName}
                       </td>
@@ -718,13 +718,13 @@ export function ReportsPage() {
         </div>
 
         {/* Payment Method Breakdown */}
-        <div className="bg-white rounded-lg shadow-sm mb-8 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-white rounded-lg mb-8 overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/30">
             <h2 className="text-lg font-bold text-gray-800">Payment Method Breakdown</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-white/30 border-b border-white/30">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                     Payment Method
@@ -740,7 +740,7 @@ export function ReportsPage() {
               <tbody className="divide-y divide-gray-200">
                 {paymentMethods.length > 0 ? (
                   paymentMethods.map((method, index) => (
-                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                    <tr key={index} className="hover:bg-white/40 transition-colors">
                       <td className="px-6 py-4 text-sm text-gray-800 font-medium">
                         {method.method}
                       </td>

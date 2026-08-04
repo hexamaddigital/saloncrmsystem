@@ -159,9 +159,9 @@ export function ClientFormPage() {
     }
   }
 
-  const inputCls = 'w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition text-sm';
+  const inputCls = 'w-full px-4 py-2.5 glass-input rounded-xl text-sm';
   const labelCls = 'block text-sm font-medium text-gray-700 mb-1.5';
-  const sectionCls = 'bg-gray-50 border border-gray-200 rounded-xl p-5 space-y-4';
+  const sectionCls = 'glass-subtle rounded-2xl p-5 space-y-4';
 
   function PillButton({ label, active, color, onClick }: { label: string; active: boolean; color: 'teal' | 'rose'; onClick: () => void }) {
     const activeClass = color === 'teal'
@@ -172,28 +172,28 @@ export function ClientFormPage() {
       : 'hover:border-rose-400';
     return (
       <button type="button" onClick={onClick}
-        className={`px-3 py-1.5 rounded-full text-sm border font-medium transition ${active ? activeClass : `bg-white text-gray-700 border-gray-300 ${hoverClass}`}`}>
+        className={`px-3 py-1.5 rounded-full text-sm border font-medium transition ${active ? activeClass : `bg-white/60 text-gray-700 border-white/40 ${hoverClass}`}`}>
         {label}
       </button>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10 w-auto object-contain" />
             <h1 className="text-xl font-bold text-gray-900">Add New Client</h1>
           </div>
-          <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+          <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/40 rounded-lg transition">
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8">
+        <div className="glass rounded-2xl p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
 
             {/* Basic Information */}
@@ -281,7 +281,7 @@ export function ClientFormPage() {
                     className={`py-2.5 rounded-lg text-sm font-semibold border-2 transition ${
                       form.service_type === opt.value
                         ? 'bg-teal-600 text-white border-teal-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-teal-400'
+                        : 'bg-white/60 text-gray-700 border-white/40 hover:border-teal-400'
                     }`}>
                     {opt.label}
                   </button>
@@ -338,14 +338,14 @@ export function ClientFormPage() {
               {(form.service_items.filter(i => i !== 'Custom').length > 0 ||
                 (hairCustomSelected && form.custom_hair.trim()) ||
                 (skinCustomSelected && form.custom_skin.trim())) && (
-                <div className="pt-2 border-t border-gray-200">
+                <div className="pt-2 border-t border-white/30">
                   <p className="text-xs text-gray-500 mb-1.5">Selected services:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {form.service_items.filter(i => i !== 'Custom').map(item => (
-                      <span key={item} className="px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full border border-teal-200">{item}</span>
+                      <span key={item} className="px-2 py-0.5 bg-teal-500/15 text-teal-700 text-xs rounded-full border border-teal-200">{item}</span>
                     ))}
                     {hairCustomSelected && form.custom_hair.trim() && (
-                      <span className="px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full border border-teal-200">Custom: {form.custom_hair.trim()}</span>
+                      <span className="px-2 py-0.5 bg-teal-500/15 text-teal-700 text-xs rounded-full border border-teal-200">Custom: {form.custom_hair.trim()}</span>
                     )}
                     {skinCustomSelected && form.custom_skin.trim() && (
                       <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-xs rounded-full border border-rose-200">Custom: {form.custom_skin.trim()}</span>
@@ -393,11 +393,11 @@ export function ClientFormPage() {
                       ))}
                     </div>
                     {form.hair_conditions.length > 0 && (
-                      <div className="pt-2 border-t border-gray-200">
+                      <div className="pt-2 border-t border-white/30">
                         <p className="text-xs text-gray-500 mb-1.5">Selected conditions:</p>
                         <div className="flex flex-wrap gap-1.5">
                           {form.hair_conditions.map(c => (
-                            <span key={c} className="px-2 py-0.5 bg-teal-50 text-teal-700 text-xs rounded-full border border-teal-200">{c}</span>
+                            <span key={c} className="px-2 py-0.5 bg-teal-500/15 text-teal-700 text-xs rounded-full border border-teal-200">{c}</span>
                           ))}
                         </div>
                       </div>
@@ -408,18 +408,18 @@ export function ClientFormPage() {
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-500/15 border border-red-300/40 text-red-700 backdrop-blur-sm px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => navigate('/dashboard')}
-                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition text-sm">
+                className="flex-1 px-4 py-2.5 btn-lux-ghost font-semibold rounded-xl transition text-sm">
                 Cancel
               </button>
               <button type="submit" disabled={loading}
-                className="flex-1 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2 text-sm">
+                className="flex-1 px-4 py-2.5 btn-lux text-white font-semibold rounded-lg transition flex items-center justify-center gap-2 text-sm">
                 {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</> : 'Create Client'}
               </button>
             </div>

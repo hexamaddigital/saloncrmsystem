@@ -191,8 +191,8 @@ export function SettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10 w-auto object-contain" />
@@ -200,7 +200,7 @@ export function SettingsPage() {
           </div>
           <button
             onClick={() => navigate('/dashboard')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition"
+            className="p-2 hover:bg-white/40 rounded-lg transition"
           >
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
@@ -218,8 +218,8 @@ export function SettingsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full text-left ${
                     activeTab === tab.id
-                      ? 'bg-teal-50 text-teal-700 shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-teal-500/15 text-teal-700'
+                      : 'text-gray-600 hover:bg-white/40'
                   }`}
                 >
                   <tab.icon className="w-5 h-5" />
@@ -232,8 +232,8 @@ export function SettingsPage() {
           {/* Content */}
           <div className="flex-1 min-w-0">
             {activeTab === 'profile' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
+              <div className="glass rounded-2xl overflow-hidden">
+                <div className="p-6 border-b border-white/20">
                   <h2 className="text-lg font-bold text-gray-900">Profile Information</h2>
                   <p className="text-sm text-gray-500 mt-1">Your personal details and role</p>
                 </div>
@@ -252,19 +252,19 @@ export function SettingsPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="glass-subtle rounded-xl p-4">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Full Name</p>
                       <p className="text-gray-900 font-medium">{user?.name}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="glass-subtle rounded-xl p-4">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Email</p>
                       <p className="text-gray-900 font-medium">{user?.email}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="glass-subtle rounded-xl p-4">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Phone</p>
                       <p className="text-gray-900 font-medium">{user?.phone}</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="glass-subtle rounded-xl p-4">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Role</p>
                       <p className="text-gray-900 font-medium capitalize">{user?.role}</p>
                     </div>
@@ -274,8 +274,8 @@ export function SettingsPage() {
             )}
 
             {activeTab === 'account' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
+              <div className="glass rounded-2xl overflow-hidden">
+                <div className="p-6 border-b border-white/20">
                   <h2 className="text-lg font-bold text-gray-900">Account Settings</h2>
                   <p className="text-sm text-gray-500 mt-1">Update your email address</p>
                 </div>
@@ -299,7 +299,7 @@ export function SettingsPage() {
                           type="email"
                           value={user?.email || ''}
                           disabled
-                          className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                          className="w-full pl-10 pr-4 py-2.5 border border-white/30 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -314,7 +314,7 @@ export function SettingsPage() {
                           onChange={(e) => setEmailForm(prev => ({ ...prev, newEmail: e.target.value }))}
                           placeholder="Enter new email address"
                           disabled={emailLoading}
-                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                          className="w-full pl-10 pr-4 py-2.5 glass-input rounded-xl disabled:bg-gray-100"
                         />
                       </div>
                     </div>
@@ -329,7 +329,7 @@ export function SettingsPage() {
                           onChange={(e) => setEmailForm(prev => ({ ...prev, currentPassword: e.target.value }))}
                           placeholder="Confirm your current password"
                           disabled={emailLoading}
-                          className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                          className="w-full pl-10 pr-12 py-2.5 glass-input rounded-xl disabled:bg-gray-100"
                         />
                         <button
                           type="button"
@@ -345,7 +345,7 @@ export function SettingsPage() {
                       <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
                         emailMessage.type === 'success'
                           ? 'bg-green-50 border border-green-200 text-green-700'
-                          : 'bg-red-50 border border-red-200 text-red-700'
+                          : 'bg-red-500/15 border border-red-300/40 text-red-700 backdrop-blur-sm'
                       }`}>
                         {emailMessage.type === 'success'
                           ? <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -358,7 +358,7 @@ export function SettingsPage() {
                     <button
                       type="submit"
                       disabled={emailLoading}
-                      className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white font-semibold rounded-lg shadow-lg shadow-teal-600/25 hover:shadow-xl hover:shadow-teal-600/30 transition-all duration-200 flex items-center gap-2"
+                      className="px-6 py-2.5 btn-lux text-white font-semibold rounded-lg  hover:shadow-xl hover:shadow-teal-600/30 transition-all duration-200 flex items-center gap-2"
                     >
                       {emailLoading ? (
                         <>
@@ -375,8 +375,8 @@ export function SettingsPage() {
             )}
 
             {activeTab === 'security' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
+              <div className="glass rounded-2xl overflow-hidden">
+                <div className="p-6 border-b border-white/20">
                   <h2 className="text-lg font-bold text-gray-900">Security Settings</h2>
                   <p className="text-sm text-gray-500 mt-1">Change your password</p>
                 </div>
@@ -392,7 +392,7 @@ export function SettingsPage() {
                           onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
                           placeholder="Enter current password"
                           disabled={passwordLoading}
-                          className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                          className="w-full pl-10 pr-12 py-2.5 glass-input rounded-xl disabled:bg-gray-100"
                         />
                         <button
                           type="button"
@@ -414,7 +414,7 @@ export function SettingsPage() {
                           onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
                           placeholder="Enter new password"
                           disabled={passwordLoading}
-                          className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                          className="w-full pl-10 pr-12 py-2.5 glass-input rounded-xl disabled:bg-gray-100"
                         />
                         <button
                           type="button"
@@ -437,7 +437,7 @@ export function SettingsPage() {
                           onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                           placeholder="Confirm new password"
                           disabled={passwordLoading}
-                          className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                          className="w-full pl-10 pr-12 py-2.5 glass-input rounded-xl disabled:bg-gray-100"
                         />
                         <button
                           type="button"
@@ -456,7 +456,7 @@ export function SettingsPage() {
                       <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
                         passwordMessage.type === 'success'
                           ? 'bg-green-50 border border-green-200 text-green-700'
-                          : 'bg-red-50 border border-red-200 text-red-700'
+                          : 'bg-red-500/15 border border-red-300/40 text-red-700 backdrop-blur-sm'
                       }`}>
                         {passwordMessage.type === 'success'
                           ? <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -469,7 +469,7 @@ export function SettingsPage() {
                     <button
                       type="submit"
                       disabled={passwordLoading || (passwordForm.newPassword !== passwordForm.confirmPassword && passwordForm.confirmPassword !== '')}
-                      className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white font-semibold rounded-lg shadow-lg shadow-teal-600/25 hover:shadow-xl hover:shadow-teal-600/30 transition-all duration-200 flex items-center gap-2"
+                      className="px-6 py-2.5 btn-lux text-white font-semibold rounded-lg  hover:shadow-xl hover:shadow-teal-600/30 transition-all duration-200 flex items-center gap-2"
                     >
                       {passwordLoading ? (
                         <>

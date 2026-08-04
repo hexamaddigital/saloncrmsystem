@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<StatusType, { bg: string; text: string; badge: strin
   confirmed: { bg: 'bg-teal-50', text: 'text-teal-700', badge: 'bg-teal-100 text-teal-800' },
   in_progress: { bg: 'bg-amber-50', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-800' },
   completed: { bg: 'bg-green-50', text: 'text-green-700', badge: 'bg-green-100 text-green-800' },
-  cancelled: { bg: 'bg-gray-50', text: 'text-gray-700', badge: 'bg-gray-100 text-gray-800' },
+  cancelled: { bg: 'bg-gray-50', text: 'text-gray-700', badge: 'bg-white/40 text-gray-800' },
   no_show: { bg: 'bg-red-50', text: 'text-red-700', badge: 'bg-red-100 text-red-800' },
 };
 
@@ -303,14 +303,14 @@ export function AppointmentsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/40 rounded-lg transition-colors"
                 title="Back to Dashboard"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -320,7 +320,7 @@ export function AppointmentsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex border border-gray-300 rounded-lg p-1 bg-white">
+              <div className="hidden sm:flex border border-white/40 rounded-lg p-1 bg-white/80">
                 <button
                   onClick={() => setView('list')}
                   className={`px-3 py-1.5 rounded transition-colors flex items-center gap-2 ${
@@ -363,7 +363,7 @@ export function AppointmentsPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+          <div className="mb-6 p-4 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-red-800 font-medium">Error</p>
@@ -374,12 +374,12 @@ export function AppointmentsPage() {
 
         {view === 'list' ? (
           <div className="space-y-4">
-            <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="glass-subtle rounded-lg border border-white/30 p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                 <select
                   value={filterDateRange}
                   onChange={(e) => setFilterDateRange(e.target.value as FilterDateRange)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                  className="px-3 py-2 border border-white/40 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
                 >
                   <option value="all">All Dates</option>
                   <option value="today">Today</option>
@@ -389,7 +389,7 @@ export function AppointmentsPage() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as StatusType | 'all')}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                  className="px-3 py-2 border border-white/40 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
                 >
                   <option value="all">All Statuses</option>
                   <option value="scheduled">Scheduled</option>
@@ -412,15 +412,15 @@ export function AppointmentsPage() {
                 <p className="mt-4 text-gray-600">Loading appointments...</p>
               </div>
             ) : filteredAppointments.length === 0 ? (
-              <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+              <div className="glass-subtle rounded-lg border border-white/30 p-12 text-center">
                 <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-600 font-medium">No appointments found</p>
                 <p className="text-gray-500 text-sm mt-1">Try adjusting your filters or create a new appointment</p>
               </div>
             ) : (
-              <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="hidden md:block glass-subtle rounded-lg border border-white/30 overflow-hidden">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-white/30 border-b border-white/30">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">Date & Time</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">Client</th>
@@ -434,7 +434,7 @@ export function AppointmentsPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {filteredAppointments.map((apt) => (
-                      <tr key={apt.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={apt.id} className="hover:bg-white/40 transition-colors">
                         <td className="px-4 py-3 text-sm text-gray-900 font-medium whitespace-nowrap">
                           {formatDateTime(apt.scheduled_at)}
                         </td>
@@ -462,7 +462,7 @@ export function AppointmentsPage() {
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => openEditModal(apt)}
-                              className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                              className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-white/40 rounded transition-colors"
                               title="Edit"
                             >
                               <Edit2 className="w-4 h-4" />
@@ -488,7 +488,7 @@ export function AppointmentsPage() {
             {filteredAppointments.length > 0 && (
               <div className="md:hidden space-y-3">
                 {filteredAppointments.map((apt) => (
-                  <div key={apt.id} className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div key={apt.id} className="glass-subtle rounded-lg border border-white/30 p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <p className="font-semibold text-gray-900">{apt.client_name}</p>
@@ -522,7 +522,7 @@ export function AppointmentsPage() {
                       </select>
                       <button
                         onClick={() => openEditModal(apt)}
-                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white/40 rounded transition-colors"
                         title="Edit"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -544,14 +544,14 @@ export function AppointmentsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between glass-subtle rounded-lg border border-white/30 p-4">
               <button
                 onClick={() => {
                   const prev = new Date(calendarWeek);
                   prev.setDate(prev.getDate() - 7);
                   setCalendarWeek(prev);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/40 rounded-lg transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 text-gray-600" />
               </button>
@@ -566,7 +566,7 @@ export function AppointmentsPage() {
                   next.setDate(next.getDate() + 7);
                   setCalendarWeek(next);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/40 rounded-lg transition-colors"
               >
                 <ChevronRight className="w-5 h-5 text-gray-600" />
               </button>
@@ -578,12 +578,12 @@ export function AppointmentsPage() {
                 <p className="mt-4 text-gray-600">Loading calendar...</p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div className="grid grid-cols-7 border-b border-gray-200">
+              <div className="glass-subtle rounded-lg border border-white/30 overflow-hidden">
+                <div className="grid grid-cols-7 border-b border-white/30">
                   {weekDays.map((day, idx) => (
                     <div
                       key={idx}
-                      className="border-r border-gray-200 last:border-r-0 p-3 text-center bg-gray-50"
+                      className="border-r border-white/30 last:border-r-0 p-3 text-center glass-subtle"
                     >
                       <p className="text-xs font-semibold text-gray-700">{getDayOfWeek(day)}</p>
                       <p className="text-sm font-medium text-gray-900">{day.getDate()}</p>
@@ -595,7 +595,7 @@ export function AppointmentsPage() {
                   {weekDays.map((day, dayIdx) => (
                     <div
                       key={dayIdx}
-                      className="border-r border-gray-200 last:border-r-0 min-h-32 p-2 relative"
+                      className="border-r border-white/30 last:border-r-0 min-h-32 p-2 relative"
                     >
                       <div className="space-y-1">
                         {appointmentsByDay[dayIdx]?.map((apt) => (
@@ -739,7 +739,7 @@ export function AppointmentsPage() {
                     type="text"
                     value={formData.client_name}
                     onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     placeholder="Enter client name"
                   />
                 </div>
@@ -752,7 +752,7 @@ export function AppointmentsPage() {
                     type="tel"
                     value={formData.client_phone}
                     onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     placeholder="Enter phone number"
                   />
                 </div>
@@ -765,7 +765,7 @@ export function AppointmentsPage() {
                     type="text"
                     value={formData.service_name}
                     onChange={(e) => setFormData({ ...formData, service_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     placeholder="Enter service name"
                   />
                 </div>
@@ -778,7 +778,7 @@ export function AppointmentsPage() {
                     type="text"
                     value={formData.staff_name}
                     onChange={(e) => setFormData({ ...formData, staff_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     placeholder="Enter staff name"
                   />
                 </div>
@@ -792,7 +792,7 @@ export function AppointmentsPage() {
                       type="date"
                       value={formData.scheduled_date}
                       onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
 
@@ -804,7 +804,7 @@ export function AppointmentsPage() {
                       type="time"
                       value={formData.scheduled_time}
                       onChange={(e) => setFormData({ ...formData, scheduled_time: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                 </div>
@@ -816,7 +816,7 @@ export function AppointmentsPage() {
                   <select
                     value={formData.duration_min}
                     onChange={(e) => setFormData({ ...formData, duration_min: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   >
                     {DURATIONS.map((dur) => (
                       <option key={dur} value={dur}>
@@ -833,7 +833,7 @@ export function AppointmentsPage() {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as StatusType })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                   >
                     {Object.keys(STATUS_COLORS).map((status) => (
                       <option key={status} value={status}>
@@ -850,7 +850,7 @@ export function AppointmentsPage() {
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                    className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                     rows={3}
                     placeholder="Enter any additional notes"
                   />
@@ -860,7 +860,7 @@ export function AppointmentsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={closeModal}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 px-4 py-2 border border-white/40 text-gray-700 rounded-lg hover:bg-white/40 transition-colors font-medium"
                 >
                   Cancel
                 </button>

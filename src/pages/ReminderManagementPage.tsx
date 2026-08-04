@@ -28,7 +28,7 @@ const TYPE_META: Record<string, { icon: React.ReactNode; color: string; label: s
   appointment: { icon: <CalendarDays className="w-4 h-4" />, color: 'bg-violet-100 text-violet-700', label: 'Appointment' },
   membership:  { icon: <Award className="w-4 h-4" />,       color: 'bg-teal-100 text-teal-700',    label: 'Membership' },
   payment:     { icon: <CreditCard className="w-4 h-4" />,  color: 'bg-red-100 text-red-700',      label: 'Payment' },
-  custom:      { icon: <MessageSquare className="w-4 h-4" />, color: 'bg-gray-100 text-gray-700',  label: 'Custom' },
+  custom:      { icon: <MessageSquare className="w-4 h-4" />, color: 'bg-white/40 text-gray-700',  label: 'Custom' },
 };
 
 function fmtDate(d: string) {
@@ -256,18 +256,18 @@ export function ReminderManagementPage() {
   const displayed = tab === 'upcoming' ? upcoming : done;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/40 rounded-lg transition">
               <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
             <Bell className="w-5 h-5 text-amber-500" />
             <h1 className="text-xl font-bold text-gray-900">Reminder Management</h1>
           </div>
           <button onClick={() => { setShowForm(true); setFormError(); }}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition shadow-sm">
+            className="flex items-center gap-2 px-4 py-2 btn-lux text-white text-sm font-semibold rounded-xl transition">
             <Plus className="w-4 h-4" /> New Reminder
           </button>
         </div>
@@ -278,7 +278,7 @@ export function ReminderManagementPage() {
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Today', value: todayCount, color: 'text-teal-600', bg: 'bg-teal-50 border-teal-200' },
+            { label: 'Today', value: todayCount, color: 'text-teal-600', bg: 'bg-teal-500/15 border-teal-200' },
             { label: 'Overdue', value: overdueCount, color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
             { label: 'Pending', value: upcoming.length, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
             { label: 'Completed', value: done.length, color: 'text-green-600', bg: 'bg-green-50 border-green-200' },
@@ -307,14 +307,14 @@ export function ReminderManagementPage() {
         )}
 
         {/* Birthday Message Template card (admin can edit, operators read-only) */}
-        <div className="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-pink-100 overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 bg-pink-50 border-b border-pink-100">
             <Cake className="w-4 h-4 text-pink-600" />
             <h3 className="font-bold text-gray-900 text-sm">Birthday Message Template</h3>
             {isAdmin && !editingTemplate && (
               <div className="ml-auto flex gap-1.5">
                 <button onClick={startEditTemplate}
-                  className="flex items-center gap-1 px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition">
+                  className="flex items-center gap-1 px-2.5 py-1 btn-lux text-white text-xs font-semibold rounded-lg transition">
                   <Pencil className="w-3 h-3" /> Edit
                 </button>
                 {template && (
@@ -332,25 +332,25 @@ export function ReminderManagementPage() {
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Template Title</label>
                 <input type="text" value={tplForm.title} onChange={e => setTplForm(p => ({ ...p, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none" />
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
                   Message Body <span className="text-gray-400 normal-case">(use {'{{client_name}}'} and {'{{offer}}'} as placeholders)</span>
                 </label>
                 <textarea rows={5} value={tplForm.body} onChange={e => setTplForm(p => ({ ...p, body: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none resize-y" />
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none resize-y" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Birthday Offer</label>
                 <input type="text" value={tplForm.offer} onChange={e => setTplForm(p => ({ ...p, offer: e.target.value }))}
                   placeholder="e.g. Flat 20% off on all services (valid for 7 days)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none" />
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none" />
               </div>
-              {tplError && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5 shrink-0" />{tplError}</p>}
+              {tplError && <p className="text-sm text-red-700 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm px-3 py-2 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5 shrink-0" />{tplError}</p>}
               <div className="flex gap-2">
                 <button onClick={() => setEditingTemplate(false)}
-                  className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition text-sm">Cancel</button>
+                  className="flex-1 py-2.5 btn-lux-ghost font-semibold rounded-xl transition text-sm">Cancel</button>
                 <button onClick={saveTemplate} disabled={tplSaving}
                   className="flex-1 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl transition text-sm flex items-center justify-center gap-2 disabled:bg-gray-400">
                   {tplSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Template</>}
@@ -365,7 +365,7 @@ export function ReminderManagementPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Message Body</p>
-                <pre className="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap font-sans bg-gray-50 rounded-lg p-3 border border-gray-100">{template.body}</pre>
+                <pre className="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap font-sans glass-subtle rounded-lg p-3 border border-white/20">{template.body}</pre>
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Birthday Offer</p>
@@ -390,49 +390,49 @@ export function ReminderManagementPage() {
 
         {/* New reminder form */}
         {showForm && (
-          <div className="bg-white rounded-2xl border-2 border-amber-200 p-6 shadow-sm space-y-4">
+          <div className="bg-white rounded-2xl border-2 border-amber-200 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-gray-900">New Reminder</h3>
-              <button onClick={() => setShowForm(false)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
+              <button onClick={() => setShowForm(false)} className="p-1.5 hover:bg-white/40 rounded-lg"><X className="w-4 h-4" /></button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Type</label>
                 <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                   {Object.entries(TYPE_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Due Date *</label>
                 <input type="date" value={form.due_date} onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Client Name *</label>
                 <input type="text" value={form.client_name} onChange={e => setForm(p => ({ ...p, client_name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Client Phone</label>
                 <input type="text" value={form.client_phone} onChange={e => setForm(p => ({ ...p, client_phone: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Title *</label>
                 <input type="text" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Message</label>
                 <textarea rows={2} value={form.message} onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none resize-none" />
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none resize-none" />
               </div>
             </div>
-            {formError && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5 shrink-0" />{formError}</p>}
+            {formError && <p className="text-sm text-red-700 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm px-3 py-2 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5 shrink-0" />{formError}</p>}
             <div className="flex gap-2">
-              <button onClick={() => setShowForm(false)} className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition text-sm">Cancel</button>
-              <button onClick={saveReminder} disabled={saving} className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition text-sm flex items-center justify-center gap-2 disabled:bg-gray-400">
+              <button onClick={() => setShowForm(false)} className="flex-1 py-2.5 btn-lux-ghost font-semibold rounded-xl transition text-sm">Cancel</button>
+              <button onClick={saveReminder} disabled={saving} className="flex-1 py-2.5 btn-lux text-white font-bold rounded-xl transition text-sm flex items-center justify-center gap-2 disabled:bg-gray-400">
                 {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Check className="w-4 h-4" /> Save</>}
               </button>
             </div>
@@ -441,10 +441,10 @@ export function ReminderManagementPage() {
 
         {/* Tabs */}
         <div className="flex items-center justify-between">
-          <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+          <div className="flex gap-1 p-1 bg-white/40 rounded-xl">
             {(['upcoming', 'done'] as Tab[]).map(t => (
               <button key={t} onClick={() => setTab(t)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition capitalize ${tab === t ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition capitalize ${tab === t ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
                 {t === 'upcoming' ? `Pending (${upcoming.length})` : `Completed (${done.length})`}
               </button>
             ))}
@@ -455,7 +455,7 @@ export function ReminderManagementPage() {
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-teal-600" /></div>
         ) : displayed.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center text-gray-400 text-sm">
+          <div className="bg-white rounded-2xl border border-white/20 p-10 text-center text-gray-400 text-sm">
             {tab === 'upcoming' ? 'No pending reminders.' : 'No completed reminders yet.'}
           </div>
         ) : (
@@ -466,7 +466,7 @@ export function ReminderManagementPage() {
               const today = isToday(r.due_date);
               const isBirthday = r.type === 'birthday';
               return (
-                <div key={r.id} className={`bg-white rounded-xl border shadow-sm p-4 flex items-start gap-3 ${overdue ? 'border-red-200' : today ? 'border-amber-200' : 'border-gray-100'}`}>
+                <div key={r.id} className={`glass-subtle rounded-xl border p-4 flex items-start gap-3 ${overdue ? 'border-red-200' : today ? 'border-amber-200' : 'border-white/20'}`}>
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${meta.color}`}>
                     {meta.icon}
                   </div>
@@ -502,7 +502,7 @@ export function ReminderManagementPage() {
                       </button>
                     ) : (
                       <button onClick={() => markUndone(r.id)} title="Mark pending"
-                        className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition">
+                        className="p-1.5 bg-white/40 hover:bg-gray-200 text-gray-600 rounded-lg transition">
                         <RefreshCw className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -521,13 +521,13 @@ export function ReminderManagementPage() {
       {/* Birthday Message Modal */}
       {msgModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="glass-strong rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/20">
               <div className="flex items-center gap-2">
                 <Cake className="w-5 h-5 text-pink-600" />
                 <h2 className="font-bold text-gray-900">Birthday Message</h2>
               </div>
-              <button onClick={() => setMsgModal(null)} className="p-1.5 hover:bg-gray-100 rounded-lg transition">
+              <button onClick={() => setMsgModal(null)} className="p-1.5 hover:bg-white/40 rounded-lg transition">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -548,14 +548,14 @@ export function ReminderManagementPage() {
                   rows={8}
                   value={msgModal.text}
                   onChange={e => setMsgModal(p => p ? { ...p, text: e.target.value } : p)}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none resize-y leading-relaxed"
+                  className="w-full px-3 py-2.5 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none resize-y leading-relaxed"
                 />
               </div>
 
               {/* Action buttons */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <button onClick={handleCopy}
-                  className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm">
+                  className="flex items-center justify-center gap-2 py-2.5 bg-white/40 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm">
                   {copied ? <><Check className="w-4 h-4 text-green-600" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy</>}
                 </button>
                 <button onClick={handleWhatsAppSend}

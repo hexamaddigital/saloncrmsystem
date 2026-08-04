@@ -76,9 +76,9 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md animate-fade-in-up">
+        <div className="glass-strong rounded-3xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <img
@@ -90,7 +90,7 @@ export function LoginPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
+            <div className="bg-red-500/15 border border-red-300/40 text-red-700 px-4 py-3 rounded-xl text-sm mb-6 backdrop-blur-sm">
               {error}
             </div>
           )}
@@ -112,8 +112,8 @@ export function LoginPage() {
                   placeholder="Enter your email"
                   disabled={loading}
                   autoComplete="email"
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100 ${
-                    fieldErrors.email ? 'border-red-300' : 'border-gray-300'
+                  className={`glass-input w-full pl-10 pr-4 py-2.5 rounded-xl disabled:opacity-60 ${
+                    fieldErrors.email ? '!border-red-400' : ''
                   }`}
                 />
               </div>
@@ -146,8 +146,8 @@ export function LoginPage() {
                   placeholder="••••••••"
                   disabled={loading}
                   autoComplete="current-password"
-                  className={`w-full pl-10 pr-12 py-2.5 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100 ${
-                    fieldErrors.password ? 'border-red-300' : 'border-gray-300'
+                  className={`glass-input w-full pl-10 pr-12 py-2.5 rounded-xl disabled:opacity-60 ${
+                    fieldErrors.password ? '!border-red-400' : ''
                   }`}
                 />
                 <button
@@ -176,7 +176,7 @@ export function LoginPage() {
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 disabled={loading}
-                className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-2 focus:ring-teal-500 cursor-pointer disabled:opacity-50"
+                className="w-4 h-4 text-teal-600 border-white/50 bg-white/40 rounded focus:ring-2 focus:ring-teal-500 cursor-pointer disabled:opacity-50"
               />
               <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700 cursor-pointer">
                 Remember this device
@@ -187,7 +187,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 rounded-lg shadow-lg shadow-teal-600/25 hover:shadow-xl hover:shadow-teal-600/30 transition-all duration-200 flex items-center justify-center gap-2"
+              className="btn-lux w-full font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

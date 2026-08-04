@@ -78,17 +78,17 @@ function SectionHeader({ title, icon, editing, onEdit, onSave, onCancel, saving 
       </div>
       {!editing ? (
         <button onClick={onEdit}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-teal-700 hover:bg-teal-50 border border-gray-200 hover:border-teal-300 rounded-lg transition">
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-teal-700 hover:bg-teal-500/15 border border-white/40 hover:border-teal-300/60 rounded-lg transition">
           <Pencil className="w-3.5 h-3.5" /> Edit
         </button>
       ) : (
         <div className="flex items-center gap-2">
           <button onClick={onCancel} disabled={saving}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-lg transition disabled:opacity-50">
+            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-white/40 border border-white/30 rounded-lg transition disabled:opacity-50">
             <X className="w-3.5 h-3.5" /> Cancel
           </button>
           <button onClick={onSave} disabled={saving}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition disabled:opacity-60 shadow-sm">
+            className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition disabled:opacity-60">
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
             Save
           </button>
@@ -106,7 +106,7 @@ function FieldInput({ label, name, value, onChange, type = 'text', placeholder }
     <div>
       <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} placeholder={placeholder}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+        className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
     </div>
   );
 }
@@ -119,7 +119,7 @@ function FieldSelect({ label, name, value, onChange, options }: {
     <div>
       <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">{label}</label>
       <select name={name} value={value} onChange={onChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white">
+        className="w-full px-3 py-2 glass-input rounded-lg text-sm">
         <option value="">— Select —</option>
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
@@ -134,7 +134,7 @@ function ChipToggle({ label, active, color, onClick }: {
   const hover = color === 'teal' ? 'hover:border-teal-400' : 'hover:border-rose-400';
   return (
     <button type="button" onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-sm border font-medium transition ${active ? on : `bg-white text-gray-700 border-gray-300 ${hover}`}`}>
+      className={`px-3 py-1.5 rounded-full text-sm border font-medium transition ${active ? on : `bg-white/60 text-gray-700 border-white/40 ${hover}`}`}>
       {label}
     </button>
   );
@@ -617,7 +617,7 @@ export function ClientProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
       </div>
     );
@@ -625,7 +625,7 @@ export function ClientProfilePage() {
 
   if (!client) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8 text-red-500" />
@@ -642,7 +642,7 @@ export function ClientProfilePage() {
               </button>
             )}
             <button onClick={() => navigate(-1)}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold text-sm">
+              className="px-4 py-2 bg-white/40 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold text-sm">
               Go Back
             </button>
           </div>
@@ -658,12 +658,12 @@ export function ClientProfilePage() {
     || (client.hair_conditions?.length ?? 0) > 0
     || client.oral_medication || client.skin_allergies || client.home_care;
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white';
+  const inputCls = 'w-full px-3 py-2 glass-input rounded-lg text-sm';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10 w-auto object-contain" />
@@ -683,7 +683,7 @@ export function ClientProfilePage() {
                   await supabase.from('clients').update({ is_golden: newVal }).eq('id', client.id);
                   setClient(prev => prev ? { ...prev, is_golden: newVal } : prev);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border transition ${client.is_golden ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-50' : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50 border-gray-200 hover:border-amber-300'}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border transition ${client.is_golden ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-50' : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50 border-white/30 hover:border-amber-300'}`}
                 title={client.is_golden ? 'Remove VIP status' : 'Mark as VIP'}
               >
                 <span className="text-base leading-none">{client.is_golden ? '★' : '☆'}</span>
@@ -700,7 +700,7 @@ export function ClientProfilePage() {
                 <span className="hidden sm:inline">Delete Client</span>
               </button>
             )}
-            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/40 rounded-lg transition">
               <ChevronLeft className="w-6 h-6 text-gray-600" />
             </button>
           </div>
@@ -714,7 +714,7 @@ export function ClientProfilePage() {
           <div className="lg:col-span-2 space-y-6">
 
             {/* ── Basic Information ── */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="glass rounded-2xl p-6">
               <SectionHeader
                 title="Basic Information"
                 icon={<span className="w-5 h-5" />}
@@ -757,7 +757,7 @@ export function ClientProfilePage() {
                       className={inputCls} />
                   </div>
                   {basicError && (
-                    <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{basicError}</p>
+                    <p className="text-sm text-red-600 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm px-3 py-2">{basicError}</p>
                   )}
                 </div>
               ) : (
@@ -772,12 +772,12 @@ export function ClientProfilePage() {
                   <InfoRow label="Profession" value={client.profession ? professionLabel(client.profession) : undefined} />
                   {client.blood_group && <InfoRow label="Blood Group" value={client.blood_group} />}
                   {client.address && (
-                    <div className="sm:col-span-2 pt-4 border-t border-gray-100">
+                    <div className="sm:col-span-2 pt-4 border-t border-white/20">
                       <InfoRow label="Address" value={client.address} />
                     </div>
                   )}
                   {client.notes && (
-                    <div className="sm:col-span-2 pt-4 border-t border-gray-100">
+                    <div className="sm:col-span-2 pt-4 border-t border-white/20">
                       <InfoRow label="Notes" value={client.notes} />
                     </div>
                   )}
@@ -787,7 +787,7 @@ export function ClientProfilePage() {
 
             {/* ── Service & Cosmo Medico Profile ── */}
             {(hasServiceSection || editingService) && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="glass rounded-2xl p-6">
                 <SectionHeader
                   title="Service & Cosmo Medico Profile"
                   icon={<ClipboardList className="w-5 h-5 text-teal-600" />}
@@ -809,7 +809,7 @@ export function ClientProfilePage() {
                             className={`px-4 py-2 rounded-lg text-sm font-semibold border-2 transition ${
                               serviceForm.service_type === opt.value
                                 ? 'bg-teal-600 text-white border-teal-600'
-                                : 'bg-white text-gray-700 border-gray-300 hover:border-teal-400'
+                                : 'bg-white/60 text-gray-700 border-white/40 hover:border-teal-400'
                             }`}>
                             {opt.label}
                           </button>
@@ -861,7 +861,7 @@ export function ClientProfilePage() {
 
                     {/* Cosmo Medico — Skin */}
                     {showSkin && (
-                      <div className="pt-4 border-t border-gray-100 space-y-3">
+                      <div className="pt-4 border-t border-white/20 space-y-3">
                         <p className="text-xs text-rose-700 font-semibold uppercase tracking-wide flex items-center gap-1">
                           <Sparkles className="w-3 h-3" /> Skin — Cosmo Medico
                         </p>
@@ -878,7 +878,7 @@ export function ClientProfilePage() {
 
                     {/* Cosmo Medico — Hair */}
                     {showHair && (
-                      <div className="pt-4 border-t border-gray-100 space-y-3">
+                      <div className="pt-4 border-t border-white/20 space-y-3">
                         <p className="text-xs text-teal-700 font-semibold uppercase tracking-wide flex items-center gap-1">
                           <Scissors className="w-3 h-3" /> Hair Conditions — Cosmo Medico
                         </p>
@@ -893,7 +893,7 @@ export function ClientProfilePage() {
                     )}
 
                     {serviceError && (
-                      <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{serviceError}</p>
+                      <p className="text-sm text-red-600 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm px-3 py-2">{serviceError}</p>
                     )}
                   </div>
                 ) : (
@@ -952,7 +952,7 @@ export function ClientProfilePage() {
 
                     {/* Cosmo Medico — Skin */}
                     {(client.oral_medication || client.skin_allergies || client.home_care) && (
-                      <div className="pt-4 border-t border-gray-100">
+                      <div className="pt-4 border-t border-white/20">
                         <p className="text-xs text-rose-700 font-semibold uppercase tracking-wide mb-3 flex items-center gap-1">
                           <Sparkles className="w-3 h-3" /> Skin — Cosmo Medico
                         </p>
@@ -981,7 +981,7 @@ export function ClientProfilePage() {
 
                     {/* Cosmo Medico — Hair */}
                     {client.hair_conditions && client.hair_conditions.length > 0 && (
-                      <div className="pt-4 border-t border-gray-100">
+                      <div className="pt-4 border-t border-white/20">
                         <p className="text-xs text-teal-700 font-semibold uppercase tracking-wide mb-3 flex items-center gap-1">
                           <Scissors className="w-3 h-3" /> Hair Conditions — Cosmo Medico
                         </p>
@@ -998,14 +998,14 @@ export function ClientProfilePage() {
             {/* ── Add Service section button when none exists yet ── */}
             {!hasServiceSection && !editingService && (
               <button onClick={() => { startEditService(); }}
-                className="w-full bg-white rounded-xl shadow-sm border border-dashed border-gray-300 hover:border-teal-400 p-5 text-sm text-gray-500 hover:text-teal-600 transition flex items-center justify-center gap-2">
+                className="w-full glass-subtle rounded-xl border border-dashed border-white/40 hover:border-teal-400 p-5 text-sm text-gray-500 hover:text-teal-600 transition flex items-center justify-center gap-2">
                 <Plus className="w-4 h-4" /> Add Service & Cosmo Medico Profile
               </button>
             )}
 
             {/* Legacy health_profiles */}
             {health && (health.allergies || health.special_requirements) && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="glass rounded-2xl p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Health & Safety</h2>
                 {health.allergies && <InfoRow label="Allergies" value={health.allergies} />}
                 {health.special_requirements && <div className="mt-3"><InfoRow label="Special Requirements" value={health.special_requirements} /></div>}
@@ -1014,7 +1014,7 @@ export function ClientProfilePage() {
 
             {/* Legacy hair_profiles */}
             {hair && (hair.hair_problems?.length > 0 || hair.hair_texture?.length > 0 || hair.health_issues?.length > 0) && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="glass rounded-2xl p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Hair & Health Profile</h2>
                 {hair.hair_problems?.length > 0 && (
                   <div className="mb-4">
@@ -1038,7 +1038,7 @@ export function ClientProfilePage() {
             )}
 
             {/* ── Service History ── */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center justify-between mb-5">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Service History</h2>
@@ -1048,14 +1048,14 @@ export function ClientProfilePage() {
                 </div>
                 <button
                   onClick={openNewServiceEntry}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition shadow-sm shadow-teal-600/20">
+                  className="flex items-center gap-1.5 px-4 py-2 btn-lux text-white text-sm font-semibold rounded-xl transition ">
                   <Plus className="w-4 h-4" /> New Service Entry
                 </button>
               </div>
 
               {/* ── Service Entry Modal/Drawer ── */}
               {showServiceEntry && (
-                <div className="mb-6 bg-gradient-to-br from-teal-50 to-gray-50 border-2 border-teal-200 rounded-2xl p-5 space-y-4 shadow-sm">
+                <div className="mb-6 glass-subtle border-2 border-teal-200 rounded-2xl p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-gray-900 flex items-center gap-2">
                       <ClipboardList className="w-4 h-4 text-teal-600" />
@@ -1090,7 +1090,7 @@ export function ClientProfilePage() {
                               : opt.cls === 'rose'  ? 'bg-rose-600 text-white border-rose-600'
                               : opt.cls === 'blue'  ? 'bg-blue-600 text-white border-blue-600'
                               :                       'bg-amber-500 text-white border-amber-500'
-                              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                              : 'bg-white text-gray-600 border-white/30 hover:border-white/40'
                           }`}>
                           {opt.label}
                         </button>
@@ -1113,8 +1113,8 @@ export function ClientProfilePage() {
                                 <button key={s} type="button" onClick={() => toggleServiceChip(s)}
                                   className={`px-2.5 py-1 text-xs rounded-full border font-medium transition select-none ${
                                     active
-                                      ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
-                                      : 'bg-white text-teal-700 border-teal-200 hover:bg-teal-50'
+                                      ? 'bg-teal-600 text-white border-teal-600'
+                                      : 'bg-white/60 text-teal-700 border-teal-200 hover:bg-teal-500/20'
                                   }`}>
                                   {active && <span className="mr-1">✓</span>}{s}
                                 </button>
@@ -1135,7 +1135,7 @@ export function ClientProfilePage() {
                                 <button key={s} type="button" onClick={() => toggleServiceChip(s)}
                                   className={`px-2.5 py-1 text-xs rounded-full border font-medium transition select-none ${
                                     active
-                                      ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                                      ? 'bg-rose-600 text-white border-rose-600'
                                       : 'bg-white text-rose-700 border-rose-200 hover:bg-rose-50'
                                   }`}>
                                   {active && <span className="mr-1">✓</span>}{s}
@@ -1148,7 +1148,7 @@ export function ClientProfilePage() {
 
                       {/* Selected services — price per item */}
                       {serviceEntry.selected_services.length > 0 && (
-                        <div className="bg-white border border-gray-200 rounded-xl p-3 space-y-2">
+                        <div className="glass border border-white/30 rounded-xl p-3 space-y-2">
                           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Selected Services &amp; Prices</p>
                           {serviceEntry.selected_services.map(name => (
                             <div key={name} className="flex items-center gap-2">
@@ -1159,7 +1159,7 @@ export function ClientProfilePage() {
                                   type="number" min="0" step="0.01" placeholder="0"
                                   value={serviceEntry.service_prices[name] ?? ''}
                                   onChange={e => setServicePrice(name, e.target.value)}
-                                  className="w-24 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white text-right"
+                                  className="w-24 px-2 py-1.5 glass-input rounded-lg text-sm text-right"
                                 />
                               </div>
                               <button type="button" onClick={() => toggleServiceChip(name)}
@@ -1169,7 +1169,7 @@ export function ClientProfilePage() {
                               </button>
                             </div>
                           ))}
-                          <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
+                          <div className="pt-2 border-t border-white/20 flex justify-between items-center">
                             <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                               {serviceEntry.selected_services.length} service{serviceEntry.selected_services.length !== 1 ? 's' : ''} selected
                             </span>
@@ -1190,14 +1190,14 @@ export function ClientProfilePage() {
                         <input type="text" placeholder="Enter custom service name"
                           value={serviceEntry.custom_name}
                           onChange={e => setServiceEntry(p => ({ ...p, custom_name: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                          className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Price (₹) *</p>
                         <input type="number" min="0" step="0.01" placeholder="0.00"
                           value={serviceEntry.custom_price}
                           onChange={e => setServiceEntry(p => ({ ...p, custom_price: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                          className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
                       </div>
                     </div>
                   )}
@@ -1209,14 +1209,14 @@ export function ClientProfilePage() {
                       <input type="date" value={serviceEntry.date}
                         max={new Date().toISOString().split('T')[0]}
                         onChange={e => setServiceEntry(p => ({ ...p, date: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                        className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Staff / Operator</label>
                       <input type="text" placeholder="Who performed this?"
                         value={serviceEntry.staff_name}
                         onChange={e => setServiceEntry(p => ({ ...p, staff_name: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white" />
+                        className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
                     </div>
                   </div>
 
@@ -1226,7 +1226,7 @@ export function ClientProfilePage() {
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Payment Method</label>
                       <select value={serviceEntry.payment_method}
                         onChange={e => setServiceEntry(p => ({ ...p, payment_method: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white">
+                        className="w-full px-3 py-2 glass-input rounded-lg text-sm">
                         <option value="Cash">Cash</option>
                         <option value="UPI">UPI</option>
                         <option value="Card">Card</option>
@@ -1237,7 +1237,7 @@ export function ClientProfilePage() {
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Payment Status</label>
                       <select value={serviceEntry.payment_status}
                         onChange={e => setServiceEntry(p => ({ ...p, payment_status: e.target.value as 'paid' | 'pending' | 'partial' }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white">
+                        className="w-full px-3 py-2 glass-input rounded-lg text-sm">
                         <option value="paid">Paid</option>
                         <option value="partial">Partial</option>
                         <option value="pending">Pending</option>
@@ -1251,11 +1251,11 @@ export function ClientProfilePage() {
                     <textarea rows={2} placeholder="Products used, observations, next visit recommendations..."
                       value={serviceEntry.notes}
                       onChange={e => setServiceEntry(p => ({ ...p, notes: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white resize-none" />
+                      className="w-full px-3 py-2 glass-input rounded-lg text-sm resize-none" />
                   </div>
 
                   {serviceEntryError && (
-                    <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-center gap-2">
+                    <p className="text-sm text-red-700 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm px-3 py-2 flex items-center gap-2">
                       <AlertTriangle className="w-3.5 h-3.5 shrink-0" />{serviceEntryError}
                     </p>
                   )}
@@ -1271,12 +1271,12 @@ export function ClientProfilePage() {
                   <div className="flex gap-2 pt-1">
                     <button type="button" onClick={() => { setShowServiceEntry(false); setServiceEntryEditId(null); }}
                       disabled={serviceEntrySaving}
-                      className="flex-1 px-3 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition text-sm disabled:opacity-50">
+                      className="flex-1 px-3 py-2.5 btn-lux-ghost font-semibold rounded-xl transition text-sm disabled:opacity-50">
                       Cancel
                     </button>
                     <button type="button" onClick={handleSaveServiceEntry}
                       disabled={serviceEntrySaving}
-                      className="flex-1 px-3 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition text-sm disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-sm">
+                      className="flex-1 px-3 py-2.5 btn-lux text-white font-bold rounded-xl transition text-sm disabled:bg-gray-400 flex items-center justify-center gap-2">
                       {serviceEntrySaving
                         ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
                         : <><Check className="w-4 h-4" /> {serviceEntryEditId ? 'Update Entry' : `Save ${serviceEntry.selected_services.length > 1 ? `${serviceEntry.selected_services.length} Services` : 'Entry'}`}</>}
@@ -1289,7 +1289,7 @@ export function ClientProfilePage() {
               <div className="space-y-2">
                 {transactions.length > 0 ? transactions.map((trans, idx) => (
                   <div key={trans.id}
-                    className={`rounded-xl border transition ${idx === 0 ? 'border-teal-200 bg-teal-50/60' : 'border-gray-200 bg-gray-50/60 hover:border-gray-300'}`}>
+                    className={`rounded-xl border transition ${idx === 0 ? 'border-teal-200 bg-teal-500/10' : 'border-white/30 glass-subtle hover:border-white/40'}`}>
                     <div className="flex items-start gap-3 p-3.5">
                       {/* Category icon badge */}
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base ${
@@ -1333,12 +1333,12 @@ export function ClientProfilePage() {
                                   trans.service_category === 'skin' ? 'bg-rose-50 text-rose-600 border-rose-200' :
                                   trans.service_category === 'hair_and_skin' ? 'bg-blue-50 text-blue-600 border-blue-200' :
                                   trans.service_category === 'custom' ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                                  'bg-teal-50 text-teal-600 border-teal-200'
+                                  'bg-teal-500/15 text-teal-600 border-teal-200'
                                 }`}>{trans.service_category.replace('_', ' & ')}</span>
                               )}
                             </div>
                             {trans.notes && (
-                              <p className="text-xs text-gray-600 mt-1 bg-white/70 rounded px-2 py-1 border border-gray-100">{trans.notes}</p>
+                              <p className="text-xs text-gray-600 mt-1 glass-subtle rounded px-2 py-1 border border-white/20">{trans.notes}</p>
                             )}
                           </div>
                           <div className="text-right shrink-0">
@@ -1349,7 +1349,7 @@ export function ClientProfilePage() {
                     </div>
                     {/* Admin actions */}
                     {isAdmin && (
-                      <div className="flex border-t border-gray-200/80 divide-x divide-gray-200/80">
+                      <div className="flex border-t border-white/30/80 divide-x divide-gray-200/80">
                         <button
                           onClick={() => openEditServiceEntry(trans)}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-500 hover:text-teal-700 hover:bg-teal-50/50 transition rounded-bl-xl">
@@ -1365,7 +1365,7 @@ export function ClientProfilePage() {
                   </div>
                 )) : (
                   <div className="text-center py-10">
-                    <div className="w-14 h-14 rounded-full bg-teal-50 flex items-center justify-center mx-auto mb-3">
+                    <div className="w-14 h-14 rounded-full bg-teal-500/15 flex items-center justify-center mx-auto mb-3">
                       <ClipboardList className="w-7 h-7 text-teal-400" />
                     </div>
                     <p className="text-gray-500 text-sm font-medium">No service entries yet</p>
@@ -1381,7 +1381,7 @@ export function ClientProfilePage() {
 
             {/* Active membership */}
             {activeMembership && (
-              <div className="bg-gradient-to-br from-teal-500 to-emerald-600 rounded-xl shadow-sm p-5 text-white">
+              <div className="bg-gradient-to-br from-teal-500 to-emerald-600 rounded-xl p-5 text-white">
                 <div className="flex items-center gap-2 mb-2">
                   <Award className="w-4 h-4 text-teal-200" />
                   <span className="text-xs font-bold uppercase tracking-wide text-teal-100">Active Membership</span>
@@ -1397,7 +1397,7 @@ export function ClientProfilePage() {
 
             {/* Loyalty points */}
             {(client.loyalty_points ?? 0) > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-amber-100 p-5">
+              <div className="glass-subtle rounded-xl border border-amber-100 p-5">
                 <div className="flex items-center gap-2 mb-1">
                   <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
                   <span className="text-xs font-bold uppercase tracking-wide text-gray-500">Loyalty Points</span>
@@ -1407,17 +1407,17 @@ export function ClientProfilePage() {
               </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900">Feedback</h2>
                 <button onClick={() => setShowAddFeedback(true)}
-                  className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition flex items-center gap-1">
+                  className="px-3 py-1.5 btn-lux text-white text-sm font-semibold rounded-lg transition flex items-center gap-1">
                   <Plus className="w-4 h-4" /> Add
                 </button>
               </div>
 
               {showAddFeedback && (
-                <form onSubmit={handleAddFeedback} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <form onSubmit={handleAddFeedback} className="mb-6 p-4 glass-subtle rounded-lg border border-white/30">
                   <div className="space-y-3">
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-2">Rating</label>
@@ -1433,11 +1433,11 @@ export function ClientProfilePage() {
                     </div>
                     <textarea placeholder="Comment (optional)" value={feedbackForm.comment}
                       onChange={e => setFeedbackForm(p => ({ ...p, comment: e.target.value }))}
-                      rows={2} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition" />
+                      rows={2} className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
                     <div className="flex gap-2">
-                      <button type="submit" className="flex-1 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition text-sm">Save</button>
+                      <button type="submit" className="flex-1 px-3 py-2 btn-lux text-white font-semibold rounded-lg transition text-sm">Save</button>
                       <button type="button" onClick={() => setShowAddFeedback(false)}
-                        className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition text-sm">Cancel</button>
+                        className="flex-1 px-3 py-2 btn-lux-ghost font-semibold rounded-xl transition text-sm">Cancel</button>
                     </div>
                   </div>
                 </form>
@@ -1445,7 +1445,7 @@ export function ClientProfilePage() {
 
               <div className="space-y-2">
                 {feedback.length > 0 ? feedback.map(fb => (
-                  <div key={fb.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div key={fb.id} className="p-3 glass-subtle rounded-lg border border-white/30">
                     <div className="flex items-center gap-0.5 mb-1.5">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className={`w-4 h-4 ${i < fb.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
@@ -1463,7 +1463,7 @@ export function ClientProfilePage() {
             </div>
 
             {/* ── Billing History ── */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                   <Receipt className="w-5 h-5 text-teal-600" />
@@ -1471,7 +1471,7 @@ export function ClientProfilePage() {
                 </h2>
                 <button
                   onClick={() => navigate('/billing', { state: { clientId: id } })}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition">
+                  className="flex items-center gap-1.5 px-3 py-1.5 btn-lux text-white text-xs font-semibold rounded-lg transition">
                   <Plus className="w-3.5 h-3.5" /> New Bill
                 </button>
               </div>
@@ -1479,7 +1479,7 @@ export function ClientProfilePage() {
               {invoices.length > 0 ? (
                 <div className="space-y-2">
                   {invoices.map(inv => (
-                    <div key={inv.id} className="p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-teal-200 transition">
+                    <div key={inv.id} className="p-3 glass-subtle rounded-xl border border-white/30 hover:border-teal-200 transition">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -1540,7 +1540,7 @@ export function ClientProfilePage() {
             onClick={() => !deleting && setShowDeleteModal(false)}
           />
           {/* Modal */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-fade-in">
+          <div className="relative glass-strong rounded-3xl w-full max-w-md p-6 animate-fade-in">
             <div className="flex items-start gap-4 mb-5">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-6 h-6 text-red-600" />
@@ -1563,7 +1563,7 @@ export function ClientProfilePage() {
                 value={deleteConfirmText}
                 onChange={e => setDeleteConfirmText(e.target.value)}
                 placeholder="Type DELETE"
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition"
+                className="w-full px-3 py-2.5 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition"
                 disabled={deleting}
                 autoFocus
               />
@@ -1573,7 +1573,7 @@ export function ClientProfilePage() {
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
-                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition text-sm disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 btn-lux-ghost font-semibold rounded-xl transition text-sm disabled:opacity-50"
               >
                 Cancel
               </button>

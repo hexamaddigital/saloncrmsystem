@@ -128,15 +128,15 @@ export function UserManagementPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10 w-auto object-contain" />
@@ -144,7 +144,7 @@ export function UserManagementPage() {
           </div>
           <button
             onClick={() => navigate('/dashboard')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition"
+            className="p-2 hover:bg-white/40 rounded-lg transition"
           >
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
@@ -158,12 +158,12 @@ export function UserManagementPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+        <div className="glass rounded-2xl">
+          <div className="p-4 sm:p-6 border-b border-white/30 flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">Users</h2>
             <button
               onClick={() => { setShowAddForm(true); setError(''); }}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition flex items-center gap-2 shadow-lg shadow-teal-600/25"
+              className="px-4 py-2 btn-lux text-white font-semibold rounded-lg transition flex items-center gap-2 "
             >
               <Plus className="w-5 h-5" />
               <span className="hidden sm:inline">Add User</span>
@@ -171,7 +171,7 @@ export function UserManagementPage() {
           </div>
 
           {showAddForm && (
-            <form onSubmit={handleAddUser} className="p-4 sm:p-6 border-b border-gray-200 bg-gray-50">
+            <form onSubmit={handleAddUser} className="p-4 sm:p-6 border-b glass-subtle border-white/30">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
@@ -180,7 +180,7 @@ export function UserManagementPage() {
                     value={form.name}
                     onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Full name"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2.5 glass-input rounded-xl"
                   />
                 </div>
                 <div>
@@ -190,7 +190,7 @@ export function UserManagementPage() {
                     value={form.email}
                     onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))}
                     placeholder="email@example.com"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2.5 glass-input rounded-xl"
                   />
                 </div>
                 <div>
@@ -200,7 +200,7 @@ export function UserManagementPage() {
                     value={form.phone}
                     onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))}
                     placeholder="10-digit phone number"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2.5 glass-input rounded-xl"
                   />
                 </div>
                 <div>
@@ -211,7 +211,7 @@ export function UserManagementPage() {
                       value={form.password}
                       onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
                       placeholder="Min 6 characters"
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition pr-12"
+                      className="w-full px-4 py-2.5 glass-input rounded-xl pr-12"
                     />
                     <button
                       type="button"
@@ -227,7 +227,7 @@ export function UserManagementPage() {
                   <select
                     value={form.role}
                     onChange={(e) => setForm(prev => ({ ...prev, role: e.target.value }))}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-2.5 glass-input rounded-xl"
                   >
                     <option value="operator">Operator</option>
                     <option value="admin">Admin</option>
@@ -236,7 +236,7 @@ export function UserManagementPage() {
               </div>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+                <div className="bg-red-500/15 border border-red-300/40 text-red-700 backdrop-blur-sm px-4 py-3 rounded-lg mb-4 text-sm">
                   {error}
                 </div>
               )}
@@ -244,14 +244,14 @@ export function UserManagementPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition shadow-lg shadow-teal-600/25"
+                  className="px-4 py-2.5 btn-lux text-white font-semibold rounded-lg transition "
                 >
                   Add User
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowAddForm(false); setError(''); }}
-                  className="px-4 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition"
+                  className="px-4 py-2.5 border border-white/40 text-gray-700 font-semibold rounded-lg hover:bg-white/40 transition"
                 >
                   Cancel
                 </button>
@@ -262,7 +262,7 @@ export function UserManagementPage() {
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-white/30 border-b border-white/30">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
@@ -278,7 +278,7 @@ export function UserManagementPage() {
                   </tr>
                 ) : (
                   users.map(u => (
-                    <tr key={u.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                    <tr key={u.id} className="border-b border-white/30 hover:bg-white/40 transition">
                       <td className="px-6 py-3 text-gray-900 font-medium">{u.name}</td>
                       <td className="px-6 py-3 text-gray-700">{u.email}</td>
                       <td className="px-6 py-3 text-gray-700">{u.phone}</td>

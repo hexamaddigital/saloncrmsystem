@@ -35,7 +35,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; badge: string }>
   contacted: { bg: 'bg-amber-50', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-800' },
   follow_up: { bg: 'bg-orange-50', text: 'text-orange-700', badge: 'bg-orange-100 text-orange-800' },
   converted: { bg: 'bg-teal-50', text: 'text-teal-700', badge: 'bg-teal-100 text-teal-800' },
-  lost: { bg: 'bg-gray-50', text: 'text-gray-700', badge: 'bg-gray-100 text-gray-800' },
+  lost: { bg: 'bg-gray-50', text: 'text-gray-700', badge: 'bg-white/40 text-gray-800' },
 };
 
 const isDateOverdue = (date: string): 'overdue' | 'today' | 'upcoming' | null => {
@@ -275,12 +275,12 @@ export function InquiryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-amber-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-white/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between gap-4 mb-4">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/40 rounded-lg transition-colors"
               title="Back to Dashboard"
             >
               <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -295,7 +295,7 @@ export function InquiryPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg border border-blue-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-subtle rounded-lg border border-blue-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">New</p>
@@ -304,7 +304,7 @@ export function InquiryPage() {
               <AlertCircle className="w-8 h-8 text-blue-300" />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-amber-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-subtle rounded-lg border border-amber-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Contacted</p>
@@ -313,7 +313,7 @@ export function InquiryPage() {
               <Phone className="w-8 h-8 text-amber-300" />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-orange-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-subtle rounded-lg border border-orange-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Follow-up Due</p>
@@ -322,7 +322,7 @@ export function InquiryPage() {
               <Clock className="w-8 h-8 text-orange-300" />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-teal-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="glass-subtle rounded-lg border border-teal-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Converted</p>
@@ -334,7 +334,7 @@ export function InquiryPage() {
         </div>
 
         {/* Tabs & Controls */}
-        <div className="bg-white rounded-lg border border-gray-200 mb-6 overflow-hidden">
+        <div className="glass-subtle rounded-lg border border-white/30 mb-6 overflow-hidden">
           <div className="flex flex-col sm:flex-row gap-4 p-4 sm:items-center sm:justify-between">
             <div className="flex gap-2 overflow-x-auto">
               {(
@@ -352,7 +352,7 @@ export function InquiryPage() {
                   className={`px-3 sm:px-4 py-2 text-sm font-medium whitespace-nowrap rounded-lg transition-colors ${
                     activeTab === tab.id
                       ? 'bg-teal-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-white/40 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   {tab.label}
@@ -369,7 +369,7 @@ export function InquiryPage() {
           </div>
 
           {/* Search */}
-          <div className="px-4 pb-4 border-t border-gray-200">
+          <div className="px-4 pb-4 border-t border-white/30">
             <div className="relative">
               <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
               <input
@@ -377,7 +377,7 @@ export function InquiryPage() {
                 placeholder="Search by name or phone..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -385,7 +385,7 @@ export function InquiryPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 flex items-start gap-3">
+          <div className="mb-6 p-4 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm text-red-800 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Error</p>
@@ -404,7 +404,7 @@ export function InquiryPage() {
               return (
                 <div
                   key={inquiry.id}
-                  className={`${colors.bg} rounded-lg border border-gray-200 p-4 shadow-sm`}
+                  className={`${colors.bg} rounded-lg border border-white/30 p-4`}
                 >
                   {/* Header */}
                   <div className="flex items-start justify-between gap-2 mb-3">
@@ -454,10 +454,10 @@ export function InquiryPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2 pt-3 border-t border-gray-300">
+                  <div className="flex gap-2 pt-3 border-t border-white/40">
                     <button
                       onClick={() => handleEditInquiry(inquiry)}
-                      className="flex-1 px-3 py-2 text-xs font-medium bg-white border border-gray-300 rounded text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1"
+                      className="flex-1 px-3 py-2 text-xs font-medium glass border border-white/40 rounded text-gray-700 hover:bg-white/40 transition-colors flex items-center justify-center gap-1"
                     >
                       <Edit2 className="w-3 h-3" />
                       Edit
@@ -473,7 +473,7 @@ export function InquiryPage() {
                     {isAdmin && (
                       <button
                         onClick={() => setDeleteConfirm(inquiry.id)}
-                        className="px-3 py-2 text-xs font-medium bg-white border border-red-300 rounded text-red-700 hover:bg-red-50 transition-colors flex items-center justify-center gap-1"
+                        className="px-3 py-2 text-xs font-medium glass border border-red-300 rounded text-red-700 hover:bg-red-50 transition-colors flex items-center justify-center gap-1"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -508,11 +508,11 @@ export function InquiryPage() {
 
         {/* Inquiries Table - Desktop */}
         {filteredInquiries.length > 0 ? (
-          <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+          <div className="hidden md:block glass-subtle rounded-lg border border-white/30 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
+                  <tr className="bg-white/30 border-b border-white/30">
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       Name
                     </th>
@@ -545,7 +545,7 @@ export function InquiryPage() {
                     const colors = STATUS_COLORS[inquiry.status] || STATUS_COLORS.new;
 
                     return (
-                      <tr key={inquiry.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={inquiry.id} className="hover:bg-white/40 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <p className="font-medium text-gray-900">{inquiry.name}</p>
                         </td>
@@ -595,7 +595,7 @@ export function InquiryPage() {
                             {inquiry.status === 'converted' && (
                               <button
                                 onClick={() => handleConvertToClient(inquiry)}
-                                className="p-2 hover:bg-teal-50 rounded-lg transition-colors text-teal-600 text-xs font-semibold"
+                                className="p-2 hover:bg-teal-500/15 rounded-lg transition-colors text-teal-600 text-xs font-semibold"
                                 title="Convert to Client"
                               >
                                 <User className="w-4 h-4" />
@@ -614,7 +614,7 @@ export function InquiryPage() {
 
                           {/* Delete Confirm Tooltip */}
                           {deleteConfirm === inquiry.id && (
-                            <div className="absolute right-0 mt-2 bg-white border border-red-200 rounded-lg shadow-lg p-3 z-50">
+                            <div className="absolute right-0 mt-2 glass border border-red-200 rounded-lg shadow-lg p-3 z-50">
                               <p className="text-xs text-gray-700 mb-2 whitespace-nowrap">
                                 Delete this inquiry?
                               </p>
@@ -643,7 +643,7 @@ export function InquiryPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+          <div className="glass-subtle rounded-lg border border-white/30 p-12 text-center">
             <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-2">
               {searchQuery ? 'No inquiries match your search' : `No ${activeTab !== 'all' ? activeTab : ''} inquiries`}
@@ -665,13 +665,13 @@ export function InquiryPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-white border-b border-white/30 px-6 py-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingId ? 'Edit Inquiry' : 'Add New Inquiry'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1 hover:bg-white/40 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
@@ -694,7 +694,7 @@ export function InquiryPage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   placeholder="Client name"
                 />
               </div>
@@ -708,7 +708,7 @@ export function InquiryPage() {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   placeholder="+1 (555) 000-0000"
                 />
               </div>
@@ -722,7 +722,7 @@ export function InquiryPage() {
                   type="text"
                   value={formData.service_interest}
                   onChange={(e) => setFormData({ ...formData, service_interest: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   placeholder="e.g., Hair Styling, Facial"
                 />
               </div>
@@ -736,7 +736,7 @@ export function InquiryPage() {
                   <select
                     value={formData.source}
                     onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white"
+                    className="w-full px-3 py-2 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none"
                   >
                     {SOURCES.map((source) => (
                       <option key={source} value={source}>
@@ -757,7 +757,7 @@ export function InquiryPage() {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white"
+                    className="w-full px-3 py-2 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none"
                   >
                     <option value="new">New</option>
                     <option value="contacted">Contacted</option>
@@ -778,7 +778,7 @@ export function InquiryPage() {
                   type="date"
                   value={formData.follow_up_date}
                   onChange={(e) => setFormData({ ...formData, follow_up_date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 />
               </div>
 
@@ -790,7 +790,7 @@ export function InquiryPage() {
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                   rows={3}
                   placeholder="Additional notes..."
                 />
@@ -801,7 +801,7 @@ export function InquiryPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 px-4 py-2 border border-white/40 text-gray-700 rounded-lg hover:bg-white/40 transition-colors font-medium"
                 >
                   Cancel
                 </button>

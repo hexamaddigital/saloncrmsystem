@@ -115,9 +115,9 @@ export function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-2xl p-8">
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-md animate-fade-in-up">
+          <div className="glass-strong rounded-3xl p-8">
             <div className="text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -139,7 +139,7 @@ export function ForgotPasswordPage() {
               )}
               <button
                 onClick={() => navigate('/login')}
-                className="w-full px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-lg shadow-teal-600/25 hover:shadow-xl hover:shadow-teal-600/30 transition-all duration-200"
+                className="btn-lux w-full font-semibold py-3 rounded-xl transition-all duration-200"
               >
                 Back to Login
               </button>
@@ -151,9 +151,9 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md animate-fade-in-up">
+        <div className="glass-strong rounded-3xl p-8">
           <button
             onClick={() => step === 'reset_direct' ? setStep('email') : navigate('/login')}
             className="flex items-center gap-2 text-teal-600 hover:text-teal-700 mb-6 transition"
@@ -182,7 +182,7 @@ export function ForgotPasswordPage() {
                     onChange={(e) => handleEmailChange(e.target.value)}
                     placeholder="Enter your email"
                     disabled={loading}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                    className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl outline-none transition disabled:opacity-60"
                   />
                 </div>
                 {emailError && (
@@ -199,7 +199,7 @@ export function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 rounded-lg shadow-lg shadow-teal-600/25 hover:shadow-xl hover:shadow-teal-600/30 transition-all duration-200 flex items-center justify-center gap-2"
+                className="btn-lux w-full font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -213,17 +213,17 @@ export function ForgotPasswordPage() {
 
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
+                  <div className="w-full border-t border-white/30"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">or</span>
+                  <span className="px-4 text-gray-500 bg-white/40 backdrop-blur-sm rounded-full">or</span>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => { setError(''); setStep('reset_direct'); }}
-                className="w-full border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                className="btn-lux-ghost w-full font-semibold py-3 rounded-xl transition-all duration-200"
               >
                 Reset Password Directly
               </button>
@@ -232,7 +232,7 @@ export function ForgotPasswordPage() {
 
           {step === 'reset_direct' && (
             <form onSubmit={handleDirectReset} className="space-y-5">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
+              <div className="bg-blue-500/15 border border-blue-300/40 rounded-xl p-4 mb-2 backdrop-blur-sm">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
@@ -256,7 +256,7 @@ export function ForgotPasswordPage() {
                     }}
                     placeholder="Enter new password"
                     disabled={loading}
-                    className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                    className="glass-input w-full pl-10 pr-12 py-2.5 rounded-xl outline-none transition disabled:opacity-60"
                   />
                   <button
                     type="button"
@@ -288,7 +288,7 @@ export function ForgotPasswordPage() {
                     }}
                     placeholder="Confirm new password"
                     disabled={loading}
-                    className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                    className="glass-input w-full pl-10 pr-12 py-2.5 rounded-xl outline-none transition disabled:opacity-60"
                   />
                   <button
                     type="button"
@@ -312,7 +312,7 @@ export function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={loading || (confirmPassword !== '' && newPassword !== confirmPassword)}
-                className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 rounded-lg shadow-lg shadow-teal-600/25 hover:shadow-xl hover:shadow-teal-600/30 transition-all duration-200 flex items-center justify-center gap-2"
+                className="btn-lux w-full font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

@@ -77,7 +77,7 @@ function operationBadge(op: string) {
     UPDATE: 'bg-blue-100 text-blue-700 border-blue-200',
     DELETE: 'bg-red-100 text-red-700 border-red-200',
   };
-  return map[op] ?? 'bg-gray-100 text-gray-700 border-gray-200';
+  return map[op] ?? 'bg-white/40 text-gray-700 border-white/30';
 }
 
 function tableBadge(t: string) {
@@ -88,7 +88,7 @@ function tableBadge(t: string) {
     health_profiles: 'bg-rose-100 text-rose-700',
     hair_profiles: 'bg-purple-100 text-purple-700',
   };
-  return map[t] ?? 'bg-gray-100 text-gray-600';
+  return map[t] ?? 'bg-white/40 text-gray-600';
 }
 
 // ─── CSV export ───────────────────────────────────────────────────────────────
@@ -270,14 +270,14 @@ export function AdminMasterDataPage() {
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen">
 
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/dashboard')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition -ml-2">
+              className="p-2 hover:bg-white/40 rounded-lg transition -ml-2">
               <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-9 w-auto object-contain" />
@@ -288,11 +288,11 @@ export function AdminMasterDataPage() {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={fetchMaster}
-              className="p-2 hover:bg-gray-100 rounded-lg transition" title="Refresh">
+              className="p-2 hover:bg-white/40 rounded-lg transition" title="Refresh">
               <RefreshCw className="w-4 h-4 text-gray-500" />
             </button>
             <button onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition shadow-sm">
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition">
               <Download className="w-4 h-4" />
               <span className="hidden sm:inline">Export CSV</span>
             </button>
@@ -300,7 +300,7 @@ export function AdminMasterDataPage() {
         </div>
 
         {/* Tabs */}
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-0 border-t border-gray-100">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-0 border-t border-white/20">
           {(['master', 'audit'] as Tab[]).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-5 py-3 text-sm font-semibold border-b-2 transition ${
@@ -333,7 +333,7 @@ export function AdminMasterDataPage() {
                   { label: 'Total Revenue', value: `₹${totalSpent.toLocaleString('en-IN')}`, icon: <Filter className="w-4 h-4 text-green-500" /> },
                   { label: 'Deleted (hidden)', value: masterRows.filter(r => r.deleted_at).length, icon: <ShieldAlert className="w-4 h-4 text-red-400" /> },
                 ].map(s => (
-                  <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+                  <div key={s.label} className="glass border border-white/30 rounded-xl p-4 flex items-center gap-3">
                     {s.icon}
                     <div>
                       <p className="text-xs text-gray-500">{s.label}</p>
@@ -345,35 +345,35 @@ export function AdminMasterDataPage() {
             )}
 
             {/* Filters */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-wrap gap-3">
+            <div className="glass-subtle rounded-xl border border-white/30 p-4 flex flex-wrap gap-3">
               <div className="relative flex-1 min-w-[180px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input type="text" value={searchQ} onChange={e => setSearchQ(e.target.value)}
                   placeholder="Search name, phone, address..."
-                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none" />
+                  className="w-full pl-9 pr-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none" />
               </div>
               <select value={serviceFilter} onChange={e => setServiceFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                className="px-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white/60 text-gray-700">
                 <option value="">All Services</option>
                 <option value="hair">Hair</option>
                 <option value="skin">Skin</option>
                 <option value="hair_and_skin">Hair & Skin</option>
               </select>
               <select value={genderFilter} onChange={e => setGenderFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                className="px-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white/60 text-gray-700">
                 <option value="">All Genders</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
                 <option value="other">Other</option>
               </select>
-              <label className="flex items-center gap-2 cursor-pointer px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition select-none">
+              <label className="flex items-center gap-2 cursor-pointer px-3 py-2 border border-white/40 rounded-lg text-sm text-gray-700 hover:bg-white/40 transition select-none">
                 <input type="checkbox" checked={showDeleted} onChange={e => setShowDeleted(e.target.checked)}
                   className="accent-red-600 w-3.5 h-3.5" />
                 Show deleted
               </label>
               {hasFilters && (
                 <button onClick={() => { setSearchQ(''); setServiceFilter(''); setGenderFilter(''); }}
-                  className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:text-red-600 hover:border-red-300 transition">
+                  className="flex items-center gap-1 px-3 py-2 border border-white/40 rounded-lg text-sm text-gray-600 hover:text-red-600 hover:border-red-300 transition">
                   <X className="w-3.5 h-3.5" /> Clear
                 </button>
               )}
@@ -385,7 +385,7 @@ export function AdminMasterDataPage() {
 
             {/* Error */}
             {masterError && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+              <div className="flex items-center gap-2 bg-red-500/15 border border-red-300/40 text-red-700 backdrop-blur-sm rounded-lg px-4 py-3 text-sm">
                 <AlertCircle className="w-4 h-4 shrink-0" />{masterError}
               </div>
             )}
@@ -396,16 +396,16 @@ export function AdminMasterDataPage() {
                 <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
               </div>
             ) : filteredRows.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+              <div className="glass-subtle rounded-xl border border-white/30 p-12 text-center">
                 <Database className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500">{hasFilters ? 'No records match your filters' : 'No records found'}</p>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="glass-subtle rounded-xl border border-white/30 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm min-w-[1100px]">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
+                      <tr className="bg-white/30 border-b border-white/30">
                         {[
                           { key: 'client_name' as SortKey, label: 'Name' },
                           { key: 'phone' as SortKey, label: 'Phone' },
@@ -435,7 +435,7 @@ export function AdminMasterDataPage() {
                     <tbody className="divide-y divide-gray-100">
                       {filteredRows.map((row, idx) => (
                         <tr key={row.client_id}
-                          className={`hover:bg-teal-50/40 transition ${row.deleted_at ? 'opacity-50 bg-red-50/30' : idx % 2 === 0 ? '' : 'bg-gray-50/40'}`}>
+                          className={`hover:bg-teal-50/40 transition ${row.deleted_at ? 'opacity-50 bg-red-50/30' : idx % 2 === 0 ? '' : 'bg-white/20'}`}>
                           <td className="px-3 py-2.5 font-medium text-gray-900 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <div className="w-7 h-7 rounded-full bg-teal-500 flex items-center justify-center shrink-0">
@@ -486,9 +486,9 @@ export function AdminMasterDataPage() {
         {tab === 'audit' && (
           <div className="space-y-4">
             {/* Filters */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-wrap gap-3 items-center">
+            <div className="glass-subtle rounded-xl border border-white/30 p-4 flex flex-wrap gap-3 items-center">
               <select value={auditTableFilter} onChange={e => { setAuditTableFilter(e.target.value); setAuditPage(0); }}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                className="px-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white/60 text-gray-700">
                 <option value="">All Tables</option>
                 <option value="clients">clients</option>
                 <option value="transactions">transactions</option>
@@ -497,7 +497,7 @@ export function AdminMasterDataPage() {
                 <option value="hair_profiles">hair_profiles</option>
               </select>
               <select value={auditOpFilter} onChange={e => { setAuditOpFilter(e.target.value); setAuditPage(0); }}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+                className="px-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white/60 text-gray-700">
                 <option value="">All Operations</option>
                 <option value="INSERT">INSERT</option>
                 <option value="UPDATE">UPDATE</option>
@@ -505,18 +505,18 @@ export function AdminMasterDataPage() {
               </select>
               {(auditTableFilter || auditOpFilter) && (
                 <button onClick={() => { setAuditTableFilter(''); setAuditOpFilter(''); setAuditPage(0); }}
-                  className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:text-red-600 hover:border-red-300 transition">
+                  className="flex items-center gap-1 px-3 py-2 border border-white/40 rounded-lg text-sm text-gray-600 hover:text-red-600 hover:border-red-300 transition">
                   <X className="w-3.5 h-3.5" /> Clear
                 </button>
               )}
               <button onClick={fetchAudit}
-                className="ml-auto flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                className="ml-auto flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-white/40 rounded-lg hover:bg-white/40 transition">
                 <RefreshCw className="w-3.5 h-3.5" /> Refresh
               </button>
             </div>
 
             {auditError && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+              <div className="flex items-center gap-2 bg-red-500/15 border border-red-300/40 text-red-700 backdrop-blur-sm rounded-lg px-4 py-3 text-sm">
                 <AlertCircle className="w-4 h-4 shrink-0" />{auditError}
               </div>
             )}
@@ -526,17 +526,17 @@ export function AdminMasterDataPage() {
                 <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
               </div>
             ) : auditRows.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+              <div className="glass-subtle rounded-xl border border-white/30 p-12 text-center">
                 <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500">No audit entries found</p>
               </div>
             ) : (
               <>
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="glass-subtle rounded-xl border border-white/30 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm min-w-[800px]">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
+                        <tr className="bg-white/30 border-b border-white/30">
                           {['Timestamp', 'Table', 'Operation', 'Record ID', 'Changed By'].map(h => (
                             <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">{h}</th>
                           ))}
@@ -545,7 +545,7 @@ export function AdminMasterDataPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {auditRows.map(row => (
-                          <tr key={row.id} className="hover:bg-gray-50/60 transition">
+                          <tr key={row.id} className="hover:glass-subtle transition">
                             <td className="px-3 py-2.5 text-gray-600 whitespace-nowrap text-xs">{fmtTs(row.changed_at)}</td>
                             <td className="px-3 py-2.5">
                               <span className={`px-2 py-0.5 text-xs font-medium rounded ${tableBadge(row.table_name)}`}>
@@ -572,17 +572,17 @@ export function AdminMasterDataPage() {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3">
+                <div className="flex items-center justify-between glass border border-white/30 rounded-xl px-4 py-3">
                   <p className="text-sm text-gray-500">
                     Page {auditPage + 1} · showing {auditRows.length} entries
                   </p>
                   <div className="flex gap-2">
                     <button disabled={auditPage === 0} onClick={() => setAuditPage(p => p - 1)}
-                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                      className="px-3 py-1.5 text-sm border border-white/40 rounded-lg hover:bg-white/40 disabled:opacity-40 disabled:cursor-not-allowed transition">
                       Previous
                     </button>
                     <button disabled={auditRows.length < AUDIT_PAGE_SIZE} onClick={() => setAuditPage(p => p + 1)}
-                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                      className="px-3 py-1.5 text-sm border border-white/40 rounded-lg hover:bg-white/40 disabled:opacity-40 disabled:cursor-not-allowed transition">
                       Next
                     </button>
                   </div>
@@ -598,12 +598,12 @@ export function AdminMasterDataPage() {
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedRow(null)} />
           <div className="relative w-full max-w-lg bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-white border-b border-white/30 px-6 py-4 flex items-center justify-between">
               <div>
                 <h2 className="font-bold text-gray-900">{selectedRow.client_name}</h2>
                 <p className="text-xs text-gray-500">{selectedRow.phone}</p>
               </div>
-              <button onClick={() => setSelectedRow(null)} className="p-2 hover:bg-gray-100 rounded-lg transition">
+              <button onClick={() => setSelectedRow(null)} className="p-2 hover:bg-white/40 rounded-lg transition">
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -658,10 +658,10 @@ export function AdminMasterDataPage() {
               </DetailSection>
             </div>
 
-            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-3">
+            <div className="sticky bottom-0 bg-white border-t border-white/20 px-6 py-3">
               <button
                 onClick={() => { navigate(`/clients/${selectedRow.client_id}`); setSelectedRow(null); }}
-                className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm rounded-lg transition"
+                className="w-full py-2.5 btn-lux text-white font-semibold text-sm rounded-lg transition"
               >
                 Open Full Profile
               </button>
@@ -679,7 +679,7 @@ function DetailSection({ title, children }: { title: string; children: React.Rea
   return (
     <div>
       <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">{title}</h3>
-      <div className="bg-gray-50 rounded-lg border border-gray-200 divide-y divide-gray-100">
+      <div className="glass-subtle rounded-lg border border-white/30 divide-y divide-gray-100">
         {children}
       </div>
     </div>
@@ -713,7 +713,7 @@ function ChangedByCell({ uid, userMap }: {
   }
   const roleBadge = user.role === 'admin'
     ? 'bg-teal-100 text-teal-700'
-    : 'bg-gray-100 text-gray-600';
+    : 'bg-white/40 text-gray-600';
   return (
     <span className="flex items-center gap-1.5 whitespace-nowrap">
       <span className="text-xs font-medium text-gray-800">{user.name}</span>

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, QrCode, Plus, Pencil, Trash2, X, Check, Loader2, AlertTriangle,
-  ToggleLeft, ToggleRight, RefreshCw, Download, Printer, Link as LinkIcon, Eye,
+  ToggleLeft, ToggleRight, Download, Printer, Link as LinkIcon, Eye,
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { supabase } from '../lib/supabase';
@@ -193,23 +193,23 @@ export function QrMenuPage() {
   const grouped = groupBy(items, 'category');
   const activeItems = items.filter(i => i.is_active);
   const qrUrl = `${window.location.origin}/menu`;
-  const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none';
+  const inputCls = 'w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/40 rounded-lg transition">
               <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
             <QrCode className="w-5 h-5 text-teal-600" />
             <h1 className="text-xl font-bold text-gray-900">QR Service Menu</h1>
-            {!isAdmin && <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">View Only</span>}
+            {!isAdmin && <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/40 text-gray-500">View Only</span>}
           </div>
           {isAdmin && (
             <button onClick={openNewItem}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition shadow-sm">
+              className="flex items-center gap-2 px-4 py-2 btn-lux text-white text-sm font-semibold rounded-xl transition">
               <Plus className="w-4 h-4" /> Add Service
             </button>
           )}
@@ -222,7 +222,7 @@ export function QrMenuPage() {
         ) : (
           <>
             {/* Menu status card */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-white/20 p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-gray-900">Menu Status</h3>
@@ -243,22 +243,22 @@ export function QrMenuPage() {
               </div>
 
               {menu?.is_active && (
-                <div className="bg-teal-50 border border-teal-200 rounded-xl p-4">
+                <div className="bg-teal-500/15 border border-teal-300/40 rounded-xl p-4">
                   <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-2">Public Menu URL</p>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <code className="flex-1 min-w-0 text-xs bg-white border border-teal-200 rounded-lg px-3 py-2 text-teal-800 font-mono truncate">{qrUrl}</code>
+                    <code className="flex-1 min-w-0 text-xs glass border border-teal-200 rounded-lg px-3 py-2 text-teal-800 font-mono truncate">{qrUrl}</code>
                     {isAdmin && (
                       <button onClick={openQrModal}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
+                        className="flex items-center gap-1.5 px-3 py-2 btn-lux text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
                         <QrCode className="w-3.5 h-3.5" /> Generate QR Code
                       </button>
                     )}
                     <button onClick={copyMenuLink}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
+                      className="flex items-center gap-1.5 px-3 py-2 btn-lux text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
                       {linkCopied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><LinkIcon className="w-3.5 h-3.5" /> Copy Menu Link</>}
                     </button>
                     <button onClick={() => window.open(qrUrl, '_blank', 'noopener,noreferrer')}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition whitespace-nowrap">
+                      className="flex items-center gap-1.5 px-3 py-2 bg-white/40 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition whitespace-nowrap">
                       <Eye className="w-3.5 h-3.5" /> Preview
                     </button>
                   </div>
@@ -269,7 +269,7 @@ export function QrMenuPage() {
 
             {/* Menu settings — admin only */}
             {isAdmin && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+              <div className="bg-white rounded-2xl border border-white/20 p-6 space-y-4">
                 <h3 className="font-bold text-gray-900">Menu Settings</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -286,7 +286,7 @@ export function QrMenuPage() {
                   </div>
                 </div>
                 <button onClick={saveMenuSettings} disabled={menuSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition disabled:bg-gray-400">
+                  className="flex items-center gap-2 px-4 py-2 btn-lux text-white text-sm font-semibold rounded-xl transition disabled:bg-gray-400">
                   {menuSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Check className="w-4 h-4" /> Save Settings</>}
                 </button>
               </div>
@@ -294,10 +294,10 @@ export function QrMenuPage() {
 
             {/* Add/Edit item form — admin only */}
             {isAdmin && showItemForm && (
-              <div className="bg-white rounded-2xl border-2 border-teal-200 p-6 shadow-sm space-y-4">
+              <div className="bg-white rounded-2xl border-2 border-teal-200 p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-gray-900">{editItemId ? 'Edit Service' : 'Add Service'}</h3>
-                  <button onClick={() => setShowItemForm(false)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4" /></button>
+                  <button onClick={() => setShowItemForm(false)} className="p-1.5 hover:bg-white/40 rounded-lg"><X className="w-4 h-4" /></button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -327,10 +327,10 @@ export function QrMenuPage() {
                     <label htmlFor="item-active" className="text-sm font-medium text-gray-700">Visible on menu</label>
                   </div>
                 </div>
-                {itemError && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5 shrink-0" />{itemError}</p>}
+                {itemError && <p className="text-sm text-red-700 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm px-3 py-2 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5 shrink-0" />{itemError}</p>}
                 <div className="flex gap-2">
-                  <button onClick={() => setShowItemForm(false)} className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 text-sm">Cancel</button>
-                  <button onClick={saveItem} disabled={itemSaving} className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 disabled:bg-gray-400">
+                  <button onClick={() => setShowItemForm(false)} className="flex-1 py-2.5 border border-white/40 text-gray-700 font-semibold rounded-xl hover:bg-white/40 text-sm">Cancel</button>
+                  <button onClick={saveItem} disabled={itemSaving} className="flex-1 py-2.5 btn-lux text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 disabled:bg-gray-400">
                     {itemSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Check className="w-4 h-4" /> {editItemId ? 'Update' : 'Add'}</>}
                   </button>
                 </div>
@@ -340,14 +340,14 @@ export function QrMenuPage() {
             {/* Services by category */}
             <div className="space-y-4">
               {Object.entries(grouped).map(([cat, catItems]) => (
-                <div key={cat} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                <div key={cat} className="bg-white rounded-2xl border border-white/20 overflow-hidden">
+                  <div className="px-5 py-3 bg-white/30 border-b border-white/20 flex items-center justify-between">
                     <h3 className="font-bold text-gray-800">{cat}</h3>
                     <span className="text-xs text-gray-500">{catItems.filter(i => i.is_active).length} active / {catItems.length}</span>
                   </div>
                   <div className="divide-y divide-gray-100">
                     {catItems.map(it => (
-                      <div key={it.id} className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition ${!it.is_active ? 'opacity-50' : ''}`}>
+                      <div key={it.id} className={`flex items-center gap-3 px-4 py-3 hover:bg-white/40 transition ${!it.is_active ? 'opacity-50' : ''}`}>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 text-sm">{it.name}</p>
                           {it.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{it.description}</p>}
@@ -357,7 +357,7 @@ export function QrMenuPage() {
                           {it.duration_min && <span className="text-gray-400 text-xs">{it.duration_min}m</span>}
                           {isAdmin && (
                             <>
-                              <button onClick={() => toggleItem(it)} className={`p-1 rounded ${it.is_active ? 'text-teal-600 hover:bg-teal-50' : 'text-gray-400 hover:bg-gray-100'}`} title={it.is_active ? 'Hide' : 'Show'}>
+                              <button onClick={() => toggleItem(it)} className={`p-1 rounded ${it.is_active ? 'text-teal-600 hover:bg-teal-500/20' : 'text-gray-400 hover:bg-white/40'}`} title={it.is_active ? 'Hide' : 'Show'}>
                                 {it.is_active ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                               </button>
                               <button onClick={() => openEditItem(it)} className="p-1 text-gray-400 hover:text-teal-600 rounded"><Pencil className="w-3.5 h-3.5" /></button>
@@ -371,7 +371,7 @@ export function QrMenuPage() {
                 </div>
               ))}
               {items.length === 0 && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                <div className="bg-white rounded-2xl border border-white/20 p-12 text-center">
                   <QrCode className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">{isAdmin ? 'No services added yet. Add your first service to the menu.' : 'No services listed on the menu yet.'}</p>
                 </div>
@@ -387,19 +387,19 @@ export function QrMenuPage() {
       {/* QR Code Modal */}
       {showQrModal && qrDataUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="glass-strong rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/20">
               <div className="flex items-center gap-2">
                 <QrCode className="w-5 h-5 text-teal-600" />
                 <h2 className="font-bold text-gray-900">QR Code — Service Menu</h2>
               </div>
-              <button onClick={() => setShowQrModal(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition">
+              <button onClick={() => setShowQrModal(false)} className="p-1.5 hover:bg-white/40 rounded-lg transition">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="p-6 space-y-5">
               <div className="flex flex-col items-center">
-                <div className="bg-white border-2 border-teal-200 rounded-2xl p-4 shadow-sm">
+                <div className="bg-white border-2 border-teal-200 rounded-2xl p-4">
                   <img src={qrDataUrl} alt="Service Menu QR Code" className="w-56 h-56" />
                 </div>
                 <p className="text-sm font-bold text-gray-900 mt-4">{menu?.title || 'Service Menu'}</p>
@@ -408,20 +408,20 @@ export function QrMenuPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button onClick={downloadQr}
-                  className="flex items-center justify-center gap-2 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition text-sm">
+                  className="flex items-center justify-center gap-2 py-2.5 btn-lux text-white font-semibold rounded-xl transition text-sm">
                   <Download className="w-4 h-4" /> Download QR
                 </button>
                 <button onClick={printQr}
-                  className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm">
+                  className="flex items-center justify-center gap-2 py-2.5 bg-white/40 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm">
                   <Printer className="w-4 h-4" /> Print QR
                 </button>
                 <button onClick={copyMenuLink}
-                  className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm">
+                  className="flex items-center justify-center gap-2 py-2.5 bg-white/40 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition text-sm">
                   {linkCopied ? <><Check className="w-4 h-4 text-green-600" /> Copied!</> : <><LinkIcon className="w-4 h-4" /> Copy Link</>}
                 </button>
               </div>
 
-              <div className="bg-teal-50 border border-teal-100 rounded-xl p-3">
+              <div className="bg-teal-500/15 border border-teal-100 rounded-xl p-3">
                 <p className="text-xs text-teal-700 leading-relaxed">
                   This QR code always opens the live public menu. Any service, package, or price changes you make will appear instantly when customers scan it.
                 </p>

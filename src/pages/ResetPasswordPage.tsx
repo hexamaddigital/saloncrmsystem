@@ -95,10 +95,10 @@ export function ResetPasswordPage() {
 
   if (validating) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-teal-500 mx-auto mb-4" />
-          <p className="text-white">Verifying reset link...</p>
+          <p className="text-gray-700">Verifying reset link...</p>
         </div>
       </div>
     );
@@ -106,9 +106,9 @@ export function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-2xl p-8">
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-md animate-fade-in-up">
+          <div className="glass-strong rounded-3xl p-8">
             <div className="text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Password Reset Successful</h1>
@@ -126,9 +126,9 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md animate-fade-in-up">
+        <div className="glass-strong rounded-3xl p-8">
           <div className="text-center mb-8">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-20 w-auto mx-auto mb-3 object-contain" />
             <h1 className="text-2xl font-bold text-gray-900">Create New Password</h1>
@@ -136,7 +136,7 @@ export function ResetPasswordPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
+            <div className="bg-red-500/15 border border-red-300/40 text-red-700 px-4 py-3 rounded-xl text-sm mb-6 backdrop-blur-sm">
               {error}
             </div>
           )}
@@ -152,7 +152,7 @@ export function ResetPasswordPage() {
                   onChange={(e) => handlePasswordChange(e.target.value)}
                   placeholder="••••••••"
                   disabled={loading}
-                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                  className="glass-input w-full pl-10 pr-12 py-2.5 rounded-xl outline-none transition disabled:opacity-60"
                 />
                 <button
                   type="button"
@@ -186,7 +186,7 @@ export function ResetPasswordPage() {
                   }}
                   placeholder="••••••••"
                   disabled={loading}
-                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition disabled:bg-gray-100"
+                  className="glass-input w-full pl-10 pr-12 py-2.5 rounded-xl outline-none transition disabled:opacity-60"
                 />
                 <button
                   type="button"
@@ -201,7 +201,7 @@ export function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading || passwordErrors.length > 0}
-              className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-2.5 rounded-lg transition flex items-center justify-center gap-2"
+              className="btn-lux w-full font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

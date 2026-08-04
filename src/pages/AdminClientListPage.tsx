@@ -95,13 +95,13 @@ export function AdminClientListPage() {
   const hasActiveFilters = query || serviceFilter || genderFilter;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/dashboard')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition -ml-2">
+              className="p-2 hover:bg-white/40 rounded-lg transition -ml-2">
               <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-9 w-auto object-contain" />
@@ -111,7 +111,7 @@ export function AdminClientListPage() {
             </div>
           </div>
           {!loading && (
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-700 text-sm font-semibold rounded-lg border border-teal-200">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/15 text-teal-700 text-sm font-semibold rounded-lg border border-teal-200">
               <Users className="w-4 h-4" />
               {filtered.length}{filtered.length !== clients.length ? ` / ${clients.length}` : ''}
             </span>
@@ -122,7 +122,7 @@ export function AdminClientListPage() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
         {/* Search & filters */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-5">
+        <div className="glass-subtle rounded-xl border border-white/30 p-4 mb-5">
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search */}
             <div className="relative flex-1">
@@ -133,7 +133,7 @@ export function AdminClientListPage() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Search by name, phone, or address..."
-                className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition"
+                className="w-full pl-9 pr-4 py-2.5 glass-input rounded-lg text-sm"
               />
             </div>
 
@@ -141,7 +141,7 @@ export function AdminClientListPage() {
             <select
               value={serviceFilter}
               onChange={e => setServiceFilter(e.target.value)}
-              className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white text-gray-700 min-w-[140px]">
+              className="px-3 py-2.5 glass-input rounded-lg text-sm/60 text-gray-700 min-w-[140px]">
               <option value="">All Services</option>
               <option value="hair">Hair</option>
               <option value="skin">Skin</option>
@@ -153,7 +153,7 @@ export function AdminClientListPage() {
             <select
               value={genderFilter}
               onChange={e => setGenderFilter(e.target.value)}
-              className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white text-gray-700 min-w-[120px]">
+              className="px-3 py-2.5 glass-input rounded-lg text-sm/60 text-gray-700 min-w-[120px]">
               <option value="">All Genders</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
@@ -162,7 +162,7 @@ export function AdminClientListPage() {
 
             {hasActiveFilters && (
               <button onClick={clearFilters}
-                className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-gray-600 hover:text-red-600 border border-gray-300 hover:border-red-300 rounded-lg transition whitespace-nowrap">
+                className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-gray-600 hover:text-red-600 border border-white/40 hover:border-red-300 rounded-lg transition whitespace-nowrap">
                 <X className="w-4 h-4" /> Clear
               </button>
             )}
@@ -192,7 +192,7 @@ export function AdminClientListPage() {
               <button
                 key={client.id}
                 onClick={() => navigate(`/clients/${client.id}`)}
-                className="w-full text-left bg-white rounded-xl border border-gray-200 hover:border-teal-300 hover:shadow-md shadow-sm p-4 transition group"
+                className="w-full text-left glass-subtle rounded-xl border border-white/40 hover:border-teal-300/60 hover:shadow-md p-4 transition group"
               >
                 <div className="flex items-center justify-between gap-4">
                   {/* Left — number + info */}
@@ -203,7 +203,7 @@ export function AdminClientListPage() {
                     </span>
 
                     {/* Avatar circle */}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shrink-0 shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shrink-0">
                       <span className="text-white font-bold text-sm">
                         {client.name.charAt(0).toUpperCase()}
                       </span>
@@ -234,7 +234,7 @@ export function AdminClientListPage() {
                       {client.service_items && client.service_items.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {client.service_items.slice(0, 4).map(item => (
-                            <span key={item} className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                            <span key={item} className="text-xs text-gray-500 bg-white/40 px-1.5 py-0.5 rounded">
                               {item}
                             </span>
                           ))}

@@ -42,7 +42,7 @@ function statusBadge(s: PaymentStatus) {
     pending: 'bg-red-100 text-red-800 border-red-200',
     partial: 'bg-amber-100 text-amber-800 border-amber-200',
   };
-  return map[s] ?? 'bg-gray-100 text-gray-700';
+  return map[s] ?? 'bg-white/40 text-gray-700';
 }
 
 function fmtDate(d: string) {
@@ -636,18 +636,18 @@ export function BillingPage() {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated  = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition bg-white';
+  const inputCls = 'w-full px-3 py-2 glass-input rounded-lg text-sm';
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen">
 
       {/* ── Header ── */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/40 rounded-lg transition">
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </button>
             <img src="/Image_logo.png" alt="Logo" className="h-9 w-auto object-contain" />
@@ -667,7 +667,7 @@ export function BillingPage() {
 
       {/* ── Stats (admin) ── */}
       {isAdmin && (
-        <div className="border-b border-gray-200 bg-white">
+        <div className="border-b border-white/30 glass-strong">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-5 border border-teal-200">
               <p className="text-teal-600 text-xs font-semibold uppercase tracking-wider">Today's Revenue</p>
@@ -686,30 +686,30 @@ export function BillingPage() {
       )}
 
       {/* ── Filters ── */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-white/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
             <input type="text" placeholder="Search invoice, client, phone..."
               value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+              className="w-full pl-9 pr-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" />
           </div>
           <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value as PaymentStatus | 'all'); setCurrentPage(1); }}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+            className="px-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white/60 text-gray-700">
             <option value="all">All Status</option>
             <option value="paid">Paid</option>
             <option value="pending">Pending</option>
             <option value="partial">Partial</option>
           </select>
           <select value={dateFilter} onChange={e => { setDateFilter(e.target.value as typeof dateFilter); setCurrentPage(1); }}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-gray-700">
+            className="px-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white/60 text-gray-700">
             <option value="all">All Time</option>
             <option value="today">Today</option>
             <option value="week">This Week</option>
             <option value="month">This Month</option>
           </select>
           <button onClick={() => { fetchInvoices(); fetchStats(); }}
-            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-500" title="Refresh">
+            className="p-2 border border-white/40 rounded-lg hover:bg-white/40 transition text-gray-500" title="Refresh">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -722,17 +722,17 @@ export function BillingPage() {
             <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
           </div>
         ) : paginated.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div className="glass-subtle rounded-xl border border-white/30 p-12 text-center">
             <Receipt className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">{filtered.length === 0 && invoices.length > 0 ? 'No invoices match filters' : 'No invoices yet. Create your first bill!'}</p>
           </div>
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="hidden md:block glass-subtle rounded-xl border border-white/30 overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
+                  <tr className="bg-white/30 border-b border-white/30">
                     {['Invoice #', 'Client', 'Date', 'Services', 'Total', 'Method', 'Status', 'Actions'].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap">{h}</th>
                     ))}
@@ -740,7 +740,7 @@ export function BillingPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {paginated.map(inv => (
-                    <tr key={inv.id} className="hover:bg-gray-50/60 transition">
+                    <tr key={inv.id} className="hover:glass-subtle transition">
                       <td className="px-4 py-3 font-semibold text-teal-700">{inv.invoice_number}</td>
                       <td className="px-4 py-3">
                         <p className="font-medium text-gray-900">{inv.client_name}</p>
@@ -758,7 +758,7 @@ export function BillingPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <button onClick={() => openInvoice(inv)}
-                            className="p-1.5 hover:bg-teal-50 text-teal-600 rounded-lg transition" title="View">
+                            className="p-1.5 hover:bg-teal-500/15 text-teal-600 rounded-lg transition" title="View">
                             <Eye className="w-4 h-4" />
                           </button>
                           {isAdmin && (
@@ -778,7 +778,7 @@ export function BillingPage() {
             {/* Mobile cards */}
             <div className="md:hidden space-y-3">
               {paginated.map(inv => (
-                <div key={inv.id} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3 shadow-sm">
+                <div key={inv.id} className="glass-subtle rounded-xl border border-white/30 p-4 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-sm font-bold text-teal-700">{inv.invoice_number}</p>
@@ -795,7 +795,7 @@ export function BillingPage() {
                   </div>
                   <div className="flex gap-2 pt-1">
                     <button onClick={() => openInvoice(inv)}
-                      className="flex-1 py-2 bg-teal-50 text-teal-700 rounded-lg text-sm font-semibold hover:bg-teal-100 transition">
+                      className="flex-1 py-2 bg-teal-500/15 text-teal-700 rounded-lg text-sm font-semibold hover:bg-teal-100 transition">
                       View Invoice
                     </button>
                     {isAdmin && (
@@ -813,12 +813,12 @@ export function BillingPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-3 mt-6">
                 <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
-                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                  className="p-2 border border-white/40 rounded-lg hover:bg-white/40 disabled:opacity-40 disabled:cursor-not-allowed transition">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <span className="text-sm text-gray-600">Page {currentPage} of {totalPages} · {filtered.length} records</span>
                 <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                  className="p-2 border border-white/40 rounded-lg hover:bg-white/40 disabled:opacity-40 disabled:cursor-not-allowed transition">
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -836,10 +836,10 @@ export function BillingPage() {
           <div className="relative w-full max-w-2xl bg-white h-full flex flex-col shadow-2xl overflow-hidden">
 
             {/* Drawer header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/30 bg-white sticky top-0 z-10">
               <div className="flex items-center gap-3">
                 {createStep === 2 && (
-                  <button onClick={() => setCreateStep(1)} className="p-1.5 hover:bg-gray-100 rounded-lg transition">
+                  <button onClick={() => setCreateStep(1)} className="p-1.5 hover:bg-white/40 rounded-lg transition">
                     <ChevronLeft className="w-5 h-5 text-gray-600" />
                   </button>
                 )}
@@ -852,13 +852,13 @@ export function BillingPage() {
                   </p>
                 </div>
               </div>
-              <button onClick={resetCreateForm} className="p-2 hover:bg-gray-100 rounded-lg transition">
+              <button onClick={resetCreateForm} className="p-2 hover:bg-white/40 rounded-lg transition">
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
 
             {/* Step indicator */}
-            <div className="flex border-b border-gray-100">
+            <div className="flex border-b border-white/20">
               {[{ n: 1, label: 'Client' }, { n: 2, label: 'Bill' }].map(s => (
                 <div key={s.n} className={`flex-1 py-2.5 text-center text-xs font-semibold transition ${createStep === s.n ? 'border-b-2 border-teal-600 text-teal-700' : 'text-gray-400'}`}>
                   {s.n}. {s.label}
@@ -872,10 +872,10 @@ export function BillingPage() {
               {createStep === 1 && (
                 <div className="p-6 space-y-5">
                   {/* Mode toggle */}
-                  <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-fit">
+                  <div className="flex gap-2 p-1 bg-white/40 rounded-xl w-fit">
                     {(['phone', 'name'] as const).map(m => (
                       <button key={m} onClick={() => { setSearchMode(m); setClientQuery(''); setClientResults([]); }}
-                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === m ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === m ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
                         {m === 'phone' ? <Phone className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
                         {m === 'phone' ? 'By Phone' : 'By Name'}
                       </button>
@@ -888,7 +888,7 @@ export function BillingPage() {
                       <input type={searchMode === 'phone' ? 'tel' : 'text'} value={clientQuery}
                         onChange={e => setClientQuery(e.target.value)}
                         placeholder={searchMode === 'phone' ? '10-digit phone' : 'Client name'}
-                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+                        className="w-full pl-9 pr-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" />
                     </div>
                     <button type="submit" disabled={clientSearching}
                       className="px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold text-sm hover:bg-teal-700 disabled:bg-gray-400 transition flex items-center gap-1.5">
@@ -902,7 +902,7 @@ export function BillingPage() {
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{clientResults.length} found</p>
                       {clientResults.map(c => (
                         <button key={c.id} onClick={() => selectClient(c)}
-                          className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-teal-50 rounded-xl border border-gray-200 hover:border-teal-300 transition text-left group">
+                          className="w-full flex items-center justify-between p-3.5 glass-subtle hover:bg-teal-500/20 rounded-xl border border-white/40 hover:border-teal-300/60 transition text-left group">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-full bg-teal-500 flex items-center justify-center shrink-0">
                               <span className="text-white text-sm font-bold">{c.name.charAt(0).toUpperCase()}</span>
@@ -938,7 +938,7 @@ export function BillingPage() {
                 <div className="p-6 space-y-6">
 
                   {/* Client card */}
-                  <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-start justify-between">
+                  <div className="bg-teal-500/15 border border-teal-300/40 rounded-xl p-4 flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-bold text-teal-900">{selectedClient.name}</p>
@@ -955,7 +955,7 @@ export function BillingPage() {
 
                   {/* Previous history snippet */}
                   {showHistory && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
+                    <div className="glass-subtle rounded-2xl p-4 space-y-2">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Recent Treatments</p>
                       {clientHistory.length > 0 ? clientHistory.map(t => (
                         <div key={t.id} className="flex justify-between text-sm">
@@ -974,7 +974,7 @@ export function BillingPage() {
                       <div className="flex flex-wrap gap-1.5">
                         {HAIR_SERVICES.map(s => (
                           <button key={s} type="button" onClick={() => quickAddService(s, 'hair')}
-                            className="px-2.5 py-1 text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-full border border-teal-200 transition font-medium">
+                            className="px-2.5 py-1 text-xs bg-teal-500/15 hover:bg-teal-100 text-teal-700 rounded-full border border-teal-200 transition font-medium">
                             + {s}
                           </button>
                         ))}
@@ -1004,7 +1004,7 @@ export function BillingPage() {
                     </div>
 
                     {lineItems.map((item, idx) => (
-                      <div key={item.id} className="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-3">
+                      <div key={item.id} className="glass-subtle rounded-xl border border-white/30 p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-gray-500">Service {idx + 1}</span>
                           {lineItems.length > 1 && (
@@ -1051,7 +1051,7 @@ export function BillingPage() {
                               className={inputCls} />
                           </div>
                         </div>
-                        <div className="flex justify-between items-center pt-1 border-t border-gray-200">
+                        <div className="flex justify-between items-center pt-1 border-t border-white/30">
                           <span className="text-xs text-gray-500">Item Total</span>
                           <span className="font-bold text-teal-700">₹{Math.max(0, item.quantity * item.unit_price - item.item_discount).toLocaleString('en-IN')}</span>
                         </div>
@@ -1060,7 +1060,7 @@ export function BillingPage() {
                   </div>
 
                   {/* Discount & Coupon */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+                  <div className="glass-subtle rounded-2xl p-4 space-y-4">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Discounts & Coupon</p>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -1098,7 +1098,7 @@ export function BillingPage() {
                     </div>
 
                     {/* Bill summary */}
-                    <div className="border-t border-gray-200 pt-3 space-y-1.5 text-sm">
+                    <div className="border-t border-white/30 pt-3 space-y-1.5 text-sm">
                       <div className="flex justify-between text-gray-600">
                         <span>Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span>
                       </div>
@@ -1117,7 +1117,7 @@ export function BillingPage() {
                           <span>Tax ({taxPercent}%)</span><span>₹{taxAmt.toLocaleString('en-IN')}</span>
                         </div>
                       )}
-                      <div className="flex justify-between font-bold text-base pt-1.5 border-t border-gray-300 text-teal-900">
+                      <div className="flex justify-between font-bold text-base pt-1.5 border-t border-white/40 text-teal-900">
                         <span>Grand Total</span><span>₹{grandTotal.toLocaleString('en-IN')}</span>
                       </div>
                     </div>
@@ -1174,7 +1174,7 @@ export function BillingPage() {
                   </div>
 
                   {submitError && (
-                    <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2 bg-red-500/15 border border-red-300/40 text-red-700 backdrop-blur-sm rounded-lg px-4 py-3 text-sm">
                       <AlertCircle className="w-4 h-4 shrink-0" />{submitError}
                     </div>
                   )}
@@ -1184,13 +1184,13 @@ export function BillingPage() {
 
             {/* Drawer footer */}
             {createStep === 2 && (
-              <div className="border-t border-gray-200 bg-white px-6 py-4 flex gap-3">
+              <div className="border-t border-white/30 bg-white px-6 py-4 flex gap-3">
                 <button onClick={resetCreateForm}
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+                  className="flex-1 px-4 py-2.5 border border-white/40 rounded-lg text-sm font-semibold text-gray-700 hover:bg-white/40 transition">
                   Cancel
                 </button>
                 <button onClick={handleSubmit} disabled={submitting}
-                  className="flex-1 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition disabled:bg-gray-400 flex items-center justify-center gap-2 text-sm shadow-md shadow-teal-600/20">
+                  className="flex-1 px-4 py-2.5 btn-lux text-white font-bold rounded-lg transition disabled:bg-gray-400 flex items-center justify-center gap-2 text-sm shadow-md shadow-teal-600/20">
                   {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><CheckCircle2 className="w-4 h-4" /> Generate Bill</>}
                 </button>
               </div>
@@ -1205,12 +1205,12 @@ export function BillingPage() {
       {showView && viewInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowView(false)} />
-          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+          <div className="relative w-full max-w-lg glass-strong rounded-3xl flex flex-col max-h-[92vh] overflow-hidden">
 
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/30">
               <h2 className="font-bold text-gray-900">Invoice {viewInvoice.invoice_number}</h2>
-              <button onClick={() => setShowView(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
+              <button onClick={() => setShowView(false)} className="p-2 hover:bg-white/40 rounded-lg transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1222,7 +1222,7 @@ export function BillingPage() {
               ) : (
                 <>
                   {/* Salon header */}
-                  <div className="text-center pb-5 border-b border-gray-200">
+                  <div className="text-center pb-5 border-b border-white/30">
                     <img src="/Image_logo.png" alt="Logo" className="h-12 w-auto mx-auto mb-2 object-contain" />
                     <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Image Skinn & Hair</h1>
                     <p className="text-gray-500 text-sm mt-0.5">Premium Salon & Hair Care</p>
@@ -1241,14 +1241,14 @@ export function BillingPage() {
                   </div>
 
                   {/* Client */}
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <div className="glass-subtle rounded-xl p-4 border border-white/30">
                     <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Bill To</p>
                     <p className="font-bold text-gray-900 text-base">{viewInvoice.client_name}</p>
                     <p className="text-gray-600 text-sm">📞 {viewInvoice.client_phone}</p>
                   </div>
 
                   {/* Items table */}
-                  <div className="overflow-x-auto rounded-xl border border-gray-200">
+                  <div className="overflow-x-auto rounded-xl border border-white/30">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-teal-600 text-white">
@@ -1261,7 +1261,7 @@ export function BillingPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {viewItems.map(item => (
-                          <tr key={item.id} className="even:bg-gray-50">
+                          <tr key={item.id} className="even:glass-subtle">
                             <td className="px-3 py-2.5">
                               <p className="font-medium text-gray-900">{item.service_name}</p>
                             </td>
@@ -1295,14 +1295,14 @@ export function BillingPage() {
                       {Number(viewInvoice.tax) > 0 && (
                         <div className="flex justify-between text-gray-600"><span>Tax</span><span>₹{Number(viewInvoice.tax).toLocaleString('en-IN')}</span></div>
                       )}
-                      <div className="flex justify-between font-bold text-base pt-1.5 border-t border-gray-300">
+                      <div className="flex justify-between font-bold text-base pt-1.5 border-t border-white/40">
                         <span>Grand Total</span><span className="text-teal-700">₹{Number(viewInvoice.total).toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Payment info */}
-                  <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="bg-teal-500/15 border border-teal-300/40 rounded-xl p-4 grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Method</p>
                       <p className="font-semibold text-gray-900 mt-0.5">{viewInvoice.payment_method || '—'}</p>
@@ -1336,7 +1336,7 @@ export function BillingPage() {
             </div>
 
             {/* Action buttons */}
-            <div className="border-t border-gray-200 px-4 py-4 bg-white">
+            <div className="border-t border-white/30 px-4 py-4 glass">
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => openInvoicePrintWindow(viewInvoice, viewItems)}

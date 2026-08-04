@@ -33,15 +33,15 @@ export function PublicMenuPage() {
   }, []);
 
   if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-gray-50 flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
     </div>
   );
 
   if (notFound) return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-gray-50 flex items-center justify-center px-4">
-      <div className="text-center">
-        <Scissors className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="glass-strong rounded-3xl p-8 text-center max-w-sm animate-fade-in-up">
+        <Scissors className="w-12 h-12 text-teal-400 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-gray-800 mb-2">Menu Unavailable</h1>
         <p className="text-gray-500">The service menu is currently offline. Please contact the salon.</p>
       </div>
@@ -51,11 +51,11 @@ export function PublicMenuPage() {
   const grouped = groupBy(items, 'category');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-teal-700 text-white text-center py-10 px-4">
+      <div className="glass-dark text-white text-center py-10 px-4">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <Scissors className="w-6 h-6" />
+          <Scissors className="w-6 h-6 text-teal-300" />
           <Sparkles className="w-5 h-5 text-teal-200" />
         </div>
         <h1 className="text-2xl font-extrabold">{menu?.title}</h1>
@@ -72,7 +72,7 @@ export function PublicMenuPage() {
             </h2>
             <div className="space-y-2">
               {catItems.map(item => (
-                <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex items-center gap-3">
+                <div key={item.id} className="glass-subtle rounded-xl border border-white/20 px-4 py-3 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900">{item.name}</p>
                     {item.description && <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>}
@@ -96,7 +96,7 @@ export function PublicMenuPage() {
         )}
 
         {menu?.footer_note && (
-          <p className="text-center text-xs text-gray-400 pt-4 border-t border-gray-200">{menu.footer_note}</p>
+          <p className="text-center text-xs text-gray-400 pt-4 border-t border-white/30">{menu.footer_note}</p>
         )}
       </main>
     </div>

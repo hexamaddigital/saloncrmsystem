@@ -117,14 +117,14 @@ export function ClientSearchPage() {
   const hasMore = treatments.length > PREVIEW_COUNT;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-10 w-auto object-contain" />
             <h1 className="text-xl font-bold text-gray-900">Client Search</h1>
           </div>
-          <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+          <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/40 rounded-lg transition">
             <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
         </div>
@@ -132,19 +132,19 @@ export function ClientSearchPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Search Box */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="glass rounded-2xl p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Find Client</h2>
 
           {/* Mode toggle */}
-          <div className="flex gap-2 mb-4 p-1 bg-gray-100 rounded-lg w-fit">
+          <div className="flex gap-2 mb-4 p-1 bg-white/40 rounded-xl w-fit">
             <button
               onClick={() => { setSearchMode('phone'); reset(); setQuery(''); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'phone' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'phone' ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
               <Phone className="w-3.5 h-3.5" /> Phone
             </button>
             <button
               onClick={() => { setSearchMode('name'); reset(); setQuery(''); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'name' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'name' ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
               <User className="w-3.5 h-3.5" /> Name
             </button>
           </div>
@@ -158,11 +158,11 @@ export function ClientSearchPage() {
                   value={query}
                   onChange={e => { setQuery(e.target.value); setError(''); }}
                   placeholder={searchMode === 'phone' ? 'Enter 10-digit phone number' : 'Enter client name (min 2 chars)'}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 pr-4 py-3 glass-input rounded-xl"
                 />
               </div>
               <button type="submit" disabled={loading}
-                className="px-6 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2 shadow-lg shadow-teal-600/20">
+                className="px-6 py-3 btn-lux text-white font-semibold rounded-lg transition flex items-center justify-center gap-2 ">
                 {loading
                   ? <><Loader2 className="w-5 h-5 animate-spin" /> Searching...</>
                   : <><Search className="w-5 h-5" /> Search</>}
@@ -171,18 +171,18 @@ export function ClientSearchPage() {
           </form>
 
           {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+            <div className="mt-4 bg-red-500/15 border border-red-300/40 text-red-700 backdrop-blur-sm px-4 py-3 rounded-lg text-sm">{error}</div>
           )}
         </div>
 
         {/* Multiple name results */}
         {nameResults.length > 1 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="glass rounded-2xl p-6">
             <h3 className="text-base font-bold text-gray-900 mb-3">{nameResults.length} clients found</h3>
             <div className="space-y-2">
               {nameResults.map(c => (
                 <button key={c.id} onClick={() => selectNameResult(c)}
-                  className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-teal-50 rounded-lg border border-gray-200 hover:border-teal-300 transition text-left group">
+                  className="w-full flex items-center justify-between p-3 glass-subtle hover:bg-teal-500/20 rounded-lg border border-white/40 hover:border-teal-300/60 transition text-left group">
                   <div>
                     <p className="font-semibold text-gray-900 group-hover:text-teal-800">{c.name}</p>
                     <p className="text-xs text-gray-500">{c.phone}{c.gender ? ` · ${c.gender}` : ''}</p>
@@ -197,7 +197,7 @@ export function ClientSearchPage() {
         {/* Single client result */}
         {client && (
           <div className="space-y-4">
-            <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="bg-teal-500/15 border border-teal-300/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <p className="font-bold text-teal-900 text-lg">{client.name}</p>
@@ -212,7 +212,7 @@ export function ClientSearchPage() {
               </div>
               <button
                 onClick={() => navigate(`/clients/${client.id}`)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition text-sm shadow-md shadow-teal-600/20 whitespace-nowrap"
+                className="flex items-center gap-2 px-4 py-2.5 btn-lux text-white font-semibold rounded-lg transition text-sm shadow-md shadow-teal-600/20 whitespace-nowrap"
               >
                 <ExternalLink className="w-4 h-4" />
                 Open Full Profile
@@ -220,7 +220,7 @@ export function ClientSearchPage() {
             </div>
 
             {/* Treatment History */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="glass rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                   <CalendarDays className="w-5 h-5 text-teal-600" />
@@ -244,7 +244,7 @@ export function ClientSearchPage() {
                   <div className="space-y-2">
                     {visibleTreatments.map((tx, idx) => (
                       <div key={tx.id}
-                        className={`flex items-start justify-between p-3 rounded-lg border transition ${idx === 0 ? 'bg-teal-50 border-teal-200' : 'bg-gray-50 border-gray-200'}`}>
+                        className={`flex items-start justify-between p-3 rounded-lg border transition ${idx === 0 ? 'bg-teal-500/15 border-teal-200' : 'glass-subtle'}`}>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-semibold text-gray-900 text-sm">{tx.treatment_name}</p>
@@ -269,9 +269,9 @@ export function ClientSearchPage() {
                   </div>
 
                   {hasMore && !showAll && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="mt-4 pt-4 border-t border-white/20">
                       <button onClick={() => setShowAll(true)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-teal-700 hover:text-teal-800 hover:bg-teal-50 rounded-lg border border-teal-200 hover:border-teal-300 transition">
+                        className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-teal-700 hover:text-teal-800 hover:bg-teal-500/15 rounded-lg border border-teal-200 hover:border-teal-300 transition">
                         <ChevronDown className="w-4 h-4" />
                         View All History ({treatments.length} records)
                       </button>
@@ -279,7 +279,7 @@ export function ClientSearchPage() {
                   )}
 
                   {showAll && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                    <div className="mt-4 pt-4 border-t border-white/20 text-center">
                       <button onClick={() => navigate(`/clients/${client.id}`)}
                         className="inline-flex items-center gap-2 text-sm text-teal-700 hover:text-teal-800 font-medium transition">
                         <ExternalLink className="w-4 h-4" />
@@ -297,14 +297,14 @@ export function ClientSearchPage() {
 
         {/* Not found */}
         {notFound && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="glass rounded-2xl p-6">
             <h3 className="text-base font-semibold text-gray-900 mb-2">Client Not Found</h3>
             <p className="text-gray-600 text-sm mb-5">
               No client found for <strong>{query}</strong>. Create a new profile?
             </p>
             <button
               onClick={() => navigate('/clients/new', { state: { phone: searchMode === 'phone' ? query : '' } })}
-              className="w-full px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
+              className="w-full px-4 py-3 btn-lux text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
               <Plus className="w-5 h-5" />
               Create New Client
             </button>

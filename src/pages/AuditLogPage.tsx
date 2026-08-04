@@ -83,17 +83,17 @@ export function AuditLogPage() {
     : entries;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen">
+      <header className="glass-strong border-b border-white/30 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg transition">
+            <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/40 rounded-lg transition">
               <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
             <Shield className="w-5 h-5 text-teal-600" />
             <h1 className="text-xl font-bold text-gray-900">Audit Log</h1>
           </div>
-          <button onClick={fetchLogs} className="p-2 hover:bg-gray-100 rounded-lg transition">
+          <button onClick={fetchLogs} className="p-2 hover:bg-white/40 rounded-lg transition">
             <RefreshCw className="w-4 h-4 text-gray-600" />
           </button>
         </div>
@@ -102,17 +102,17 @@ export function AuditLogPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
         {/* Filters */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+        <div className="bg-white rounded-2xl border border-white/20 p-5 space-y-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search by user, action, or description..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
+              placeholder="Search by user, action, or description..." className="w-full pl-9 pr-3 py-2 border border-white/30 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
           </div>
           <div className="flex flex-wrap gap-3">
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Operation</label>
               <select value={opFilter} onChange={e => { setOpFilter(e.target.value as any); setPage(1); }}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                className="px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                 <option value="all">All Operations</option>
                 <option value="INSERT">INSERT</option>
                 <option value="UPDATE">UPDATE</option>
@@ -122,7 +122,7 @@ export function AuditLogPage() {
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Table</label>
               <select value={tableFilter} onChange={e => { setTableFilter(e.target.value); setPage(1); }}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none capitalize">
+                className="px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none capitalize">
                 {tables.map(t => <option key={t} value={t}>{t === 'all' ? 'All Tables' : t.replace('_', ' ')}</option>)}
               </select>
             </div>
@@ -133,8 +133,8 @@ export function AuditLogPage() {
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 animate-spin text-teal-600" /></div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-gray-100 text-xs text-gray-500">
+          <div className="bg-white rounded-2xl border border-white/20 overflow-hidden">
+            <div className="px-5 py-3 border-b border-white/20 text-xs text-gray-500">
               {total} total entries — page {page} of {totalPages || 1}
             </div>
             {filtered.length === 0 ? (
@@ -142,9 +142,9 @@ export function AuditLogPage() {
             ) : (
               <div className="divide-y divide-gray-100">
                 {filtered.map(e => (
-                  <div key={e.id} className="hover:bg-gray-50 transition">
+                  <div key={e.id} className="hover:bg-white/40 transition">
                     <button className="w-full flex items-start gap-3 px-5 py-3.5 text-left" onClick={() => setExpanded(expanded === e.id ? null : e.id)}>
-                      <span className={`mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${OP_COLOR[e.operation] || 'bg-gray-100 text-gray-600'}`}>{e.operation}</span>
+                      <span className={`mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${OP_COLOR[e.operation] || 'bg-white/40 text-gray-600'}`}>{e.operation}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-800">{buildSummary(e)}</p>
                         <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-2">
@@ -180,14 +180,14 @@ export function AuditLogPage() {
             )}
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
+              <div className="px-5 py-3 border-t border-white/20 flex items-center justify-between">
                 <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition disabled:opacity-40">
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-white/40 rounded-lg transition disabled:opacity-40">
                   <Prev className="w-4 h-4" /> Prev
                 </button>
                 <span className="text-sm text-gray-500">Page {page} of {totalPages}</span>
                 <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition disabled:opacity-40">
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-white/40 rounded-lg transition disabled:opacity-40">
                   Next <Next className="w-4 h-4" />
                 </button>
               </div>
