@@ -4,10 +4,11 @@ import {
   Plus, ArrowLeft, Eye, Trash2, X, Search, ChevronLeft, ChevronRight,
   MessageCircle, Printer, Loader2, Receipt, CheckCircle2, AlertCircle,
   User, Phone, Tag, ChevronDown, ChevronUp, RefreshCw, Download,
+  CreditCard, Clock, Calendar, CheckCircle, Wallet,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import type { Invoice, InvoiceItem, Client, Transaction } from '../lib/types';
+import type { Invoice, InvoiceItem, InvoicePayment, Client, Transaction } from '../lib/types';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,14 @@ function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function fmtDateTime(d: string) {
+  return new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function fmtTime(d: string) {
+  return new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
 // ─── WhatsApp helper ──────────────────────────────────────────────────────────
 // Normalises an Indian phone number to E.164 (+91XXXXXXXXXX).
 // wa.me links require the full international number — without +91 they silently
@@ -72,7 +81,7 @@ function buildWhatsAppUrl(rawPhone: string, message: string): string {
 //   • Works on Chrome, Firefox, Safari, Edge, mobile Chrome/Safari
 // "Save as PDF" is done via the browser's built-in print → Save as PDF option,
 // which the in-popup "Print" button triggers.
-function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[], logoUrl: string): string {
+function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[], payments: InvoicePayment[], logoUrl: string): string {
   const fmt = (n: number) =>
     Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -113,8 +122,53 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[], logoUrl: string): 
     ? `<tr><td colspan="4" style="padding:5px 14px;text-align:right;color:#6b7280;font-size:13px;">Tax</td><td style="padding:5px 14px;text-align:right;color:#374151;">₹${fmt(Number(inv.tax))}</td></tr>`
     : '';
 
-  const amountPaid = Number(inv.amount_paid) || 0;
+  const amountPaid = payments.length > 0
+    ? payments.reduce((sum, p) => sum + Number(p.amount), 0)
+    : Number(inv.amount_paid) || 0;
   const balanceDue = Math.max(0, Number(inv.total) - amountPaid);
+
+  const sortedByDate = [...payments].sort(
+    (a, b) => new Date(a.payment_date).getTime() - new Date(b.payment_date).getTime()
+  );
+  const firstPayDate = sortedByDate.length > 0 ? sortedByDate[0].payment_date : null;
+  const finalPayDate = sortedByDate.length > 0 ? sortedByDate[sortedByDate.length - 1].payment_date : null;
+
+  const fmtFullDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const paymentHistoryRows = sortedByDate.length > 0
+    ? sortedByDate.map((p, idx) => `
+      <tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;font-weight:600;color:#111827;">#${idx + 1}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#374151;">${fmtFullDate(p.payment_date)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#374151;">${new Date(p.payment_date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#374151;">${p.payment_method}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#6b7280;">${p.received_by || '—'}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:700;color:#15803d;">₹${fmt(Number(p.amount))}</td>
+      </tr>`).join('')
+    : '';
+
+  const paymentHistoryBlock = sortedByDate.length > 0 ? `
+    <div style="margin-top:16px;">
+      <p style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:8px;">Payment History (${sortedByDate.length})</p>
+      <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f9fafb;">
+              <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;">#</th>
+              <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;">Date</th>
+              <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;">Time</th>
+              <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;">Method</th>
+              <th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;color:#6b7280;">Received By</th>
+              <th style="padding:8px 12px;text-align:right;font-size:10px;text-transform:uppercase;color:#6b7280;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>${paymentHistoryRows}</tbody>
+        </table>
+      </div>
+      ${firstPayDate ? `<p style="font-size:12px;color:#6b7280;margin-top:8px;">First Payment: <strong style="color:#374151;">${fmtFullDate(firstPayDate)}</strong>${finalPayDate ? ` &nbsp;|&nbsp; Final Payment: <strong style="color:#374151;">${fmtFullDate(finalPayDate)}</strong>` : ''}</p>` : ''}
+    </div>` : '';
+
   // Always show Amount Paid & Balance Due; for fully paid invoices balance is 0
   const paymentBreakdownBlock = `
     <div style="margin-top:16px;padding:14px 16px;background:${inv.payment_status === 'paid' ? '#f0fdf4' : '#fef2f2'};border:1px solid ${inv.payment_status === 'paid' ? '#bbf7d0' : '#fecaca'};border-radius:10px;">
@@ -232,6 +286,7 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[], logoUrl: string): 
   </div>
 
   ${paymentBreakdownBlock}
+  ${paymentHistoryBlock}
   ${notesBlock}
 
   <!-- Footer -->
@@ -255,9 +310,9 @@ function buildInvoiceHTML(inv: Invoice, items: InvoiceItem[], logoUrl: string): 
 </html>`;
 }
 
-function openInvoicePrintWindow(inv: Invoice, items: InvoiceItem[]) {
+function openInvoicePrintWindow(inv: Invoice, items: InvoiceItem[], payments: InvoicePayment[] = []) {
   const logoUrl = `${window.location.origin}/Image_logo.png`;
-  const html = buildInvoiceHTML(inv, items, logoUrl);
+  const html = buildInvoiceHTML(inv, items, payments, logoUrl);
   const win = window.open('', '_blank', 'width=760,height=960,scrollbars=yes,resizable=yes,menubar=no,toolbar=no');
   if (!win) {
     // Fallback: try without window features (some browsers block popups with features)
@@ -334,6 +389,19 @@ export function BillingPage() {
   const [viewInvoice, setViewInvoice]     = useState<Invoice | null>(null);
   const [viewItems, setViewItems]         = useState<InvoiceItem[]>([]);
   const [viewLoading, setViewLoading]     = useState(false);
+  const [viewPayments, setViewPayments]   = useState<InvoicePayment[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+
+  // ── Add Payment modal ──
+  const [showAddPayment, setShowAddPayment] = useState(false);
+  const [payAmount, setPayAmount]           = useState('');
+  const [payDate, setPayDate]               = useState(new Date().toISOString().split('T')[0]);
+  const [payTime, setPayTime]               = useState(new Date().toTimeString().slice(0, 5));
+  const [newPayMethod, setNewPayMethod]     = useState('Cash');
+  const [payReceivedBy, setPayReceivedBy]   = useState('');
+  const [payNotes, setPayNotes]             = useState('');
+  const [paySubmitting, setPaySubmitting]   = useState(false);
+  const [payError, setPayError]             = useState('');
 
   // Pre-select client if navigated from profile
   useEffect(() => {
@@ -594,10 +662,117 @@ export function BillingPage() {
     setViewLoading(true);
     setViewInvoice(inv);
     setShowView(true);
+    setViewPayments([]);
     try {
-      const { data } = await supabase.from('invoice_items').select('*').eq('invoice_id', inv.id);
-      setViewItems(data || []);
+      const [itemsRes, paysRes] = await Promise.all([
+        supabase.from('invoice_items').select('*').eq('invoice_id', inv.id),
+        supabase.from('payments').select('*').eq('invoice_id', inv.id).order('payment_date', { ascending: false }),
+      ]);
+      setViewItems(itemsRes.data || []);
+      setViewPayments((paysRes.data || []) as InvoicePayment[]);
     } finally { setViewLoading(false); }
+  }
+
+  async function fetchPayments(invoiceId: string) {
+    setPaymentsLoading(true);
+    try {
+      const { data } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('invoice_id', invoiceId)
+        .order('payment_date', { ascending: false });
+      setViewPayments((data || []) as InvoicePayment[]);
+    } finally {
+      setPaymentsLoading(false);
+    }
+  }
+
+  function openAddPayment() {
+    if (!viewInvoice) return;
+    const balance = Number(viewInvoice.total) - Number(viewInvoice.amount_paid);
+    setPayAmount(balance > 0 ? String(balance) : '');
+    setPayDate(new Date().toISOString().split('T')[0]);
+    setPayTime(new Date().toTimeString().slice(0, 5));
+    setNewPayMethod(viewInvoice.payment_method || 'Cash');
+    setPayReceivedBy('');
+    setPayNotes('');
+    setPayError('');
+    setShowAddPayment(true);
+  }
+
+  async function handleAddPayment() {
+    if (!viewInvoice) return;
+    setPayError('');
+
+    const amount = parseFloat(payAmount);
+    if (!amount || amount <= 0) {
+      setPayError('Please enter a valid payment amount.');
+      return;
+    }
+
+    const balance = Number(viewInvoice.total) - Number(viewInvoice.amount_paid);
+    if (amount > balance + 0.01) {
+      setPayError(`Payment exceeds balance due (₹${balance.toLocaleString('en-IN')}).`);
+      return;
+    }
+
+    setPaySubmitting(true);
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      const paymentDateTime = new Date(`${payDate}T${payTime}`).toISOString();
+
+      const { error: payErr } = await supabase.from('payments').insert({
+        invoice_id: viewInvoice.id,
+        amount,
+        payment_method: newPayMethod,
+        payment_date: paymentDateTime,
+        received_by: payReceivedBy.trim() || null,
+        notes: payNotes.trim() || null,
+        created_by: user?.id || null,
+      });
+
+      if (payErr) throw payErr;
+
+      // Recalculate totals from all payments
+      const allPayments = [...viewPayments, {
+        id: 'temp',
+        invoice_id: viewInvoice.id,
+        amount,
+        payment_method: newPayMethod,
+        payment_date: paymentDateTime,
+        received_by: payReceivedBy.trim() || null,
+        notes: payNotes.trim() || null,
+        created_by: user?.id || null,
+        created_at: new Date().toISOString(),
+      }] as InvoicePayment[];
+
+      const totalPaid = allPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+      const newStatus = totalPaid >= Number(viewInvoice.total) - 0.01 ? 'paid' : 'partial';
+
+      const { error: invErr } = await supabase.from('invoices').update({
+        amount_paid: totalPaid,
+        payment_status: newStatus,
+        payment_method: newPayMethod,
+      }).eq('id', viewInvoice.id);
+
+      if (invErr) throw invErr;
+
+      // Update local state
+      setViewInvoice({
+        ...viewInvoice,
+        amount_paid: totalPaid,
+        payment_status: newStatus,
+        payment_method: newPayMethod,
+      });
+      await fetchPayments(viewInvoice.id);
+      setShowAddPayment(false);
+      await fetchInvoices();
+      await fetchStats();
+    } catch (err: unknown) {
+      setPayError(err instanceof Error ? err.message : 'Failed to record payment.');
+    } finally {
+      setPaySubmitting(false);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -1301,27 +1476,13 @@ export function BillingPage() {
                     </div>
                   </div>
 
-                  {/* Payment info */}
-                  <div className="bg-teal-500/15 border border-teal-300/40 rounded-xl p-4 grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Method</p>
-                      <p className="font-semibold text-gray-900 mt-0.5">{viewInvoice.payment_method || '—'}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Status</p>
-                      <span className={`inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusBadge(viewInvoice.payment_status)}`}>
-                        {viewInvoice.payment_status.charAt(0).toUpperCase() + viewInvoice.payment_status.slice(1)}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Amount Paid</p>
-                      <p className="font-semibold text-gray-900 mt-0.5">₹{Number(viewInvoice.amount_paid).toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-xs font-semibold uppercase tracking-wide ${(Number(viewInvoice.total) - Number(viewInvoice.amount_paid)) > 0 ? 'text-red-500' : 'text-green-600'}`}>Balance Due</p>
-                      <p className={`font-bold mt-0.5 ${(Number(viewInvoice.total) - Number(viewInvoice.amount_paid)) > 0 ? 'text-red-600' : 'text-green-600'}`}>₹{Math.max(0, Number(viewInvoice.total) - Number(viewInvoice.amount_paid)).toLocaleString('en-IN')}</p>
-                    </div>
-                  </div>
+                  {/* Payment Tracking */}
+                  <PaymentTrackingSection
+                    invoice={viewInvoice}
+                    payments={viewPayments}
+                    loading={paymentsLoading}
+                    onAddPayment={openAddPayment}
+                  />
 
                   {viewInvoice.notes && (
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
@@ -1339,12 +1500,12 @@ export function BillingPage() {
             <div className="border-t border-white/30 px-4 py-4 glass">
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
-                  onClick={() => openInvoicePrintWindow(viewInvoice, viewItems)}
+                  onClick={() => openInvoicePrintWindow(viewInvoice, viewItems, viewPayments)}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl transition text-sm">
                   <Printer className="w-4 h-4" /> Print Preview
                 </button>
                 <button
-                  onClick={() => openInvoicePrintWindow(viewInvoice, viewItems)}
+                  onClick={() => openInvoicePrintWindow(viewInvoice, viewItems, viewPayments)}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-semibold rounded-xl transition text-sm">
                   <Download className="w-4 h-4" /> Download PDF
                 </button>
@@ -1377,6 +1538,248 @@ export function BillingPage() {
           </div>
         </div>
       )}
+
+      {/* Add Payment Modal */}
+      {showAddPayment && viewInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="glass-strong rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/30">
+              <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                <Wallet className="w-5 h-5 text-teal-600" /> Record Payment
+              </h3>
+              <button onClick={() => setShowAddPayment(false)} className="p-1.5 hover:bg-gray-200 rounded-lg transition">
+                <X className="w-5 h-5 text-gray-700" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              {/* Balance info */}
+              <div className="bg-teal-500/15 border border-teal-300/40 rounded-xl p-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Invoice Total</span>
+                  <span className="font-bold text-gray-900">₹{Number(viewInvoice.total).toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className="text-gray-700">Already Paid</span>
+                  <span className="font-semibold text-green-700">₹{Number(viewInvoice.amount_paid).toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between mt-1 pt-1.5 border-t border-teal-300/30">
+                  <span className="font-semibold text-gray-700">Balance Due</span>
+                  <span className="font-bold text-red-600">₹{Math.max(0, Number(viewInvoice.total) - Number(viewInvoice.amount_paid)).toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Amount (₹)</label>
+                <input type="number" min="0" step="0.01" value={payAmount}
+                  onChange={e => setPayAmount(e.target.value)}
+                  className="glass-input w-full px-3 py-2.5 rounded-xl text-gray-900 font-semibold" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Date</label>
+                  <input type="date" value={payDate}
+                    onChange={e => setPayDate(e.target.value)}
+                    className="glass-input w-full px-3 py-2.5 rounded-xl text-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Time</label>
+                  <input type="time" value={payTime}
+                    onChange={e => setPayTime(e.target.value)}
+                    className="glass-input w-full px-3 py-2.5 rounded-xl text-gray-900" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Payment Method</label>
+                <select value={newPayMethod}
+                  onChange={e => setNewPayMethod(e.target.value)}
+                  className="glass-input w-full px-3 py-2.5 rounded-xl text-gray-900">
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Cheque">Cheque</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Received By</label>
+                <input type="text" value={payReceivedBy}
+                  onChange={e => setPayReceivedBy(e.target.value)}
+                  placeholder="Staff member name"
+                  className="glass-input w-full px-3 py-2.5 rounded-xl text-gray-900" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Notes (optional)</label>
+                <textarea value={payNotes}
+                  onChange={e => setPayNotes(e.target.value)}
+                  rows={2}
+                  placeholder="Reference no, cheque no, etc."
+                  className="glass-input w-full px-3 py-2.5 rounded-xl text-gray-900 resize-none" />
+              </div>
+
+              {payError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{payError}</span>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-1">
+                <button onClick={() => setShowAddPayment(false)}
+                  className="flex-1 py-2.5 btn-lux-ghost rounded-xl font-semibold text-sm">
+                  Cancel
+                </button>
+                <button onClick={handleAddPayment} disabled={paySubmitting}
+                  className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 disabled:opacity-50 text-white font-semibold rounded-xl transition text-sm flex items-center justify-center gap-2">
+                  {paySubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  Record Payment
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PaymentTrackingSection({
+  invoice, payments, loading, onAddPayment,
+}: {
+  invoice: Invoice;
+  payments: InvoicePayment[];
+  loading: boolean;
+  onAddPayment: () => void;
+}) {
+  const total = Number(invoice.total);
+  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const balance = Math.max(0, total - totalPaid);
+  const isFullyPaid = totalPaid >= total - 0.01;
+  const isPartial = totalPaid > 0 && !isFullyPaid;
+  const isPending = totalPaid === 0;
+
+  const sortedByDate = [...payments].sort(
+    (a, b) => new Date(a.payment_date).getTime() - new Date(b.payment_date).getTime()
+  );
+  const firstPaymentDate = sortedByDate.length > 0 ? sortedByDate[0].payment_date : null;
+  const finalPaymentDate = isFullyPaid && sortedByDate.length > 0
+    ? sortedByDate[sortedByDate.length - 1].payment_date
+    : null;
+
+  const statusInfo = isFullyPaid
+    ? { label: 'Paid / Completed', cls: 'bg-green-100 text-green-800 border-green-300', icon: <CheckCircle className="w-3.5 h-3.5" /> }
+    : isPartial
+      ? { label: 'Partially Paid', cls: 'bg-amber-100 text-amber-800 border-amber-300', icon: <Clock className="w-3.5 h-3.5" /> }
+      : { label: 'Pending', cls: 'bg-red-100 text-red-800 border-red-300', icon: <AlertCircle className="w-3.5 h-3.5" /> };
+
+  return (
+    <div className="space-y-3">
+      {/* Status + Add Payment button */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Payment Status</span>
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${statusInfo.cls}`}>
+            {statusInfo.icon}
+            {statusInfo.label}
+          </span>
+        </div>
+        {!isFullyPaid && (
+          <button onClick={onAddPayment}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white text-xs font-semibold rounded-lg transition">
+            <Plus className="w-3.5 h-3.5" /> Add Payment
+          </button>
+        )}
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+          <p className="text-xs text-green-700 font-semibold uppercase tracking-wide flex items-center gap-1">
+            <Wallet className="w-3 h-3" /> Total Paid
+          </p>
+          <p className="text-lg font-bold text-green-700 mt-0.5">₹{totalPaid.toLocaleString('en-IN')}</p>
+        </div>
+        <div className={`border rounded-xl p-3 ${balance > 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+          <p className={`text-xs font-semibold uppercase tracking-wide flex items-center gap-1 ${balance > 0 ? 'text-red-700' : 'text-gray-700'}`}>
+            <Receipt className="w-3 h-3" /> Balance Due
+          </p>
+          <p className={`text-lg font-bold mt-0.5 ${balance > 0 ? 'text-red-600' : 'text-gray-700'}`}>₹{balance.toLocaleString('en-IN')}</p>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+          <p className="text-xs text-blue-700 font-semibold uppercase tracking-wide flex items-center gap-1">
+            <Calendar className="w-3 h-3" /> First Payment
+          </p>
+          <p className="text-sm font-semibold text-gray-900 mt-0.5">
+            {firstPaymentDate ? fmtDate(firstPaymentDate) : '—'}
+          </p>
+        </div>
+        <div className="bg-teal-50 border border-teal-200 rounded-xl p-3">
+          <p className="text-xs text-teal-700 font-semibold uppercase tracking-wide flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3" /> Final Payment
+          </p>
+          <p className="text-sm font-semibold text-gray-900 mt-0.5">
+            {finalPaymentDate ? fmtDate(finalPaymentDate) : isFullyPaid ? '—' : 'Pending'}
+          </p>
+        </div>
+      </div>
+
+      {/* Payment History */}
+      <div className="border border-gray-200 rounded-xl overflow-hidden">
+        <div className="bg-gray-50 border-b border-gray-200 px-3 py-2 flex items-center justify-between">
+          <p className="text-xs font-bold text-gray-700 uppercase tracking-wide flex items-center gap-1.5">
+            <CreditCard className="w-3.5 h-3.5 text-teal-600" /> Payment History
+          </p>
+          <span className="text-xs text-gray-600 font-medium">{payments.length} payment{payments.length !== 1 ? 's' : ''}</span>
+        </div>
+
+        {loading ? (
+          <div className="p-4 flex justify-center">
+            <Loader2 className="w-5 h-5 animate-spin text-teal-600" />
+          </div>
+        ) : payments.length === 0 ? (
+          <div className="p-4 text-center">
+            <p className="text-sm text-gray-600">No payments recorded yet.</p>
+            {!isFullyPaid && (
+              <button onClick={onAddPayment}
+                className="mt-2 text-xs text-teal-600 font-semibold hover:text-teal-700 transition">
+                Record first payment →
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {payments.map((p, idx) => {
+              const pNum = payments.length - idx;
+              return (
+                <div key={p.id} className="px-3 py-2.5 flex items-start gap-3 hover:bg-gray-50 transition">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-teal-500/20 flex items-center justify-center text-xs font-bold text-teal-700">
+                    {pNum}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-gray-900 text-sm">₹{Number(p.amount).toLocaleString('en-IN')}</span>
+                      <span className="text-xs text-gray-600">{fmtDateTime(p.payment_date)}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+                      <span className="text-xs text-gray-700 flex items-center gap-1">
+                        <CreditCard className="w-3 h-3 text-gray-500" /> {p.payment_method}
+                      </span>
+                      {p.received_by && (
+                        <span className="text-xs text-gray-700 flex items-center gap-1">
+                          <User className="w-3 h-3 text-gray-500" /> {p.received_by}
+                        </span>
+                      )}
+                    </div>
+                    {p.notes && (
+                      <p className="text-xs text-gray-600 mt-0.5 italic">"{p.notes}"</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

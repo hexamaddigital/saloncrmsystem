@@ -129,6 +129,18 @@ export interface InvoiceItem {
   staff_name?: string;
 }
 
+export interface InvoicePayment {
+  id: string;
+  invoice_id: string;
+  amount: number;
+  payment_method: string;
+  payment_date: string;
+  received_by?: string | null;
+  notes?: string | null;
+  created_by?: string | null;
+  created_at: string;
+}
+
 export interface ServiceCatalog {
   id: string;
   name: string;
