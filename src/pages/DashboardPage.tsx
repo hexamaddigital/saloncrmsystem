@@ -74,23 +74,23 @@ export function DashboardPage() {
   async function handleLogout() { await signOut(); navigate('/login'); }
 
   const operatorModules = [
-    { label: 'Search Client',  desc: 'Find by phone or name',    path: '/clients/search', icon: <Search className="w-6 h-6" />,      accent: 'text-teal-600', glow: 'bg-teal-500/20' },
-    { label: 'Add New Client', desc: 'Create a new profile',     path: '/clients/new',    icon: <Plus className="w-6 h-6" />,        accent: 'text-blue-600', glow: 'bg-blue-500/20' },
-    { label: 'Appointments',   desc: `${stats.todayAppointments} today`, path: '/appointments', icon: <CalendarDays className="w-6 h-6" />, accent: 'text-violet-600', glow: 'bg-violet-500/20' },
-    { label: 'Billing',        desc: 'Invoices & payments',      path: '/billing',        icon: <Receipt className="w-6 h-6" />,     accent: 'text-amber-600', glow: 'bg-amber-500/20' },
-    { label: 'Inquiries',      desc: 'Leads & follow-ups',       path: '/inquiries',      icon: <MessageSquare className="w-6 h-6" />, accent: 'text-green-600', glow: 'bg-green-500/20' },
-    { label: 'QR Menu',        desc: 'View & scan public menu',  path: '/admin/qr-menu',  icon: <QrCode className="w-6 h-6" />,      accent: 'text-cyan-600', glow: 'bg-cyan-500/20' },
+    { label: 'Search Client',  desc: 'Find by phone or name',    path: '/clients/search', icon: <Search className="w-6 h-6" />,      accent: 'text-teal-600', glow: 'bg-teal-500/20', rgb: '20, 184, 166' },
+    { label: 'Add New Client', desc: 'Create a new profile',     path: '/clients/new',    icon: <Plus className="w-6 h-6" />,        accent: 'text-blue-600', glow: 'bg-blue-500/20', rgb: '59, 130, 246' },
+    { label: 'Appointments',   desc: `${stats.todayAppointments} today`, path: '/appointments', icon: <CalendarDays className="w-6 h-6" />, accent: 'text-violet-600', glow: 'bg-violet-500/20', rgb: '139, 92, 246' },
+    { label: 'Billing',        desc: 'Invoices & payments',      path: '/billing',        icon: <Receipt className="w-6 h-6" />,     accent: 'text-amber-600', glow: 'bg-amber-500/20', rgb: '245, 158, 11' },
+    { label: 'Inquiries',      desc: 'Leads & follow-ups',       path: '/inquiries',      icon: <MessageSquare className="w-6 h-6" />, accent: 'text-green-600', glow: 'bg-green-500/20', rgb: '34, 197, 94' },
+    { label: 'QR Menu',        desc: 'View & scan public menu',  path: '/admin/qr-menu',  icon: <QrCode className="w-6 h-6" />,      accent: 'text-cyan-600', glow: 'bg-cyan-500/20', rgb: '6, 182, 212' },
   ];
 
   const adminOnlyModules = [
-    { label: 'Memberships',    desc: 'Plans & client memberships', path: '/admin/memberships', icon: <Award className="w-6 h-6" />,       accent: 'text-emerald-600', glow: 'bg-emerald-500/20' },
-    { label: 'Loyalty Points', desc: 'Rewards & point rules',     path: '/admin/loyalty',     icon: <Star className="w-6 h-6" />,        accent: 'text-yellow-600', glow: 'bg-yellow-500/20' },
-    { label: 'Coupons',        desc: 'Discount codes',            path: '/admin/coupons',     icon: <Tag className="w-6 h-6" />,         accent: 'text-rose-600', glow: 'bg-rose-500/20' },
-    { label: 'Reminders',      desc: 'Alerts & follow-ups',       path: '/admin/reminders',   icon: <Bell className="w-6 h-6" />,        accent: 'text-orange-600', glow: 'bg-orange-500/20' },
-    { label: 'QR Menu',        desc: 'Public service menu',       path: '/admin/qr-menu',     icon: <QrCode className="w-6 h-6" />,      accent: 'text-cyan-600', glow: 'bg-cyan-500/20' },
-    { label: 'Feedback',       desc: 'Reviews & ratings',         path: '/admin/feedback',    icon: <MessageCircle className="w-6 h-6" />, accent: 'text-pink-600', glow: 'bg-pink-500/20' },
-    { label: 'Reports',        desc: 'Analytics & export',        path: '/admin/reports',     icon: <BarChart2 className="w-6 h-6" />,   accent: 'text-indigo-600', glow: 'bg-indigo-500/20' },
-    { label: 'Audit Log',      desc: 'Change history',            path: '/admin/audit',       icon: <Shield className="w-6 h-6" />,      accent: 'text-slate-600', glow: 'bg-slate-500/20' },
+    { label: 'Memberships',    desc: 'Plans & client memberships', path: '/admin/memberships', icon: <Award className="w-6 h-6" />,       accent: 'text-emerald-600', glow: 'bg-emerald-500/20', rgb: '16, 185, 129' },
+    { label: 'Loyalty Points', desc: 'Rewards & point rules',     path: '/admin/loyalty',     icon: <Star className="w-6 h-6" />,        accent: 'text-yellow-600', glow: 'bg-yellow-500/20', rgb: '234, 179, 8' },
+    { label: 'Coupons',        desc: 'Discount codes',            path: '/admin/coupons',     icon: <Tag className="w-6 h-6" />,         accent: 'text-rose-600', glow: 'bg-rose-500/20', rgb: '244, 63, 94' },
+    { label: 'Reminders',      desc: 'Alerts & follow-ups',       path: '/admin/reminders',   icon: <Bell className="w-6 h-6" />,        accent: 'text-orange-600', glow: 'bg-orange-500/20', rgb: '249, 115, 22' },
+    { label: 'QR Menu',        desc: 'Public service menu',       path: '/admin/qr-menu',     icon: <QrCode className="w-6 h-6" />,      accent: 'text-cyan-600', glow: 'bg-cyan-500/20', rgb: '6, 182, 212' },
+    { label: 'Feedback',       desc: 'Reviews & ratings',         path: '/admin/feedback',    icon: <MessageCircle className="w-6 h-6" />, accent: 'text-pink-600', glow: 'bg-pink-500/20', rgb: '236, 72, 153' },
+    { label: 'Reports',        desc: 'Analytics & export',        path: '/admin/reports',     icon: <BarChart2 className="w-6 h-6" />,   accent: 'text-indigo-600', glow: 'bg-indigo-500/20', rgb: '99, 102, 241' },
+    { label: 'Audit Log',      desc: 'Change history',            path: '/admin/audit',       icon: <Shield className="w-6 h-6" />,      accent: 'text-slate-600', glow: 'bg-slate-500/20', rgb: '100, 116, 139' },
   ];
 
   return (
@@ -122,7 +122,7 @@ export function DashboardPage() {
         {isAdmin && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 animate-fade-in-up">
             <button onClick={() => navigate('/admin/clients')}
-              className="glass rounded-2xl p-5 transition text-left group col-span-1 hover:scale-[1.02]">
+              className="dash-card glass rounded-2xl p-5 text-left group col-span-1" style={{ '--card-accent': '20, 184, 166' } as React.CSSProperties}>
               <p className="text-gray-500 text-xs font-medium group-hover:text-teal-600 transition">Total Clients</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalClients}</p>
               <div className="flex items-center justify-between mt-2">
@@ -130,22 +130,22 @@ export function DashboardPage() {
                 <span className="text-xs text-teal-600 opacity-0 group-hover:opacity-100 transition font-medium">View →</span>
               </div>
             </button>
-            <div className="glass rounded-2xl p-5">
+            <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '59, 130, 246' } as React.CSSProperties}>
               <p className="text-gray-500 text-xs font-medium">Today's Sales</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">₹{stats.dailySales.toLocaleString('en-IN')}</p>
               <BarChart3 className="w-8 h-8 text-blue-200 mt-2" />
             </div>
-            <div className="glass rounded-2xl p-5">
+            <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '34, 197, 94' } as React.CSSProperties}>
               <p className="text-gray-500 text-xs font-medium">Monthly Sales</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">₹{stats.monthlySales.toLocaleString('en-IN')}</p>
               <TrendingUp className="w-8 h-8 text-green-200 mt-2" />
             </div>
-            <div className="glass rounded-2xl p-5">
+            <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '139, 92, 246' } as React.CSSProperties}>
               <p className="text-gray-500 text-xs font-medium">Today's Appts</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{stats.todayAppointments}</p>
               <CalendarDays className="w-8 h-8 text-violet-200 mt-2" />
             </div>
-            <div className="glass rounded-2xl p-5">
+            <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '245, 158, 11' } as React.CSSProperties}>
               <p className="text-gray-500 text-xs font-medium">Pending Bills</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{stats.pendingInvoices}</p>
               <Receipt className="w-8 h-8 text-amber-200 mt-2" />
@@ -156,11 +156,11 @@ export function DashboardPage() {
         {/* Operator stats */}
         {!isAdmin && (
           <div className="grid grid-cols-2 gap-4 animate-fade-in-up">
-            <div className="glass rounded-2xl p-5">
+            <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '139, 92, 246' } as React.CSSProperties}>
               <p className="text-gray-500 text-xs font-medium">Today's Appointments</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{stats.todayAppointments}</p>
             </div>
-            <div className="glass rounded-2xl p-5">
+            <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '20, 184, 166' } as React.CSSProperties}>
               <p className="text-gray-500 text-xs font-medium mb-2">Popular This Month</p>
               <div className="space-y-1">
                 {stats.popularTreatments.slice(0, 3).map((t, i) => (
@@ -181,9 +181,9 @@ export function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {operatorModules.map(mod => (
               <button key={mod.path} onClick={() => navigate(mod.path)}
-                className="group relative overflow-hidden glass rounded-2xl p-6 transition cursor-pointer text-left hover:scale-[1.02]">
+                className="dash-card group relative overflow-hidden glass rounded-2xl p-6 cursor-pointer text-left" style={{ '--card-accent': mod.rgb } as React.CSSProperties}>
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 ${mod.glow} rounded-xl flex items-center justify-center ${mod.accent} group-hover:scale-110 transition`}>
+                  <div className={`dash-card-accent w-12 h-12 ${mod.glow} rounded-xl flex items-center justify-center ${mod.accent}`}>
                     {mod.icon}
                   </div>
                 </div>
@@ -202,8 +202,8 @@ export function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {adminOnlyModules.map(mod => (
                 <button key={mod.path} onClick={() => navigate(mod.path)}
-                  className="group relative overflow-hidden glass rounded-2xl p-5 transition cursor-pointer text-left hover:scale-[1.02]">
-                  <div className={`w-10 h-10 ${mod.glow} rounded-xl flex items-center justify-center ${mod.accent} group-hover:scale-110 transition mb-3`}>
+                  className="dash-card group relative overflow-hidden glass rounded-2xl p-5 cursor-pointer text-left" style={{ '--card-accent': mod.rgb } as React.CSSProperties}>
+                  <div className={`dash-card-accent w-10 h-10 ${mod.glow} rounded-xl flex items-center justify-center ${mod.accent} mb-3`}>
                     {mod.icon}
                   </div>
                   <h3 className="text-base font-bold text-gray-900">{mod.label}</h3>
@@ -217,7 +217,7 @@ export function DashboardPage() {
 
         {/* Popular treatments (admin) */}
         {isAdmin && stats.popularTreatments.length > 0 && (
-          <div className="glass rounded-2xl p-6 animate-fade-in-up">
+          <div className="dash-card glass rounded-2xl p-6 animate-fade-in-up" style={{ '--card-accent': '20, 184, 166' } as React.CSSProperties}>
             <h3 className="text-base font-bold text-gray-900 mb-4">Popular Treatments This Month</h3>
             <div className="flex flex-wrap gap-3">
               {stats.popularTreatments.map((t, i) => (

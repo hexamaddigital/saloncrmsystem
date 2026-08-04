@@ -124,6 +124,33 @@
     border-color: rgba(20, 184, 166, 0.4);
   }
 
+  /* ── Premium dashboard card hover ── */
+  .dash-card {
+    --card-accent: 20, 184, 166; /* teal default */
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                background 0.35s ease,
+                border-color 0.35s ease;
+    will-change: transform, box-shadow, background;
+  }
+  .dash-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(var(--card-accent), 0.45);
+    box-shadow:
+      0 16px 40px rgba(var(--card-accent), 0.22),
+      0 4px 12px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  .dash-card:hover .dash-card-accent {
+    background: rgba(var(--card-accent), 0.22);
+    transform: scale(1.12);
+  }
+  .dash-card-accent {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                background 0.35s ease;
+  }
+
   /* ── Scrollbar ── */
   ::-webkit-scrollbar {
     width: 8px;
