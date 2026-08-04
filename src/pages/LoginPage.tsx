@@ -86,7 +86,7 @@ export function LoginPage() {
               alt="Image Skinn & Hair"
               className="h-28 w-auto mx-auto mb-3 object-contain"
             />
-            <p className="text-gray-500 text-sm font-medium tracking-wide">Salon Management Portal</p>
+            <p className="text-gray-600 text-sm font-medium tracking-wide">Salon Management Portal</p>
           </div>
 
           {error && (
@@ -103,7 +103,7 @@ export function LoginPage() {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+                <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-600 pointer-events-none" />
                 <input
                   id="email"
                   type="email"
@@ -137,7 +137,7 @@ export function LoginPage() {
                 </button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+                <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-600 pointer-events-none" />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -154,7 +154,7 @@ export function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={loading}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                  className="absolute right-3 top-3 text-gray-600 hover:text-gray-600 disabled:opacity-50"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -202,21 +202,21 @@ export function LoginPage() {
 
           {/* Footer */}
           <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-600">
               Authorized access only
             </p>
           </div>
         </div>
 
         {/* Security Footer */}
-        <div className="mt-6 text-center text-xs text-gray-400">
+        <div className="mt-6 text-center text-xs text-gray-600">
           <p>
             &copy; {new Date().getFullYear()} Image Skinn & Hair. All rights reserved. | Designed &amp; Developed by{' '}
             <a
               href="https://www.hexamad.in/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 hover:text-teal-600 transition underline underline-offset-2"
+              className="text-gray-600 hover:text-teal-600 transition underline underline-offset-2"
             >
               Hexamad Digital
             </a>

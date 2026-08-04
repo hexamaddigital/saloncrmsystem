@@ -139,12 +139,12 @@ export function ClientSearchPage() {
           <div className="flex gap-2 mb-4 p-1 bg-white/40 rounded-xl w-fit">
             <button
               onClick={() => { setSearchMode('phone'); reset(); setQuery(''); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'phone' ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'phone' ? 'bg-white/80 text-teal-700' : 'text-gray-600 hover:text-gray-700'}`}>
               <Phone className="w-3.5 h-3.5" /> Phone
             </button>
             <button
               onClick={() => { setSearchMode('name'); reset(); setQuery(''); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'name' ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === 'name' ? 'bg-white/80 text-teal-700' : 'text-gray-600 hover:text-gray-700'}`}>
               <User className="w-3.5 h-3.5" /> Name
             </button>
           </div>
@@ -152,7 +152,7 @@ export function ClientSearchPage() {
           <form onSubmit={handleSearch}>
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                 <input
                   type={searchMode === 'phone' ? 'tel' : 'text'}
                   value={query}
@@ -185,9 +185,9 @@ export function ClientSearchPage() {
                   className="w-full flex items-center justify-between p-3 glass-subtle hover:bg-teal-500/20 rounded-lg border border-white/40 hover:border-teal-300/60 transition text-left group">
                   <div>
                     <p className="font-semibold text-gray-900 group-hover:text-teal-800">{c.name}</p>
-                    <p className="text-xs text-gray-500">{c.phone}{c.gender ? ` · ${c.gender}` : ''}</p>
+                    <p className="text-xs text-gray-600">{c.phone}{c.gender ? ` · ${c.gender}` : ''}</p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-teal-600 shrink-0" />
+                  <ExternalLink className="w-4 h-4 text-gray-600 group-hover:text-teal-600 shrink-0" />
                 </button>
               ))}
             </div>
@@ -233,7 +233,7 @@ export function ClientSearchPage() {
                 </h3>
                 {hasMore && showAll && (
                   <button onClick={() => setShowAll(false)}
-                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-teal-700 transition">
+                    className="flex items-center gap-1 text-xs text-gray-600 hover:text-teal-700 transition">
                     <ChevronUp className="w-3.5 h-3.5" /> Show less
                   </button>
                 )}
@@ -255,7 +255,7 @@ export function ClientSearchPage() {
                               <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">Pending</span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="text-xs text-gray-600 mt-0.5">
                             {new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                             {tx.staff_name ? ` · ${tx.staff_name}` : ''}
                             {tx.notes ? ` · ${tx.notes}` : ''}
@@ -289,7 +289,7 @@ export function ClientSearchPage() {
                   )}
                 </>
               ) : (
-                <p className="text-gray-500 text-sm text-center py-4">No treatments recorded yet</p>
+                <p className="text-gray-600 text-sm text-center py-4">No treatments recorded yet</p>
               )}
             </div>
           </div>

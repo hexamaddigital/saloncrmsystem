@@ -653,7 +653,7 @@ export function BillingPage() {
             <img src="/Image_logo.png" alt="Logo" className="h-9 w-auto object-contain" />
             <div>
               <h1 className="text-xl font-bold text-gray-900 leading-tight">Billing</h1>
-              <p className="text-xs text-gray-400">Invoices & Payments</p>
+              <p className="text-xs text-gray-600">Invoices & Payments</p>
             </div>
           </div>
           <button onClick={() => { resetCreateForm(); setShowCreate(true); }}
@@ -689,7 +689,7 @@ export function BillingPage() {
       <div className="bg-white border-b border-white/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-600 pointer-events-none" />
             <input type="text" placeholder="Search invoice, client, phone..."
               value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               className="w-full pl-9 pr-3 py-2 border border-white/40 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500" />
@@ -709,7 +709,7 @@ export function BillingPage() {
             <option value="month">This Month</option>
           </select>
           <button onClick={() => { fetchInvoices(); fetchStats(); }}
-            className="p-2 border border-white/40 rounded-lg hover:bg-white/40 transition text-gray-500" title="Refresh">
+            className="p-2 border border-white/40 rounded-lg hover:bg-white/40 transition text-gray-600" title="Refresh">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -723,8 +723,8 @@ export function BillingPage() {
           </div>
         ) : paginated.length === 0 ? (
           <div className="glass-subtle rounded-xl border border-white/30 p-12 text-center">
-            <Receipt className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">{filtered.length === 0 && invoices.length > 0 ? 'No invoices match filters' : 'No invoices yet. Create your first bill!'}</p>
+            <Receipt className="w-10 h-10 text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-600">{filtered.length === 0 && invoices.length > 0 ? 'No invoices match filters' : 'No invoices yet. Create your first bill!'}</p>
           </div>
         ) : (
           <>
@@ -744,10 +744,10 @@ export function BillingPage() {
                       <td className="px-4 py-3 font-semibold text-teal-700">{inv.invoice_number}</td>
                       <td className="px-4 py-3">
                         <p className="font-medium text-gray-900">{inv.client_name}</p>
-                        <p className="text-xs text-gray-500">{inv.client_phone}</p>
+                        <p className="text-xs text-gray-600">{inv.client_phone}</p>
                       </td>
                       <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(inv.invoice_date)}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs max-w-[140px] truncate">—</td>
+                      <td className="px-4 py-3 text-gray-600 text-xs max-w-[140px] truncate">—</td>
                       <td className="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">₹{Number(inv.total).toLocaleString('en-IN')}</td>
                       <td className="px-4 py-3 text-gray-600">{inv.payment_method || '—'}</td>
                       <td className="px-4 py-3">
@@ -783,14 +783,14 @@ export function BillingPage() {
                     <div>
                       <p className="text-sm font-bold text-teal-700">{inv.invoice_number}</p>
                       <p className="font-semibold text-gray-900 mt-0.5">{inv.client_name}</p>
-                      <p className="text-xs text-gray-500">{inv.client_phone}</p>
+                      <p className="text-xs text-gray-600">{inv.client_phone}</p>
                     </div>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${statusBadge(inv.payment_status)}`}>
                       {inv.payment_status.charAt(0).toUpperCase() + inv.payment_status.slice(1)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{fmtDate(inv.invoice_date)}</span>
+                    <span className="text-gray-600">{fmtDate(inv.invoice_date)}</span>
                     <span className="font-bold text-gray-900">₹{Number(inv.total).toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex gap-2 pt-1">
@@ -847,20 +847,20 @@ export function BillingPage() {
                   <h2 className="text-lg font-bold text-gray-900">
                     {createStep === 1 ? 'Select Client' : 'Create Bill'}
                   </h2>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-600">
                     {createStep === 1 ? 'Search by phone or name' : selectedClient?.name}
                   </p>
                 </div>
               </div>
               <button onClick={resetCreateForm} className="p-2 hover:bg-white/40 rounded-lg transition">
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
 
             {/* Step indicator */}
             <div className="flex border-b border-white/20">
               {[{ n: 1, label: 'Client' }, { n: 2, label: 'Bill' }].map(s => (
-                <div key={s.n} className={`flex-1 py-2.5 text-center text-xs font-semibold transition ${createStep === s.n ? 'border-b-2 border-teal-600 text-teal-700' : 'text-gray-400'}`}>
+                <div key={s.n} className={`flex-1 py-2.5 text-center text-xs font-semibold transition ${createStep === s.n ? 'border-b-2 border-teal-600 text-teal-700' : 'text-gray-600'}`}>
                   {s.n}. {s.label}
                 </div>
               ))}
@@ -875,7 +875,7 @@ export function BillingPage() {
                   <div className="flex gap-2 p-1 bg-white/40 rounded-xl w-fit">
                     {(['phone', 'name'] as const).map(m => (
                       <button key={m} onClick={() => { setSearchMode(m); setClientQuery(''); setClientResults([]); }}
-                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === m ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
+                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold transition ${searchMode === m ? 'bg-white/80 text-teal-700' : 'text-gray-600 hover:text-gray-700'}`}>
                         {m === 'phone' ? <Phone className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
                         {m === 'phone' ? 'By Phone' : 'By Name'}
                       </button>
@@ -884,7 +884,7 @@ export function BillingPage() {
 
                   <form onSubmit={e => { e.preventDefault(); searchClient(); }} className="flex gap-2">
                     <div className="relative flex-1">
-                      <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                      <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-600 pointer-events-none" />
                       <input type={searchMode === 'phone' ? 'tel' : 'text'} value={clientQuery}
                         onChange={e => setClientQuery(e.target.value)}
                         placeholder={searchMode === 'phone' ? '10-digit phone' : 'Client name'}
@@ -899,7 +899,7 @@ export function BillingPage() {
 
                   {clientResults.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{clientResults.length} found</p>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">{clientResults.length} found</p>
                       {clientResults.map(c => (
                         <button key={c.id} onClick={() => selectClient(c)}
                           className="w-full flex items-center justify-between p-3.5 glass-subtle hover:bg-teal-500/20 rounded-xl border border-white/40 hover:border-teal-300/60 transition text-left group">
@@ -912,10 +912,10 @@ export function BillingPage() {
                                 {c.name}
                                 {c.is_golden && <span className="ml-1.5 text-amber-500 text-xs">★ VIP</span>}
                               </p>
-                              <p className="text-xs text-gray-500">{c.phone}{c.gender ? ` · ${c.gender}` : ''}</p>
+                              <p className="text-xs text-gray-600">{c.phone}{c.gender ? ` · ${c.gender}` : ''}</p>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-teal-600" />
+                          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-teal-600" />
                         </button>
                       ))}
                     </div>
@@ -956,19 +956,19 @@ export function BillingPage() {
                   {/* Previous history snippet */}
                   {showHistory && (
                     <div className="glass-subtle rounded-2xl p-4 space-y-2">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Recent Treatments</p>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Recent Treatments</p>
                       {clientHistory.length > 0 ? clientHistory.map(t => (
                         <div key={t.id} className="flex justify-between text-sm">
                           <span className="text-gray-700">{t.treatment_name}</span>
-                          <span className="text-gray-500 text-xs">{fmtDate(t.date)} · ₹{Number(t.price).toLocaleString('en-IN')}</span>
+                          <span className="text-gray-600 text-xs">{fmtDate(t.date)} · ₹{Number(t.price).toLocaleString('en-IN')}</span>
                         </div>
-                      )) : <p className="text-gray-400 text-sm">No previous treatments</p>}
+                      )) : <p className="text-gray-600 text-sm">No previous treatments</p>}
                     </div>
                   )}
 
                   {/* Quick-add service buttons */}
                   <div className="space-y-3">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick Add Services</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Quick Add Services</p>
                     <div>
                       <p className="text-xs text-teal-700 font-medium mb-1.5 flex items-center gap-1">✂ Hair</p>
                       <div className="flex flex-wrap gap-1.5">
@@ -1006,7 +1006,7 @@ export function BillingPage() {
                     {lineItems.map((item, idx) => (
                       <div key={item.id} className="glass-subtle rounded-xl border border-white/30 p-4 space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-gray-500">Service {idx + 1}</span>
+                          <span className="text-xs font-semibold text-gray-600">Service {idx + 1}</span>
                           {lineItems.length > 1 && (
                             <button onClick={() => removeLine(item.id)} className="p-1 hover:bg-red-50 text-red-500 rounded-lg transition">
                               <X className="w-3.5 h-3.5" />
@@ -1020,7 +1020,7 @@ export function BillingPage() {
                               className={inputCls} />
                           </div>
                           <div>
-                            <label className="text-xs text-gray-500 mb-1 block">Category</label>
+                            <label className="text-xs text-gray-600 mb-1 block">Category</label>
                             <select value={item.category} onChange={e => updateLine(item.id, 'category', e.target.value)}
                               className={inputCls}>
                               <option value="">Select</option>
@@ -1031,20 +1031,20 @@ export function BillingPage() {
                             </select>
                           </div>
                           <div>
-                            <label className="text-xs text-gray-500 mb-1 block">Staff Name</label>
+                            <label className="text-xs text-gray-600 mb-1 block">Staff Name</label>
                             <input type="text" placeholder="Who did this?" value={item.staff_name}
                               onChange={e => updateLine(item.id, 'staff_name', e.target.value)}
                               className={inputCls} />
                           </div>
                           <div>
-                            <label className="text-xs text-gray-500 mb-1 block">Price (₹) *</label>
+                            <label className="text-xs text-gray-600 mb-1 block">Price (₹) *</label>
                             <input type="number" min="0" step="0.01" placeholder="0.00"
                               value={item.unit_price || ''}
                               onChange={e => updateLine(item.id, 'unit_price', parseFloat(e.target.value) || 0)}
                               className={inputCls} />
                           </div>
                           <div>
-                            <label className="text-xs text-gray-500 mb-1 block">Qty</label>
+                            <label className="text-xs text-gray-600 mb-1 block">Qty</label>
                             <input type="number" min="1" placeholder="1"
                               value={item.quantity}
                               onChange={e => updateLine(item.id, 'quantity', Math.max(1, parseInt(e.target.value) || 1))}
@@ -1052,7 +1052,7 @@ export function BillingPage() {
                           </div>
                         </div>
                         <div className="flex justify-between items-center pt-1 border-t border-white/30">
-                          <span className="text-xs text-gray-500">Item Total</span>
+                          <span className="text-xs text-gray-600">Item Total</span>
                           <span className="font-bold text-teal-700">₹{Math.max(0, item.quantity * item.unit_price - item.item_discount).toLocaleString('en-IN')}</span>
                         </div>
                       </div>
@@ -1061,17 +1061,17 @@ export function BillingPage() {
 
                   {/* Discount & Coupon */}
                   <div className="glass-subtle rounded-2xl p-4 space-y-4">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Discounts & Coupon</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Discounts & Coupon</p>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Manual Discount (₹)</label>
+                        <label className="text-xs text-gray-600 mb-1 block">Manual Discount (₹)</label>
                         <input type="number" min="0" step="0.01" value={billDiscount || ''}
                           onChange={e => setBillDiscount(parseFloat(e.target.value) || 0)}
                           className={inputCls} placeholder="0.00" />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Tax %</label>
+                        <label className="text-xs text-gray-600 mb-1 block">Tax %</label>
                         <input type="number" min="0" max="100" step="0.01" value={taxPercent || ''}
                           onChange={e => setTaxPercent(parseFloat(e.target.value) || 0)}
                           className={inputCls} placeholder="0" />
@@ -1079,7 +1079,7 @@ export function BillingPage() {
                     </div>
 
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Coupon Code</label>
+                      <label className="text-xs text-gray-600 mb-1 block">Coupon Code</label>
                       <div className="flex gap-2">
                         <input type="text" placeholder="Enter coupon code" value={couponCode}
                           onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponDiscount(0); setCouponMsg(''); }}
@@ -1125,10 +1125,10 @@ export function BillingPage() {
 
                   {/* Payment */}
                   <div className="space-y-3">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Payment</p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Method</label>
+                        <label className="text-xs text-gray-600 mb-1 block">Method</label>
                         <select value={payMethod} onChange={e => setPayMethod(e.target.value)} className={inputCls}>
                           <option value="Cash">Cash</option>
                           <option value="UPI">UPI</option>
@@ -1138,7 +1138,7 @@ export function BillingPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Status</label>
+                        <label className="text-xs text-gray-600 mb-1 block">Status</label>
                         <select value={payStatus} onChange={e => setPayStatus(e.target.value as PaymentStatus)} className={inputCls}>
                           <option value="paid">Paid ✓</option>
                           <option value="partial">Partial Payment</option>
@@ -1167,7 +1167,7 @@ export function BillingPage() {
 
                   {/* Notes */}
                   <div>
-                    <label className="text-xs text-gray-500 mb-1.5 block font-semibold uppercase tracking-wide">Notes (optional)</label>
+                    <label className="text-xs text-gray-600 mb-1.5 block font-semibold uppercase tracking-wide">Notes (optional)</label>
                     <textarea rows={2} value={billNotes} onChange={e => setBillNotes(e.target.value)}
                       placeholder="Any notes for this bill..."
                       className={inputCls + ' resize-none'} />
@@ -1225,24 +1225,24 @@ export function BillingPage() {
                   <div className="text-center pb-5 border-b border-white/30">
                     <img src="/Image_logo.png" alt="Logo" className="h-12 w-auto mx-auto mb-2 object-contain" />
                     <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Image Skinn & Hair</h1>
-                    <p className="text-gray-500 text-sm mt-0.5">Premium Salon & Hair Care</p>
+                    <p className="text-gray-600 text-sm mt-0.5">Premium Salon & Hair Care</p>
                   </div>
 
                   {/* Invoice meta */}
                   <div className="flex justify-between text-sm">
                     <div>
-                      <p className="text-gray-500 text-xs uppercase tracking-wide">Invoice No.</p>
+                      <p className="text-gray-600 text-xs uppercase tracking-wide">Invoice No.</p>
                       <p className="font-bold text-teal-700 text-lg">{viewInvoice.invoice_number}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-gray-500 text-xs uppercase tracking-wide">Date</p>
+                      <p className="text-gray-600 text-xs uppercase tracking-wide">Date</p>
                       <p className="font-semibold text-gray-900">{fmtDate(viewInvoice.invoice_date)}</p>
                     </div>
                   </div>
 
                   {/* Client */}
                   <div className="glass-subtle rounded-xl p-4 border border-white/30">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Bill To</p>
+                    <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-2">Bill To</p>
                     <p className="font-bold text-gray-900 text-base">{viewInvoice.client_name}</p>
                     <p className="text-gray-600 text-sm">📞 {viewInvoice.client_phone}</p>
                   </div>
@@ -1330,7 +1330,7 @@ export function BillingPage() {
                     </div>
                   )}
 
-                  <p className="text-center text-xs text-gray-400 pt-2">Thank you for visiting Image Skinn & Hair!</p>
+                  <p className="text-center text-xs text-gray-600 pt-2">Thank you for visiting Image Skinn & Hair!</p>
                 </>
               )}
             </div>

@@ -205,7 +205,7 @@ export function QrMenuPage() {
             </button>
             <QrCode className="w-5 h-5 text-teal-600" />
             <h1 className="text-xl font-bold text-gray-900">QR Service Menu</h1>
-            {!isAdmin && <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/40 text-gray-500">View Only</span>}
+            {!isAdmin && <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/40 text-gray-600">View Only</span>}
           </div>
           {isAdmin && (
             <button onClick={openNewItem}
@@ -226,17 +226,17 @@ export function QrMenuPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-gray-900">Menu Status</h3>
-                  <p className="text-sm text-gray-500 mt-0.5">{activeItems.length} active services</p>
+                  <p className="text-sm text-gray-600 mt-0.5">{activeItems.length} active services</p>
                 </div>
                 {isAdmin ? (
                   <button onClick={toggleMenuActive} className="flex items-center gap-2 text-sm font-semibold">
                     {menu?.is_active
                       ? <><ToggleRight className="w-8 h-8 text-teal-600" /><span className="text-teal-700">Live</span></>
-                      : <><ToggleLeft className="w-8 h-8 text-gray-400" /><span className="text-gray-500">Offline</span></>}
+                      : <><ToggleLeft className="w-8 h-8 text-gray-600" /><span className="text-gray-600">Offline</span></>}
                   </button>
                 ) : (
-                  <span className={`flex items-center gap-2 text-sm font-semibold ${menu?.is_active ? 'text-teal-700' : 'text-gray-500'}`}>
-                    {menu?.is_active ? <ToggleRight className="w-8 h-8 text-teal-600" /> : <ToggleLeft className="w-8 h-8 text-gray-400" />}
+                  <span className={`flex items-center gap-2 text-sm font-semibold ${menu?.is_active ? 'text-teal-700' : 'text-gray-600'}`}>
+                    {menu?.is_active ? <ToggleRight className="w-8 h-8 text-teal-600" /> : <ToggleLeft className="w-8 h-8 text-gray-600" />}
                     {menu?.is_active ? 'Live' : 'Offline'}
                   </span>
                 )}
@@ -273,15 +273,15 @@ export function QrMenuPage() {
                 <h3 className="font-bold text-gray-900">Menu Settings</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Menu Title</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Menu Title</label>
                     <input type="text" value={menuForm.title} onChange={e => setMenuForm(p => ({ ...p, title: e.target.value }))} className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Subtitle</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Subtitle</label>
                     <input type="text" value={menuForm.subtitle} onChange={e => setMenuForm(p => ({ ...p, subtitle: e.target.value }))} className={inputCls} />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Footer Note</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Footer Note</label>
                     <input type="text" value={menuForm.footer_note} onChange={e => setMenuForm(p => ({ ...p, footer_note: e.target.value }))} className={inputCls} />
                   </div>
                 </div>
@@ -301,25 +301,25 @@ export function QrMenuPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Category</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Category</label>
                     <select value={itemForm.category} onChange={e => setItemForm(p => ({ ...p, category: e.target.value }))} className={inputCls}>
                       {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Service Name *</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Service Name *</label>
                     <input type="text" value={itemForm.name} onChange={e => setItemForm(p => ({ ...p, name: e.target.value }))} className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Price (₹)</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Price (₹)</label>
                     <input type="number" min="0" value={itemForm.price} onChange={e => setItemForm(p => ({ ...p, price: e.target.value }))} placeholder="Leave blank to hide price" className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Duration (mins)</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Duration (mins)</label>
                     <input type="number" min="0" value={itemForm.duration_min} onChange={e => setItemForm(p => ({ ...p, duration_min: e.target.value }))} className={inputCls} />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Description</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Description</label>
                     <input type="text" value={itemForm.description} onChange={e => setItemForm(p => ({ ...p, description: e.target.value }))} className={inputCls} />
                   </div>
                   <div className="flex items-center gap-2">
@@ -343,25 +343,25 @@ export function QrMenuPage() {
                 <div key={cat} className="bg-white rounded-2xl border border-white/20 overflow-hidden">
                   <div className="px-5 py-3 bg-white/30 border-b border-white/20 flex items-center justify-between">
                     <h3 className="font-bold text-gray-800">{cat}</h3>
-                    <span className="text-xs text-gray-500">{catItems.filter(i => i.is_active).length} active / {catItems.length}</span>
+                    <span className="text-xs text-gray-600">{catItems.filter(i => i.is_active).length} active / {catItems.length}</span>
                   </div>
                   <div className="divide-y divide-gray-100">
                     {catItems.map(it => (
                       <div key={it.id} className={`flex items-center gap-3 px-4 py-3 hover:bg-white/40 transition ${!it.is_active ? 'opacity-50' : ''}`}>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 text-sm">{it.name}</p>
-                          {it.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{it.description}</p>}
+                          {it.description && <p className="text-xs text-gray-600 mt-0.5 truncate">{it.description}</p>}
                         </div>
                         <div className="flex items-center gap-3 shrink-0 text-sm">
                           {it.price != null && <span className="font-bold text-teal-700">₹{it.price}</span>}
-                          {it.duration_min && <span className="text-gray-400 text-xs">{it.duration_min}m</span>}
+                          {it.duration_min && <span className="text-gray-600 text-xs">{it.duration_min}m</span>}
                           {isAdmin && (
                             <>
-                              <button onClick={() => toggleItem(it)} className={`p-1 rounded ${it.is_active ? 'text-teal-600 hover:bg-teal-500/20' : 'text-gray-400 hover:bg-white/40'}`} title={it.is_active ? 'Hide' : 'Show'}>
+                              <button onClick={() => toggleItem(it)} className={`p-1 rounded ${it.is_active ? 'text-teal-600 hover:bg-teal-500/20' : 'text-gray-600 hover:bg-white/40'}`} title={it.is_active ? 'Hide' : 'Show'}>
                                 {it.is_active ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                               </button>
-                              <button onClick={() => openEditItem(it)} className="p-1 text-gray-400 hover:text-teal-600 rounded"><Pencil className="w-3.5 h-3.5" /></button>
-                              <button onClick={() => deleteItem(it.id)} className="p-1 text-gray-400 hover:text-red-600 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => openEditItem(it)} className="p-1 text-gray-600 hover:text-teal-600 rounded"><Pencil className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => deleteItem(it.id)} className="p-1 text-gray-600 hover:text-red-600 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
                             </>
                           )}
                         </div>
@@ -372,8 +372,8 @@ export function QrMenuPage() {
               ))}
               {items.length === 0 && (
                 <div className="bg-white rounded-2xl border border-white/20 p-12 text-center">
-                  <QrCode className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">{isAdmin ? 'No services added yet. Add your first service to the menu.' : 'No services listed on the menu yet.'}</p>
+                  <QrCode className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-600">{isAdmin ? 'No services added yet. Add your first service to the menu.' : 'No services listed on the menu yet.'}</p>
                 </div>
               )}
             </div>
@@ -403,7 +403,7 @@ export function QrMenuPage() {
                   <img src={qrDataUrl} alt="Service Menu QR Code" className="w-56 h-56" />
                 </div>
                 <p className="text-sm font-bold text-gray-900 mt-4">{menu?.title || 'Service Menu'}</p>
-                <p className="text-xs text-gray-500 mt-1 text-center">Scan to open the live public menu — no login needed</p>
+                <p className="text-xs text-gray-600 mt-1 text-center">Scan to open the live public menu — no login needed</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">

@@ -55,7 +55,7 @@ function InfoRow({ label, value }: { label: string; value?: string | number | nu
   if (!value) return null;
   return (
     <div>
-      <p className="text-gray-500 text-xs uppercase tracking-wide">{label}</p>
+      <p className="text-gray-600 text-xs uppercase tracking-wide">{label}</p>
       <p className="text-gray-900 font-medium mt-0.5">{value}</p>
     </div>
   );
@@ -104,7 +104,7 @@ function FieldInput({ label, name, value, onChange, type = 'text', placeholder }
 }) {
   return (
     <div>
-      <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">{label}</label>
+      <label className="block text-xs text-gray-600 uppercase tracking-wide mb-1">{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} placeholder={placeholder}
         className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
     </div>
@@ -117,7 +117,7 @@ function FieldSelect({ label, name, value, onChange, options }: {
 }) {
   return (
     <div>
-      <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">{label}</label>
+      <label className="block text-xs text-gray-600 uppercase tracking-wide mb-1">{label}</label>
       <select name={name} value={value} onChange={onChange}
         className="w-full px-3 py-2 glass-input rounded-lg text-sm">
         <option value="">— Select —</option>
@@ -633,7 +633,7 @@ export function ClientProfilePage() {
           <p className="text-gray-800 font-semibold text-lg mb-1">
             {fetchError ? 'Failed to load profile' : 'Client not found'}
           </p>
-          {fetchError && <p className="text-gray-500 text-sm mb-4">{fetchError}</p>}
+          {fetchError && <p className="text-gray-600 text-sm mb-4">{fetchError}</p>}
           <div className="flex gap-2 justify-center mt-4">
             {fetchError && (
               <button onClick={() => { setLoading(true); fetchData(); }}
@@ -683,7 +683,7 @@ export function ClientProfilePage() {
                   await supabase.from('clients').update({ is_golden: newVal }).eq('id', client.id);
                   setClient(prev => prev ? { ...prev, is_golden: newVal } : prev);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border transition ${client.is_golden ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-50' : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50 border-white/30 hover:border-amber-300'}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border transition ${client.is_golden ? 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-50' : 'text-gray-600 hover:text-amber-600 hover:bg-amber-50 border-white/30 hover:border-amber-300'}`}
                 title={client.is_golden ? 'Remove VIP status' : 'Mark as VIP'}
               >
                 <span className="text-base leading-none">{client.is_golden ? '★' : '☆'}</span>
@@ -750,7 +750,7 @@ export function ClientProfilePage() {
                       onChange={e => setBasicForm(p => ({ ...p, address: e.target.value }))} placeholder="Address" />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Notes</label>
+                    <label className="block text-xs text-gray-600 uppercase tracking-wide mb-1">Notes</label>
                     <textarea name="notes" value={basicForm.notes}
                       onChange={e => setBasicForm(p => ({ ...p, notes: e.target.value }))}
                       rows={2} placeholder="Any notes..."
@@ -802,7 +802,7 @@ export function ClientProfilePage() {
                   <div className="space-y-5">
                     {/* Service Type */}
                     <div>
-                      <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Service Type</p>
+                      <p className="text-xs text-gray-600 uppercase tracking-wide mb-2">Service Type</p>
                       <div className="flex flex-wrap gap-2">
                         {[{ value: 'hair', label: 'Hair' }, { value: 'skin', label: 'Skin' }, { value: 'hair_and_skin', label: 'Hair & Skin' }].map(opt => (
                           <button key={opt.value} type="button" onClick={() => changeServiceType(opt.value)}
@@ -852,7 +852,7 @@ export function ClientProfilePage() {
                     {/* Custom service */}
                     {serviceForm.service_type && (
                       <div>
-                        <label className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Custom Service</label>
+                        <label className="block text-xs text-gray-600 uppercase tracking-wide mb-1">Custom Service</label>
                         <input type="text" name="custom_text" value={serviceForm.custom_text} onChange={sfChange}
                           placeholder="e.g. Keratin Repair, Bridal Package..."
                           className={inputCls} />
@@ -901,7 +901,7 @@ export function ClientProfilePage() {
                     {/* Service Type badge */}
                     {client.service_type && (
                       <div>
-                        <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">Service Type</p>
+                        <p className="text-gray-600 text-xs uppercase tracking-wide mb-2">Service Type</p>
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white text-sm font-semibold rounded-lg">
                           {client.service_type !== 'skin' && <Scissors className="w-3.5 h-3.5" />}
                           {client.service_type !== 'hair' && <Sparkles className="w-3.5 h-3.5" />}
@@ -913,7 +913,7 @@ export function ClientProfilePage() {
                     {/* Selected Services */}
                     {allItems.length > 0 && (
                       <div>
-                        <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">Selected Services</p>
+                        <p className="text-gray-600 text-xs uppercase tracking-wide mb-2">Selected Services</p>
                         {client.service_type === 'hair_and_skin' ? (
                           <div className="space-y-2">
                             {hairItems.length > 0 && (
@@ -998,7 +998,7 @@ export function ClientProfilePage() {
             {/* ── Add Service section button when none exists yet ── */}
             {!hasServiceSection && !editingService && (
               <button onClick={() => { startEditService(); }}
-                className="w-full glass-subtle rounded-xl border border-dashed border-white/40 hover:border-teal-400 p-5 text-sm text-gray-500 hover:text-teal-600 transition flex items-center justify-center gap-2">
+                className="w-full glass-subtle rounded-xl border border-dashed border-white/40 hover:border-teal-400 p-5 text-sm text-gray-600 hover:text-teal-600 transition flex items-center justify-center gap-2">
                 <Plus className="w-4 h-4" /> Add Service & Cosmo Medico Profile
               </button>
             )}
@@ -1018,19 +1018,19 @@ export function ClientProfilePage() {
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Hair & Health Profile</h2>
                 {hair.hair_problems?.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">Hair Problems</p>
+                    <p className="text-gray-600 text-xs uppercase tracking-wide mb-2">Hair Problems</p>
                     <div className="flex flex-wrap gap-1.5">{hair.hair_problems.map(p => <ServiceTag key={p} label={p} color="blue" />)}</div>
                   </div>
                 )}
                 {hair.hair_texture?.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">Hair Texture</p>
+                    <p className="text-gray-600 text-xs uppercase tracking-wide mb-2">Hair Texture</p>
                     <div className="flex flex-wrap gap-1.5">{hair.hair_texture.map(t => <ServiceTag key={t} label={t} color="teal" />)}</div>
                   </div>
                 )}
                 {hair.health_issues?.length > 0 && (
                   <div>
-                    <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">Health Issues</p>
+                    <p className="text-gray-600 text-xs uppercase tracking-wide mb-2">Health Issues</p>
                     <div className="flex flex-wrap gap-1.5">{hair.health_issues.map(i => <ServiceTag key={i} label={i} color="rose" />)}</div>
                   </div>
                 )}
@@ -1043,7 +1043,7 @@ export function ClientProfilePage() {
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Service History</h2>
                   {transactions.length > 0 && (
-                    <p className="text-xs text-gray-400 mt-0.5">{transactions.length} visit{transactions.length !== 1 ? 's' : ''} recorded</p>
+                    <p className="text-xs text-gray-600 mt-0.5">{transactions.length} visit{transactions.length !== 1 ? 's' : ''} recorded</p>
                   )}
                 </div>
                 <button
@@ -1063,13 +1063,13 @@ export function ClientProfilePage() {
                     </h3>
                     <button onClick={() => { setShowServiceEntry(false); setServiceEntryEditId(null); }}
                       className="p-1.5 hover:bg-gray-200 rounded-lg transition">
-                      <X className="w-4 h-4 text-gray-500" />
+                      <X className="w-4 h-4 text-gray-600" />
                     </button>
                   </div>
 
                   {/* Service category tabs */}
                   <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Service Type</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Service Type</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {([
                         { v: 'hair',          label: '✂ Hair',          cls: 'teal'  },
@@ -1104,7 +1104,7 @@ export function ClientProfilePage() {
                       {(serviceEntry.service_category === 'hair' || serviceEntry.service_category === 'hair_and_skin') && (
                         <div>
                           <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1.5">
-                            ✂ Hair Services <span className="text-gray-400 font-normal normal-case">(tap to select multiple)</span>
+                            ✂ Hair Services <span className="text-gray-600 font-normal normal-case">(tap to select multiple)</span>
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {HAIR_SERVICE_OPTIONS.map(s => {
@@ -1126,7 +1126,7 @@ export function ClientProfilePage() {
                       {(serviceEntry.service_category === 'skin' || serviceEntry.service_category === 'hair_and_skin') && (
                         <div>
                           <p className="text-xs font-semibold text-rose-700 uppercase tracking-wide mb-1.5">
-                            ✦ Skin Services <span className="text-gray-400 font-normal normal-case">(tap to select multiple)</span>
+                            ✦ Skin Services <span className="text-gray-600 font-normal normal-case">(tap to select multiple)</span>
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {SKIN_SERVICE_OPTIONS.map(s => {
@@ -1149,12 +1149,12 @@ export function ClientProfilePage() {
                       {/* Selected services — price per item */}
                       {serviceEntry.selected_services.length > 0 && (
                         <div className="glass border border-white/30 rounded-xl p-3 space-y-2">
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Selected Services &amp; Prices</p>
+                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Selected Services &amp; Prices</p>
                           {serviceEntry.selected_services.map(name => (
                             <div key={name} className="flex items-center gap-2">
                               <span className="flex-1 text-sm font-medium text-gray-800 truncate">{name}</span>
                               <div className="flex items-center gap-1 shrink-0">
-                                <span className="text-sm text-gray-500">₹</span>
+                                <span className="text-sm text-gray-600">₹</span>
                                 <input
                                   type="number" min="0" step="0.01" placeholder="0"
                                   value={serviceEntry.service_prices[name] ?? ''}
@@ -1163,14 +1163,14 @@ export function ClientProfilePage() {
                                 />
                               </div>
                               <button type="button" onClick={() => toggleServiceChip(name)}
-                                className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition shrink-0"
+                                className="p-1 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded transition shrink-0"
                                 title="Remove">
                                 <X className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           ))}
                           <div className="pt-2 border-t border-white/20 flex justify-between items-center">
-                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                               {serviceEntry.selected_services.length} service{serviceEntry.selected_services.length !== 1 ? 's' : ''} selected
                             </span>
                             <span className="text-sm font-bold text-teal-700">
@@ -1186,14 +1186,14 @@ export function ClientProfilePage() {
                   {serviceEntry.service_category === 'custom' && (
                     <div className="space-y-3">
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Service Name *</p>
+                        <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Service Name *</p>
                         <input type="text" placeholder="Enter custom service name"
                           value={serviceEntry.custom_name}
                           onChange={e => setServiceEntry(p => ({ ...p, custom_name: e.target.value }))}
                           className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Price (₹) *</p>
+                        <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Price (₹) *</p>
                         <input type="number" min="0" step="0.01" placeholder="0.00"
                           value={serviceEntry.custom_price}
                           onChange={e => setServiceEntry(p => ({ ...p, custom_price: e.target.value }))}
@@ -1205,14 +1205,14 @@ export function ClientProfilePage() {
                   {/* Date, Staff row */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Date *</label>
+                      <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Date *</label>
                       <input type="date" value={serviceEntry.date}
                         max={new Date().toISOString().split('T')[0]}
                         onChange={e => setServiceEntry(p => ({ ...p, date: e.target.value }))}
                         className="w-full px-3 py-2 glass-input rounded-lg text-sm" />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Staff / Operator</label>
+                      <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Staff / Operator</label>
                       <input type="text" placeholder="Who performed this?"
                         value={serviceEntry.staff_name}
                         onChange={e => setServiceEntry(p => ({ ...p, staff_name: e.target.value }))}
@@ -1223,7 +1223,7 @@ export function ClientProfilePage() {
                   {/* Payment */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Payment Method</label>
+                      <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Payment Method</label>
                       <select value={serviceEntry.payment_method}
                         onChange={e => setServiceEntry(p => ({ ...p, payment_method: e.target.value }))}
                         className="w-full px-3 py-2 glass-input rounded-lg text-sm">
@@ -1234,7 +1234,7 @@ export function ClientProfilePage() {
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Payment Status</label>
+                      <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Payment Status</label>
                       <select value={serviceEntry.payment_status}
                         onChange={e => setServiceEntry(p => ({ ...p, payment_status: e.target.value as 'paid' | 'pending' | 'partial' }))}
                         className="w-full px-3 py-2 glass-input rounded-lg text-sm">
@@ -1247,7 +1247,7 @@ export function ClientProfilePage() {
 
                   {/* Notes */}
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Treatment Notes</label>
+                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Treatment Notes</label>
                     <textarea rows={2} placeholder="Products used, observations, next visit recommendations..."
                       value={serviceEntry.notes}
                       onChange={e => setServiceEntry(p => ({ ...p, notes: e.target.value }))}
@@ -1289,7 +1289,7 @@ export function ClientProfilePage() {
               <div className="space-y-2">
                 {transactions.length > 0 ? transactions.map((trans, idx) => (
                   <div key={trans.id}
-                    className={`rounded-xl border transition ${idx === 0 ? 'border-teal-200 bg-teal-500/10' : 'border-white/30 glass-subtle hover:border-white/40'}`}>
+                    className={`rounded-xl border transition ${idx === 0 ? 'border-teal-200 bg-teal-500/20' : 'border-white/30 glass-subtle hover:border-white/40'}`}>
                     <div className="flex items-start gap-3 p-3.5">
                       {/* Category icon badge */}
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-base ${
@@ -1319,14 +1319,14 @@ export function ClientProfilePage() {
                               )}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-600">
                                 {new Date(trans.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </span>
                               {trans.staff_name && (
-                                <span className="text-xs text-gray-400">· by {trans.staff_name}</span>
+                                <span className="text-xs text-gray-600">· by {trans.staff_name}</span>
                               )}
                               {trans.payment_method && (
-                                <span className="text-xs text-gray-400">· {trans.payment_method}</span>
+                                <span className="text-xs text-gray-600">· {trans.payment_method}</span>
                               )}
                               {trans.service_category && (
                                 <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full border capitalize ${
@@ -1352,12 +1352,12 @@ export function ClientProfilePage() {
                       <div className="flex border-t border-white/30/80 divide-x divide-gray-200/80">
                         <button
                           onClick={() => openEditServiceEntry(trans)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-500 hover:text-teal-700 hover:bg-teal-50/50 transition rounded-bl-xl">
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-600 hover:text-teal-700 hover:bg-teal-50/50 transition rounded-bl-xl">
                           <Pencil className="w-3 h-3" /> Edit
                         </button>
                         <button
                           onClick={() => handleDeleteTransaction(trans.id)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-500 hover:text-red-600 hover:bg-red-50/50 transition rounded-br-xl">
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-600 hover:text-red-600 hover:bg-red-50/50 transition rounded-br-xl">
                           <Trash2 className="w-3 h-3" /> Delete
                         </button>
                       </div>
@@ -1368,8 +1368,8 @@ export function ClientProfilePage() {
                     <div className="w-14 h-14 rounded-full bg-teal-500/15 flex items-center justify-center mx-auto mb-3">
                       <ClipboardList className="w-7 h-7 text-teal-400" />
                     </div>
-                    <p className="text-gray-500 text-sm font-medium">No service entries yet</p>
-                    <p className="text-gray-400 text-xs mt-1">Click "New Service Entry" to record this client's first visit</p>
+                    <p className="text-gray-600 text-sm font-medium">No service entries yet</p>
+                    <p className="text-gray-600 text-xs mt-1">Click "New Service Entry" to record this client's first visit</p>
                   </div>
                 )}
               </div>
@@ -1391,7 +1391,7 @@ export function ClientProfilePage() {
                   Expires {new Date(activeMembership.expires_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                   {' · '}{Math.max(0, Math.ceil((new Date(activeMembership.expires_at).getTime() - Date.now()) / 86400000))} days left
                 </p>
-                {activeMembership.notes && <p className="text-teal-200 text-xs mt-1">{activeMembership.notes}</p>}
+                {activeMembership.notes && <p className="text-teal-100 text-xs mt-1">{activeMembership.notes}</p>}
               </div>
             )}
 
@@ -1400,10 +1400,10 @@ export function ClientProfilePage() {
               <div className="glass-subtle rounded-xl border border-amber-100 p-5">
                 <div className="flex items-center gap-2 mb-1">
                   <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-                  <span className="text-xs font-bold uppercase tracking-wide text-gray-500">Loyalty Points</span>
+                  <span className="text-xs font-bold uppercase tracking-wide text-gray-600">Loyalty Points</span>
                 </div>
                 <p className="text-3xl font-extrabold text-amber-600">{client.loyalty_points}</p>
-                <p className="text-xs text-gray-400 mt-0.5">Points earned from services</p>
+                <p className="text-xs text-gray-600 mt-0.5">Points earned from services</p>
               </div>
             )}
 
@@ -1448,16 +1448,16 @@ export function ClientProfilePage() {
                   <div key={fb.id} className="p-3 glass-subtle rounded-lg border border-white/30">
                     <div className="flex items-center gap-0.5 mb-1.5">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-4 h-4 ${i < fb.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                        <Star key={i} className={`w-4 h-4 ${i < fb.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'}`} />
                       ))}
                     </div>
                     {fb.comment && <p className="text-sm text-gray-700">{fb.comment}</p>}
-                    <p className="text-xs text-gray-400 mt-1.5">
+                    <p className="text-xs text-gray-600 mt-1.5">
                       {new Date(fb.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
                 )) : (
-                  <p className="text-center text-gray-500 text-sm py-4">No feedback yet</p>
+                  <p className="text-center text-gray-600 text-sm py-4">No feedback yet</p>
                 )}
               </div>
             </div>
@@ -1492,7 +1492,7 @@ export function ClientProfilePage() {
                               {inv.payment_status.charAt(0).toUpperCase() + inv.payment_status.slice(1)}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="text-xs text-gray-600 mt-0.5">
                             {new Date(inv.invoice_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                             {inv.payment_method ? ` · ${inv.payment_method}` : ''}
                           </p>
@@ -1516,8 +1516,8 @@ export function ClientProfilePage() {
                 </div>
               ) : (
                 <div className="text-center py-6">
-                  <Receipt className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No invoices yet</p>
+                  <Receipt className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                  <p className="text-gray-600 text-sm">No invoices yet</p>
                   <button
                     onClick={() => navigate('/billing', { state: { clientId: id } })}
                     className="mt-3 inline-flex items-center gap-1.5 text-teal-700 font-semibold text-xs hover:text-teal-900 transition">

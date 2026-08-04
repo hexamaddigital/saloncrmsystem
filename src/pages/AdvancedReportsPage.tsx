@@ -146,17 +146,17 @@ export function AdvancedReportsPage() {
           {dateRange === 'custom' && (
             <div className="flex gap-3 flex-wrap">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">From</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">From</label>
                 <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">To</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">To</label>
                 <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
             </div>
           )}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Service Filter</label>
+            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Service Filter</label>
             <select value={serviceFilter} onChange={e => setServiceFilter(e.target.value)} className="w-full sm:w-64 px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
               {SERVICE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -172,9 +172,9 @@ export function AdvancedReportsPage() {
               {summaries.map(s => (
                 <div key={s.label} className="bg-white rounded-2xl border border-white/20 p-5">
                   <div className={`w-10 h-10 rounded-xl bg-white/30 flex items-center justify-center ${s.color} mb-3`}>{s.icon}</div>
-                  <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{s.label}</p>
+                  <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">{s.label}</p>
                   <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
-                  {s.sub && <p className="text-xs text-gray-400 mt-0.5">{s.sub}</p>}
+                  {s.sub && <p className="text-xs text-gray-600 mt-0.5">{s.sub}</p>}
                 </div>
               ))}
             </div>
@@ -183,7 +183,7 @@ export function AdvancedReportsPage() {
               {/* Top services */}
               <div className="bg-white rounded-2xl border border-white/20 p-6">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-teal-600" /> Top Services</h3>
-                {topServices.length === 0 ? <p className="text-gray-400 text-sm text-center py-6">No data in this period.</p> : (
+                {topServices.length === 0 ? <p className="text-gray-600 text-sm text-center py-6">No data in this period.</p> : (
                   <div className="space-y-3">
                     {topServices.map(([name, count], i) => {
                       const pct = topServices[0][1] > 0 ? Math.round((count / topServices[0][1]) * 100) : 0;
@@ -209,14 +209,14 @@ export function AdvancedReportsPage() {
               {/* Staff performance */}
               <div className="bg-white rounded-2xl border border-white/20 p-6">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><Users className="w-4 h-4 text-blue-600" /> Staff Performance</h3>
-                {topStaff.length === 0 ? <p className="text-gray-400 text-sm text-center py-6">No data in this period.</p> : (
+                {topStaff.length === 0 ? <p className="text-gray-600 text-sm text-center py-6">No data in this period.</p> : (
                   <div className="space-y-3">
                     {topStaff.map(([name, { count, revenue }], i) => (
                       <div key={name} className="flex items-center gap-3">
                         <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-800 text-sm truncate">{name}</p>
-                          <p className="text-xs text-gray-400">{count} services</p>
+                          <p className="text-xs text-gray-600">{count} services</p>
                         </div>
                         <p className="font-bold text-blue-700 text-sm shrink-0">{fmtMoney(revenue)}</p>
                       </div>
@@ -233,9 +233,9 @@ export function AdvancedReportsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead><tr className="border-b border-white/30">
-                      <th className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Plan</th>
-                      <th className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600 uppercase">Plan</th>
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600 uppercase">Status</th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-600 uppercase">Amount</th>
                     </tr></thead>
                     <tbody>
                       {clientMems.map((m, i) => (
@@ -259,7 +259,7 @@ export function AdvancedReportsPage() {
                   {couponUsage.map(c => (
                     <div key={c.code} className="glass-subtle rounded-xl border border-white/30 p-3 text-center">
                       <p className="font-mono font-bold text-teal-700">{c.code}</p>
-                      <p className="text-xs text-gray-500 mt-1">{c.discount_type === 'percentage' ? `${c.discount_value}%` : `₹${c.discount_value}`} off</p>
+                      <p className="text-xs text-gray-600 mt-1">{c.discount_type === 'percentage' ? `${c.discount_value}%` : `₹${c.discount_value}`} off</p>
                       <p className="text-sm font-bold text-gray-800 mt-1">{c.uses_count} uses</p>
                     </div>
                   ))}

@@ -107,7 +107,7 @@ export function AdminClientListPage() {
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-9 w-auto object-contain" />
             <div>
               <h1 className="text-lg font-bold text-gray-900 leading-tight">All Clients</h1>
-              <p className="text-xs text-gray-400">Admin view</p>
+              <p className="text-xs text-gray-600">Admin view</p>
             </div>
           </div>
           {!loading && (
@@ -126,7 +126,7 @@ export function AdminClientListPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" />
               <input
                 ref={searchRef}
                 type="text"
@@ -176,8 +176,8 @@ export function AdminClientListPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
-            <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">
+            <Users className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-600 font-medium">
               {hasActiveFilters ? 'No clients match your filters' : 'No clients found'}
             </p>
             {hasActiveFilters && (
@@ -198,7 +198,7 @@ export function AdminClientListPage() {
                   {/* Left — number + info */}
                   <div className="flex items-center gap-4 min-w-0 flex-1">
                     {/* Row number */}
-                    <span className="text-xs text-gray-400 font-mono w-6 shrink-0 text-right">
+                    <span className="text-xs text-gray-600 font-mono w-6 shrink-0 text-right">
                       {idx + 1}
                     </span>
 
@@ -215,7 +215,7 @@ export function AdminClientListPage() {
                           {client.name}
                         </p>
                         {client.gender && (
-                          <span className="text-xs text-gray-400">{GENDER_LABELS[client.gender] ?? client.gender}</span>
+                          <span className="text-xs text-gray-600">{GENDER_LABELS[client.gender] ?? client.gender}</span>
                         )}
                         {client.service_type && (
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full border ${serviceColor(client.service_type)}`}>
@@ -225,21 +225,21 @@ export function AdminClientListPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <Phone className="w-3 h-3 text-gray-400 shrink-0" />
-                        <span className="text-xs text-gray-500">{client.phone}</span>
+                        <Phone className="w-3 h-3 text-gray-600 shrink-0" />
+                        <span className="text-xs text-gray-600">{client.phone}</span>
                         {client.address && (
-                          <span className="text-xs text-gray-400 truncate ml-2">· {client.address}</span>
+                          <span className="text-xs text-gray-600 truncate ml-2">· {client.address}</span>
                         )}
                       </div>
                       {client.service_items && client.service_items.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {client.service_items.slice(0, 4).map(item => (
-                            <span key={item} className="text-xs text-gray-500 bg-white/40 px-1.5 py-0.5 rounded">
+                            <span key={item} className="text-xs text-gray-600 bg-white/40 px-1.5 py-0.5 rounded">
                               {item}
                             </span>
                           ))}
                           {client.service_items.length > 4 && (
-                            <span className="text-xs text-gray-400">+{client.service_items.length - 4} more</span>
+                            <span className="text-xs text-gray-600">+{client.service_items.length - 4} more</span>
                           )}
                         </div>
                       )}
@@ -249,12 +249,12 @@ export function AdminClientListPage() {
                   {/* Right — date + arrow */}
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right hidden sm:block">
-                      <p className="text-xs text-gray-400">Joined</p>
+                      <p className="text-xs text-gray-600">Joined</p>
                       <p className="text-xs text-gray-600 font-medium">
                         {new Date(client.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-teal-600 group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-teal-600 group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
               </button>

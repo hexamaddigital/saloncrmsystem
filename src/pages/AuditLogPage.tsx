@@ -104,13 +104,13 @@ export function AuditLogPage() {
         {/* Filters */}
         <div className="bg-white rounded-2xl border border-white/20 p-5 space-y-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-600" />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search by user, action, or description..." className="w-full pl-9 pr-3 py-2 border border-white/30 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
           </div>
           <div className="flex flex-wrap gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Operation</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Operation</label>
               <select value={opFilter} onChange={e => { setOpFilter(e.target.value as any); setPage(1); }}
                 className="px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                 <option value="all">All Operations</option>
@@ -120,7 +120,7 @@ export function AuditLogPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Table</label>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Table</label>
               <select value={tableFilter} onChange={e => { setTableFilter(e.target.value); setPage(1); }}
                 className="px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none capitalize">
                 {tables.map(t => <option key={t} value={t}>{t === 'all' ? 'All Tables' : t.replace('_', ' ')}</option>)}
@@ -134,11 +134,11 @@ export function AuditLogPage() {
           <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 animate-spin text-teal-600" /></div>
         ) : (
           <div className="bg-white rounded-2xl border border-white/20 overflow-hidden">
-            <div className="px-5 py-3 border-b border-white/20 text-xs text-gray-500">
+            <div className="px-5 py-3 border-b border-white/20 text-xs text-gray-600">
               {total} total entries — page {page} of {totalPages || 1}
             </div>
             {filtered.length === 0 ? (
-              <div className="p-10 text-center text-gray-400 text-sm">No audit entries found.</div>
+              <div className="p-10 text-center text-gray-600 text-sm">No audit entries found.</div>
             ) : (
               <div className="divide-y divide-gray-100">
                 {filtered.map(e => (
@@ -147,8 +147,8 @@ export function AuditLogPage() {
                       <span className={`mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${OP_COLOR[e.operation] || 'bg-white/40 text-gray-600'}`}>{e.operation}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-800">{buildSummary(e)}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-2">
-                          <span className="capitalize font-medium text-gray-500">{e.table_name.replace('_', ' ')}</span>
+                        <p className="text-xs text-gray-600 mt-0.5 flex items-center gap-2">
+                          <span className="capitalize font-medium text-gray-600">{e.table_name.replace('_', ' ')}</span>
                           <span>·</span>
                           <span>{fmtDateTime(e.changed_at)}</span>
                         </p>
@@ -185,7 +185,7 @@ export function AuditLogPage() {
                   className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-white/40 rounded-lg transition disabled:opacity-40">
                   <Prev className="w-4 h-4" /> Prev
                 </button>
-                <span className="text-sm text-gray-500">Page {page} of {totalPages}</span>
+                <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
                 <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
                   className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-white/40 rounded-lg transition disabled:opacity-40">
                   Next <Next className="w-4 h-4" />

@@ -175,7 +175,7 @@ export function ForgotPasswordPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                   <input
                     type="email"
                     value={email}
@@ -216,7 +216,7 @@ export function ForgotPasswordPage() {
                   <div className="w-full border-t border-white/30"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 text-gray-500 bg-white/40 backdrop-blur-sm rounded-full">or</span>
+                  <span className="px-4 text-gray-600 bg-white/40 backdrop-blur-sm rounded-full">or</span>
                 </div>
               </div>
 
@@ -245,7 +245,7 @@ export function ForgotPasswordPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                   <input
                     type={showNewPassword ? 'text' : 'password'}
                     value={newPassword}
@@ -261,7 +261,7 @@ export function ForgotPasswordPage() {
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"
                   >
                     {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -278,7 +278,7 @@ export function ForgotPasswordPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
@@ -293,7 +293,7 @@ export function ForgotPasswordPage() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>

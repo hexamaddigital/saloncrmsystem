@@ -284,7 +284,7 @@ export function ReminderManagementPage() {
             { label: 'Completed', value: done.length, color: 'text-green-600', bg: 'bg-green-50 border-green-200' },
           ].map(s => (
             <div key={s.label} className={`rounded-xl border p-4 ${s.bg}`}>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{s.label}</p>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">{s.label}</p>
               <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
             </div>
           ))}
@@ -330,19 +330,19 @@ export function ReminderManagementPage() {
           {editingTemplate && isAdmin ? (
             <div className="p-5 space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Template Title</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Template Title</label>
                 <input type="text" value={tplForm.title} onChange={e => setTplForm(p => ({ ...p, title: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                  Message Body <span className="text-gray-400 normal-case">(use {'{{client_name}}'} and {'{{offer}}'} as placeholders)</span>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+                  Message Body <span className="text-gray-600 normal-case">(use {'{{client_name}}'} and {'{{offer}}'} as placeholders)</span>
                 </label>
                 <textarea rows={5} value={tplForm.body} onChange={e => setTplForm(p => ({ ...p, body: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none resize-y" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Birthday Offer</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Birthday Offer</label>
                 <input type="text" value={tplForm.offer} onChange={e => setTplForm(p => ({ ...p, offer: e.target.value }))}
                   placeholder="e.g. Flat 20% off on all services (valid for 7 days)"
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none" />
@@ -360,24 +360,24 @@ export function ReminderManagementPage() {
           ) : template ? (
             <div className="p-5 space-y-2">
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Title</p>
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Title</p>
                 <p className="text-sm font-semibold text-gray-900 mt-0.5">{template.title}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Message Body</p>
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Message Body</p>
                 <pre className="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap font-sans glass-subtle rounded-lg p-3 border border-white/20">{template.body}</pre>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Birthday Offer</p>
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Birthday Offer</p>
                 <p className="text-sm text-pink-700 font-medium mt-0.5 bg-pink-50 rounded-lg px-3 py-2 border border-pink-100">{template.offer || 'No offer set'}</p>
               </div>
               {!isAdmin && (
-                <p className="text-xs text-gray-400 italic mt-1">Only Admin can edit this template. You can still customize the message before sending to each client.</p>
+                <p className="text-xs text-gray-600 italic mt-1">Only Admin can edit this template. You can still customize the message before sending to each client.</p>
               )}
             </div>
           ) : (
             <div className="p-5 text-center">
-              <p className="text-sm text-gray-400">No birthday template set.</p>
+              <p className="text-sm text-gray-600">No birthday template set.</p>
               {isAdmin && (
                 <button onClick={() => { setTplForm({ title: 'Birthday Wishes', body: 'Happy Birthday, {{client_name}}! 🎂\n\nWishing you a wonderful day!\n\nSpecial Birthday Offer: {{offer}}\n\n— Image Skinn & Hair', offer: '' }); setEditingTemplate(true); }}
                   className="mt-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold rounded-lg transition">
@@ -397,34 +397,34 @@ export function ReminderManagementPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Type</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Type</label>
                 <select value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                   {Object.entries(TYPE_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Due Date *</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Due Date *</label>
                 <input type="date" value={form.due_date} onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Client Name *</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Client Name *</label>
                 <input type="text" value={form.client_name} onChange={e => setForm(p => ({ ...p, client_name: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Client Phone</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Client Phone</label>
                 <input type="text" value={form.client_phone} onChange={e => setForm(p => ({ ...p, client_phone: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Title *</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Title *</label>
                 <input type="text" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Message</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Message</label>
                 <textarea rows={2} value={form.message} onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
                   className="w-full px-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none resize-none" />
               </div>
@@ -444,18 +444,18 @@ export function ReminderManagementPage() {
           <div className="flex gap-1 p-1 bg-white/40 rounded-xl">
             {(['upcoming', 'done'] as Tab[]).map(t => (
               <button key={t} onClick={() => setTab(t)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition capitalize ${tab === t ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition capitalize ${tab === t ? 'bg-white/80 text-teal-700' : 'text-gray-600 hover:text-gray-700'}`}>
                 {t === 'upcoming' ? `Pending (${upcoming.length})` : `Completed (${done.length})`}
               </button>
             ))}
           </div>
-          <button onClick={fetchReminders} className="p-2 hover:bg-white rounded-lg transition"><RefreshCw className="w-4 h-4 text-gray-500" /></button>
+          <button onClick={fetchReminders} className="p-2 hover:bg-white rounded-lg transition"><RefreshCw className="w-4 h-4 text-gray-600" /></button>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-teal-600" /></div>
         ) : displayed.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-white/20 p-10 text-center text-gray-400 text-sm">
+          <div className="bg-white rounded-2xl border border-white/20 p-10 text-center text-gray-600 text-sm">
             {tab === 'upcoming' ? 'No pending reminders.' : 'No completed reminders yet.'}
           </div>
         ) : (
@@ -484,9 +484,9 @@ export function ReminderManagementPage() {
                       {overdue && <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Overdue</span>}
                       {today && <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Today</span>}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{r.client_name}{r.client_phone ? ` · ${r.client_phone}` : ''}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">{r.client_name}{r.client_phone ? ` · ${r.client_phone}` : ''}</p>
                     {r.message && <p className="text-xs text-gray-600 mt-1">{r.message}</p>}
-                    <p className="text-xs text-gray-400 mt-1">Due: {fmtDate(r.due_date)}</p>
+                    <p className="text-xs text-gray-600 mt-1">Due: {fmtDate(r.due_date)}</p>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
                     {isBirthday && (
@@ -541,8 +541,8 @@ export function ReminderManagementPage() {
 
               {/* Editable message */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                  Message <span className="text-gray-400 normal-case">(you can edit before sending)</span>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+                  Message <span className="text-gray-600 normal-case">(you can edit before sending)</span>
                 </label>
                 <textarea
                   rows={8}
@@ -567,7 +567,7 @@ export function ReminderManagementPage() {
                   <Trash2 className="w-4 h-4" /> Dismiss
                 </button>
               </div>
-              <p className="text-xs text-gray-400 text-center">
+              <p className="text-xs text-gray-600 text-center">
                 Editing the message here is temporary and won't change the saved template.
               </p>
             </div>

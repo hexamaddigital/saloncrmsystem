@@ -301,7 +301,7 @@ export function InquiryPage() {
                 <p className="text-sm text-gray-600 mb-1">New</p>
                 <p className="text-2xl sm:text-3xl font-bold text-blue-700">{stats.new}</p>
               </div>
-              <AlertCircle className="w-8 h-8 text-blue-300" />
+              <AlertCircle className="w-8 h-8 text-blue-500" />
             </div>
           </div>
           <div className="glass-subtle rounded-lg border border-amber-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
@@ -310,7 +310,7 @@ export function InquiryPage() {
                 <p className="text-sm text-gray-600 mb-1">Contacted</p>
                 <p className="text-2xl sm:text-3xl font-bold text-amber-700">{stats.contacted}</p>
               </div>
-              <Phone className="w-8 h-8 text-amber-300" />
+              <Phone className="w-8 h-8 text-amber-500" />
             </div>
           </div>
           <div className="glass-subtle rounded-lg border border-orange-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
@@ -319,7 +319,7 @@ export function InquiryPage() {
                 <p className="text-sm text-gray-600 mb-1">Follow-up Due</p>
                 <p className="text-2xl sm:text-3xl font-bold text-orange-700">{stats.followup}</p>
               </div>
-              <Clock className="w-8 h-8 text-orange-300" />
+              <Clock className="w-8 h-8 text-orange-500" />
             </div>
           </div>
           <div className="glass-subtle rounded-lg border border-teal-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
@@ -328,7 +328,7 @@ export function InquiryPage() {
                 <p className="text-sm text-gray-600 mb-1">Converted</p>
                 <p className="text-2xl sm:text-3xl font-bold text-teal-700">{stats.converted}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-teal-300" />
+              <CheckCircle className="w-8 h-8 text-teal-500" />
             </div>
           </div>
         </div>
@@ -371,7 +371,7 @@ export function InquiryPage() {
           {/* Search */}
           <div className="px-4 pb-4 border-t border-white/30">
             <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+              <Search className="w-5 h-5 absolute left-3 top-3 text-gray-600" />
               <input
                 type="text"
                 placeholder="Search by name or phone..."
@@ -577,7 +577,7 @@ export function InquiryPage() {
                               {dateStatus === 'today' && ' 🟡'}
                             </p>
                           ) : (
-                            <p className="text-sm text-gray-400">—</p>
+                            <p className="text-sm text-gray-600">—</p>
                           )}
                         </td>
                         <td className="px-6 py-4">
@@ -644,8 +644,8 @@ export function InquiryPage() {
           </div>
         ) : (
           <div className="glass-subtle rounded-lg border border-white/30 p-12 text-center">
-            <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 mb-2">
+            <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">
               {searchQuery ? 'No inquiries match your search' : `No ${activeTab !== 'all' ? activeTab : ''} inquiries`}
             </p>
             {!searchQuery && activeTab === 'all' && (
@@ -673,7 +673,7 @@ export function InquiryPage() {
                 onClick={() => setShowModal(false)}
                 className="p-1 hover:bg-white/40 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
 
@@ -744,7 +744,7 @@ export function InquiryPage() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-600 pointer-events-none" />
                 </div>
               </div>
 
@@ -765,7 +765,7 @@ export function InquiryPage() {
                     <option value="converted">Converted</option>
                     <option value="lost">Lost</option>
                   </select>
-                  <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-600 pointer-events-none" />
                 </div>
               </div>
 

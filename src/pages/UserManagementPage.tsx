@@ -216,7 +216,7 @@ export function UserManagementPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -274,7 +274,7 @@ export function UserManagementPage() {
               <tbody>
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No users found</td>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-600">No users found</td>
                   </tr>
                 ) : (
                   users.map(u => (
@@ -336,7 +336,7 @@ export function UserManagementPage() {
               </div>
             ))}
             {users.length === 0 && (
-              <div className="p-6 text-center text-gray-500">No users found</div>
+              <div className="p-6 text-center text-gray-600">No users found</div>
             )}
           </div>
         </div>

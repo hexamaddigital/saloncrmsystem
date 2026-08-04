@@ -198,7 +198,7 @@ export function ClientFormPage() {
 
             {/* Basic Information */}
             <div className={sectionCls}>
-              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Basic Information</h2>
+              <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Basic Information</h2>
 
               <div>
                 <label className={labelCls}>Name *</label>
@@ -268,7 +268,7 @@ export function ClientFormPage() {
 
             {/* Service Type */}
             <div className={sectionCls}>
-              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Service Type</h2>
+              <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Service Type</h2>
 
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -339,7 +339,7 @@ export function ClientFormPage() {
                 (hairCustomSelected && form.custom_hair.trim()) ||
                 (skinCustomSelected && form.custom_skin.trim())) && (
                 <div className="pt-2 border-t border-white/30">
-                  <p className="text-xs text-gray-500 mb-1.5">Selected services:</p>
+                  <p className="text-xs text-gray-600 mb-1.5">Selected services:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {form.service_items.filter(i => i !== 'Custom').map(item => (
                       <span key={item} className="px-2 py-0.5 bg-teal-500/15 text-teal-700 text-xs rounded-full border border-teal-200">{item}</span>
@@ -358,7 +358,7 @@ export function ClientFormPage() {
             {/* Cosmo Medico History */}
             {(showSkin || showHair) && (
               <div className={sectionCls}>
-                <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Cosmo Medico History</h2>
+                <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Cosmo Medico History</h2>
 
                 {showSkin && (
                   <div className="space-y-3">
@@ -394,7 +394,7 @@ export function ClientFormPage() {
                     </div>
                     {form.hair_conditions.length > 0 && (
                       <div className="pt-2 border-t border-white/30">
-                        <p className="text-xs text-gray-500 mb-1.5">Selected conditions:</p>
+                        <p className="text-xs text-gray-600 mb-1.5">Selected conditions:</p>
                         <div className="flex flex-wrap gap-1.5">
                           {form.hair_conditions.map(c => (
                             <span key={c} className="px-2 py-0.5 bg-teal-500/15 text-teal-700 text-xs rounded-full border border-teal-200">{c}</span>

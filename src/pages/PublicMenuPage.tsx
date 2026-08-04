@@ -43,7 +43,7 @@ export function PublicMenuPage() {
       <div className="glass-strong rounded-3xl p-8 text-center max-w-sm animate-fade-in-up">
         <Scissors className="w-12 h-12 text-teal-400 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-gray-800 mb-2">Menu Unavailable</h1>
-        <p className="text-gray-500">The service menu is currently offline. Please contact the salon.</p>
+        <p className="text-gray-600">The service menu is currently offline. Please contact the salon.</p>
       </div>
     </div>
   );
@@ -75,9 +75,9 @@ export function PublicMenuPage() {
                 <div key={item.id} className="glass-subtle rounded-xl border border-white/20 px-4 py-3 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900">{item.name}</p>
-                    {item.description && <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>}
+                    {item.description && <p className="text-xs text-gray-600 mt-0.5">{item.description}</p>}
                     {item.duration_min && (
-                      <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                      <p className="text-xs text-gray-600 flex items-center gap-1 mt-1">
                         <Clock className="w-3 h-3" /> {item.duration_min} mins
                       </p>
                     )}
@@ -92,11 +92,11 @@ export function PublicMenuPage() {
         ))}
 
         {items.length === 0 && (
-          <p className="text-center text-gray-400 py-8">No services listed yet.</p>
+          <p className="text-center text-gray-600 py-8">No services listed yet.</p>
         )}
 
         {menu?.footer_note && (
-          <p className="text-center text-xs text-gray-400 pt-4 border-t border-white/30">{menu.footer_note}</p>
+          <p className="text-center text-xs text-gray-600 pt-4 border-t border-white/30">{menu.footer_note}</p>
         )}
       </main>
     </div>

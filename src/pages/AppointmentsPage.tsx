@@ -413,9 +413,9 @@ export function AppointmentsPage() {
               </div>
             ) : filteredAppointments.length === 0 ? (
               <div className="glass-subtle rounded-lg border border-white/30 p-12 text-center">
-                <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                 <p className="text-gray-600 font-medium">No appointments found</p>
-                <p className="text-gray-500 text-sm mt-1">Try adjusting your filters or create a new appointment</p>
+                <p className="text-gray-600 text-sm mt-1">Try adjusting your filters or create a new appointment</p>
               </div>
             ) : (
               <div className="hidden md:block glass-subtle rounded-lg border border-white/30 overflow-hidden">
@@ -630,7 +630,7 @@ export function AppointmentsPage() {
               <h3 className="text-lg font-semibold text-gray-900">Appointment Details</h3>
               <button
                 onClick={() => setSelectedAppointmentPopup(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-600 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -724,7 +724,7 @@ export function AppointmentsPage() {
                 </h2>
                 <button
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-600 hover:text-gray-600"
                 >
                   <X className="w-5 h-5" />
                 </button>

@@ -40,10 +40,10 @@
 
   /* ── Glass surfaces ── */
   .glass {
-    background: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.65);
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 
@@ -56,10 +56,10 @@
   }
 
   .glass-subtle {
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(16px) saturate(130%);
     -webkit-backdrop-filter: blur(16px) saturate(130%);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 
@@ -73,10 +73,11 @@
 
   /* ── Premium inputs ── */
   .glass-input {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: #1f2937;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
     transition: all 0.2s ease;
   }
@@ -87,7 +88,7 @@
     outline: none;
   }
   .glass-input::placeholder {
-    color: rgba(107, 114, 128, 0.6);
+    color: rgba(75, 85, 99, 0.7);
   }
 
   /* ── Premium buttons ── */
@@ -112,16 +113,16 @@
   }
 
   .btn-lux-ghost {
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    color: #374151;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: #1f2937;
     transition: all 0.2s ease;
   }
   .btn-lux-ghost:hover {
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(20, 184, 166, 0.4);
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(20, 184, 166, 0.5);
   }
 
   /* ── Premium dashboard card hover ── */

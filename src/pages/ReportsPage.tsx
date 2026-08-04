@@ -477,7 +477,7 @@ export function ReportsPage() {
                 ))}
                 <option value="custom">Custom</option>
               </select>
-              <ChevronDown className="absolute right-2 top-2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-2 top-2 w-4 h-4 text-gray-600 pointer-events-none" />
             </div>
 
             {/* Custom Service Input */}
@@ -615,7 +615,7 @@ export function ReportsPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={5} className="px-6 py-4 text-center text-gray-600">
                       No services found
                     </td>
                   </tr>
@@ -707,7 +707,7 @@ export function ReportsPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={4} className="px-6 py-4 text-center text-gray-600">
                       No clients found
                     </td>
                   </tr>
@@ -756,7 +756,7 @@ export function ReportsPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={3} className="px-6 py-4 text-center text-gray-600">
                       No payment data found
                     </td>
                   </tr>

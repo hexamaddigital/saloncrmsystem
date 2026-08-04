@@ -136,41 +136,41 @@ export function CouponManagementPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Coupon Code *</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Coupon Code *</label>
                 <input type="text" value={form.code} onChange={e => setForm(p => ({ ...p, code: e.target.value.toUpperCase() }))}
                   placeholder="e.g. SAVE20" className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Discount Type *</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Discount Type *</label>
                 <select value={form.discount_type} onChange={e => setForm(p => ({ ...p, discount_type: e.target.value as 'percentage' | 'fixed' }))} className={inputCls}>
                   <option value="percentage">Percentage (%)</option>
                   <option value="fixed">Fixed Amount (₹)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
                   Discount Value * {form.discount_type === 'percentage' ? '(%)' : '(₹)'}
                 </label>
                 <input type="number" min="0" value={form.discount_value} onChange={e => setForm(p => ({ ...p, discount_value: e.target.value }))} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Min Bill Amount (₹)</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Min Bill Amount (₹)</label>
                 <input type="number" min="0" value={form.min_amount} onChange={e => setForm(p => ({ ...p, min_amount: e.target.value }))} placeholder="0 = no minimum" className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Max Uses</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Max Uses</label>
                 <input type="number" min="1" value={form.max_uses} onChange={e => setForm(p => ({ ...p, max_uses: e.target.value }))} placeholder="Leave blank = unlimited" className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valid From</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Valid From</label>
                 <input type="date" value={form.valid_from} onChange={e => setForm(p => ({ ...p, valid_from: e.target.value }))} className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Valid Until</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Valid Until</label>
                 <input type="date" value={form.valid_until} onChange={e => setForm(p => ({ ...p, valid_until: e.target.value }))} className={inputCls} />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Description</label>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Description</label>
                 <input type="text" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Optional description" className={inputCls} />
               </div>
               <div className="flex items-center gap-2 pt-4">
@@ -193,20 +193,20 @@ export function CouponManagementPage() {
           <div className="flex gap-1 p-1 bg-white/40 rounded-xl">
             {(['all', 'active', 'inactive'] as const).map(f => (
               <button key={f} onClick={() => setFilter(f)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition capitalize ${filter === f ? 'bg-white/80 text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition capitalize ${filter === f ? 'bg-white/80 text-teal-700' : 'text-gray-600 hover:text-gray-700'}`}>
                 {f}
               </button>
             ))}
           </div>
-          <button onClick={fetchCoupons} className="p-2 hover:bg-white rounded-lg transition"><RefreshCw className="w-4 h-4 text-gray-500" /></button>
+          <button onClick={fetchCoupons} className="p-2 hover:bg-white rounded-lg transition"><RefreshCw className="w-4 h-4 text-gray-600" /></button>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 animate-spin text-teal-600" /></div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-2xl border border-white/20 p-12 text-center">
-            <Tag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No coupons found.</p>
+            <Tag className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-600">No coupons found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -220,24 +220,24 @@ export function CouponManagementPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <span className="font-mono font-bold text-lg text-teal-700 bg-teal-500/15 px-3 py-0.5 rounded-lg">{c.code}</span>
-                      {c.description && <p className="text-xs text-gray-500 mt-1.5">{c.description}</p>}
+                      {c.description && <p className="text-xs text-gray-600 mt-1.5">{c.description}</p>}
                     </div>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 ${statusColor}`}>{status}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <p className="text-xs text-gray-400">Discount</p>
+                      <p className="text-xs text-gray-600">Discount</p>
                       <p className="font-bold text-gray-900">
                         {c.discount_type === 'percentage' ? `${c.discount_value}%` : `₹${c.discount_value}`}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">Used</p>
+                      <p className="text-xs text-gray-600">Used</p>
                       <p className="font-semibold text-gray-700">{c.uses_count}{c.max_uses ? ` / ${c.max_uses}` : ''}</p>
                     </div>
-                    {c.min_amount ? <div><p className="text-xs text-gray-400">Min Bill</p><p className="font-semibold text-gray-700">₹{c.min_amount}</p></div> : null}
+                    {c.min_amount ? <div><p className="text-xs text-gray-600">Min Bill</p><p className="font-semibold text-gray-700">₹{c.min_amount}</p></div> : null}
                     <div>
-                      <p className="text-xs text-gray-400">Expires</p>
+                      <p className="text-xs text-gray-600">Expires</p>
                       <p className="font-semibold text-gray-700">{fmtDate(c.valid_until)}</p>
                     </div>
                   </div>

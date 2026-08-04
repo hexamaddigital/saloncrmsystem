@@ -128,7 +128,7 @@ function downloadCSV(content: string, filename: string) {
 // ─── SortIcon ─────────────────────────────────────────────────────────────────
 
 function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: SortDir }) {
-  if (col !== sortKey) return <ChevronUp className="w-3 h-3 text-gray-300" />;
+  if (col !== sortKey) return <ChevronUp className="w-3 h-3 text-gray-600" />;
   return sortDir === 'asc'
     ? <ChevronUp className="w-3 h-3 text-teal-600" />
     : <ChevronDown className="w-3 h-3 text-teal-600" />;
@@ -283,13 +283,13 @@ export function AdminMasterDataPage() {
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-9 w-auto object-contain" />
             <div>
               <h1 className="text-lg font-bold text-gray-900 leading-tight">Master Data Repository</h1>
-              <p className="text-xs text-gray-400">Permanent record system · Admin only</p>
+              <p className="text-xs text-gray-600">Permanent record system · Admin only</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={fetchMaster}
               className="p-2 hover:bg-white/40 rounded-lg transition" title="Refresh">
-              <RefreshCw className="w-4 h-4 text-gray-500" />
+              <RefreshCw className="w-4 h-4 text-gray-600" />
             </button>
             <button onClick={handleExport}
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition">
@@ -306,7 +306,7 @@ export function AdminMasterDataPage() {
               className={`px-5 py-3 text-sm font-semibold border-b-2 transition ${
                 tab === t
                   ? 'border-teal-600 text-teal-700'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-gray-600 hover:text-gray-700'
               }`}>
               {t === 'master' ? (
                 <span className="flex items-center gap-1.5"><Database className="w-4 h-4" />Master Data</span>
@@ -336,7 +336,7 @@ export function AdminMasterDataPage() {
                   <div key={s.label} className="glass border border-white/30 rounded-xl p-4 flex items-center gap-3">
                     {s.icon}
                     <div>
-                      <p className="text-xs text-gray-500">{s.label}</p>
+                      <p className="text-xs text-gray-600">{s.label}</p>
                       <p className="text-lg font-bold text-gray-900">{s.value}</p>
                     </div>
                   </div>
@@ -347,7 +347,7 @@ export function AdminMasterDataPage() {
             {/* Filters */}
             <div className="glass-subtle rounded-xl border border-white/30 p-4 flex flex-wrap gap-3">
               <div className="relative flex-1 min-w-[180px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" />
                 <input type="text" value={searchQ} onChange={e => setSearchQ(e.target.value)}
                   placeholder="Search name, phone, address..."
                   className="w-full pl-9 pr-3 py-2 border border-white/40 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none" />
@@ -377,7 +377,7 @@ export function AdminMasterDataPage() {
                   <X className="w-3.5 h-3.5" /> Clear
                 </button>
               )}
-              <span className="ml-auto flex items-center text-xs text-gray-400 self-center">
+              <span className="ml-auto flex items-center text-xs text-gray-600 self-center">
                 {filteredRows.length} row{filteredRows.length !== 1 ? 's' : ''}
                 {filteredRows.length !== masterRows.length ? ` of ${masterRows.length}` : ''}
               </span>
@@ -397,8 +397,8 @@ export function AdminMasterDataPage() {
               </div>
             ) : filteredRows.length === 0 ? (
               <div className="glass-subtle rounded-xl border border-white/30 p-12 text-center">
-                <Database className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">{hasFilters ? 'No records match your filters' : 'No records found'}</p>
+                <Database className="w-10 h-10 text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-600">{hasFilters ? 'No records match your filters' : 'No records found'}</p>
               </div>
             ) : (
               <div className="glass-subtle rounded-xl border border-white/30 overflow-hidden">
@@ -464,8 +464,8 @@ export function AdminMasterDataPage() {
                               ? <span className="text-yellow-600 font-semibold">{Number(row.avg_rating).toFixed(1)} ★</span>
                               : '—'}
                           </td>
-                          <td className="px-3 py-2.5 text-gray-500 whitespace-nowrap text-xs">{fmt(row.created_at)}</td>
-                          <td className="px-3 py-2.5 text-gray-500 whitespace-nowrap text-xs">{fmt(row.updated_at)}</td>
+                          <td className="px-3 py-2.5 text-gray-600 whitespace-nowrap text-xs">{fmt(row.created_at)}</td>
+                          <td className="px-3 py-2.5 text-gray-600 whitespace-nowrap text-xs">{fmt(row.updated_at)}</td>
                           <td className="px-3 py-2.5">
                             <button onClick={() => setSelectedRow(row)}
                               className="p-1.5 hover:bg-teal-100 rounded-lg transition text-teal-600">
@@ -527,8 +527,8 @@ export function AdminMasterDataPage() {
               </div>
             ) : auditRows.length === 0 ? (
               <div className="glass-subtle rounded-xl border border-white/30 p-12 text-center">
-                <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">No audit entries found</p>
+                <Clock className="w-10 h-10 text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-600">No audit entries found</p>
               </div>
             ) : (
               <>
@@ -557,7 +557,7 @@ export function AdminMasterDataPage() {
                                 {row.operation}
                               </span>
                             </td>
-                            <td className="px-3 py-2.5 text-gray-400 text-xs font-mono">{row.record_id.slice(0, 8)}…</td>
+                            <td className="px-3 py-2.5 text-gray-600 text-xs font-mono">{row.record_id.slice(0, 8)}…</td>
                             <td className="px-3 py-2.5">
                               <ChangedByCell uid={row.changed_by} userMap={userMap} />
                             </td>
@@ -573,7 +573,7 @@ export function AdminMasterDataPage() {
 
                 {/* Pagination */}
                 <div className="flex items-center justify-between glass border border-white/30 rounded-xl px-4 py-3">
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Page {auditPage + 1} · showing {auditRows.length} entries
                   </p>
                   <div className="flex gap-2">
@@ -601,10 +601,10 @@ export function AdminMasterDataPage() {
             <div className="sticky top-0 bg-white border-b border-white/30 px-6 py-4 flex items-center justify-between">
               <div>
                 <h2 className="font-bold text-gray-900">{selectedRow.client_name}</h2>
-                <p className="text-xs text-gray-500">{selectedRow.phone}</p>
+                <p className="text-xs text-gray-600">{selectedRow.phone}</p>
               </div>
               <button onClick={() => setSelectedRow(null)} className="p-2 hover:bg-white/40 rounded-lg transition">
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
             <div className="p-6 space-y-5 flex-1">
@@ -678,7 +678,7 @@ export function AdminMasterDataPage() {
 function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">{title}</h3>
+      <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-2">{title}</h3>
       <div className="glass-subtle rounded-lg border border-white/30 divide-y divide-gray-100">
         {children}
       </div>
@@ -692,7 +692,7 @@ function DetailRow({ label, value, capitalize, danger }: {
   const display = value === null || value === undefined || value === '' ? '—' : String(value);
   return (
     <div className="flex justify-between items-start px-3 py-2 gap-3">
-      <span className="text-xs text-gray-500 shrink-0">{label}</span>
+      <span className="text-xs text-gray-600 shrink-0">{label}</span>
       <span className={`text-xs font-medium text-right break-all ${capitalize ? 'capitalize' : ''} ${danger ? 'text-red-600' : 'text-gray-800'}`}>
         {display}
       </span>
@@ -705,11 +705,11 @@ function ChangedByCell({ uid, userMap }: {
   userMap: Record<string, { name: string; role: string }>;
 }) {
   if (!uid) {
-    return <span className="text-xs text-gray-400 italic">System</span>;
+    return <span className="text-xs text-gray-600 italic">System</span>;
   }
   const user = userMap[uid];
   if (!user) {
-    return <span className="text-xs text-gray-400">Unknown User</span>;
+    return <span className="text-xs text-gray-600">Unknown User</span>;
   }
   const roleBadge = user.role === 'admin'
     ? 'bg-teal-100 text-teal-700'
@@ -746,6 +746,6 @@ function AuditDiff({ old_data, new_data, op }: {
     return JSON.stringify((old_data ?? {})[k]) !== JSON.stringify((new_data ?? {})[k]);
   }).slice(0, 3);
 
-  if (changed.length === 0) return <span className="text-xs text-gray-400">no field changes</span>;
+  if (changed.length === 0) return <span className="text-xs text-gray-600">no field changes</span>;
   return <span className="text-xs text-blue-700">{changed.join(', ')} changed</span>;
 }

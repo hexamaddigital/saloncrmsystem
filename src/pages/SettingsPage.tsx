@@ -235,7 +235,7 @@ export function SettingsPage() {
               <div className="glass rounded-2xl overflow-hidden">
                 <div className="p-6 border-b border-white/20">
                   <h2 className="text-lg font-bold text-gray-900">Profile Information</h2>
-                  <p className="text-sm text-gray-500 mt-1">Your personal details and role</p>
+                  <p className="text-sm text-gray-600 mt-1">Your personal details and role</p>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-5 mb-8">
@@ -244,7 +244,7 @@ export function SettingsPage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-900">{user?.name}</h3>
-                      <p className="text-gray-500">{user?.email}</p>
+                      <p className="text-gray-600">{user?.email}</p>
                       <span className="inline-block mt-1 px-3 py-0.5 bg-teal-100 text-teal-800 text-xs font-semibold rounded-full capitalize">
                         {user?.role}
                       </span>
@@ -253,19 +253,19 @@ export function SettingsPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="glass-subtle rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Full Name</p>
+                      <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Full Name</p>
                       <p className="text-gray-900 font-medium">{user?.name}</p>
                     </div>
                     <div className="glass-subtle rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Email</p>
+                      <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Email</p>
                       <p className="text-gray-900 font-medium">{user?.email}</p>
                     </div>
                     <div className="glass-subtle rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Phone</p>
+                      <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Phone</p>
                       <p className="text-gray-900 font-medium">{user?.phone}</p>
                     </div>
                     <div className="glass-subtle rounded-xl p-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Role</p>
+                      <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Role</p>
                       <p className="text-gray-900 font-medium capitalize">{user?.role}</p>
                     </div>
                   </div>
@@ -277,7 +277,7 @@ export function SettingsPage() {
               <div className="glass rounded-2xl overflow-hidden">
                 <div className="p-6 border-b border-white/20">
                   <h2 className="text-lg font-bold text-gray-900">Account Settings</h2>
-                  <p className="text-sm text-gray-500 mt-1">Update your email address</p>
+                  <p className="text-sm text-gray-600 mt-1">Update your email address</p>
                 </div>
                 <div className="p-6">
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
@@ -294,12 +294,12 @@ export function SettingsPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Current Email</label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                         <input
                           type="email"
                           value={user?.email || ''}
                           disabled
-                          className="w-full pl-10 pr-4 py-2.5 border border-white/30 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                          className="w-full pl-10 pr-4 py-2.5 border border-white/30 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -307,7 +307,7 @@ export function SettingsPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">New Email</label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                         <input
                           type="email"
                           value={emailForm.newEmail}
@@ -322,7 +322,7 @@ export function SettingsPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                         <input
                           type={showCurrentPassword ? 'text' : 'password'}
                           value={emailForm.currentPassword}
@@ -334,7 +334,7 @@ export function SettingsPage() {
                         <button
                           type="button"
                           onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"
                         >
                           {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
@@ -378,14 +378,14 @@ export function SettingsPage() {
               <div className="glass rounded-2xl overflow-hidden">
                 <div className="p-6 border-b border-white/20">
                   <h2 className="text-lg font-bold text-gray-900">Security Settings</h2>
-                  <p className="text-sm text-gray-500 mt-1">Change your password</p>
+                  <p className="text-sm text-gray-600 mt-1">Change your password</p>
                 </div>
                 <div className="p-6">
                   <form onSubmit={handlePasswordChange} className="space-y-5">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                         <input
                           type={showCurrentPassword ? 'text' : 'password'}
                           value={passwordForm.currentPassword}
@@ -397,7 +397,7 @@ export function SettingsPage() {
                         <button
                           type="button"
                           onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"
                         >
                           {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
@@ -407,7 +407,7 @@ export function SettingsPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                         <input
                           type={showNewPassword ? 'text' : 'password'}
                           value={passwordForm.newPassword}
@@ -419,7 +419,7 @@ export function SettingsPage() {
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"
                         >
                           {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
@@ -430,7 +430,7 @@ export function SettingsPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-600" />
                         <input
                           type={showConfirmPassword ? 'text' : 'password'}
                           value={passwordForm.confirmPassword}
@@ -442,7 +442,7 @@ export function SettingsPage() {
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"
                         >
                           {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>

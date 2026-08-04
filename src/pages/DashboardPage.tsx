@@ -99,7 +99,7 @@ export function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Image_logo.png" alt="Image Skinn & Hair" className="h-12 w-auto object-contain" />
-            <p className="text-xs text-gray-500 font-medium hidden sm:block">Salon Management Platform</p>
+            <p className="text-xs text-gray-600 font-medium hidden sm:block">Salon Management Platform</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="text-sm font-medium text-gray-700 hidden sm:inline">{user?.name}</span>
@@ -123,32 +123,32 @@ export function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 animate-fade-in-up">
             <button onClick={() => navigate('/admin/clients')}
               className="dash-card glass rounded-2xl p-5 text-left group col-span-1" style={{ '--card-accent': '20, 184, 166' } as React.CSSProperties}>
-              <p className="text-gray-500 text-xs font-medium group-hover:text-teal-600 transition">Total Clients</p>
+              <p className="text-gray-600 text-xs font-medium group-hover:text-teal-600 transition">Total Clients</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalClients}</p>
               <div className="flex items-center justify-between mt-2">
-                <Users className="w-8 h-8 text-teal-200 group-hover:text-teal-300 transition" />
+                <Users className="w-8 h-8 text-teal-400 group-hover:text-teal-500 transition" />
                 <span className="text-xs text-teal-600 opacity-0 group-hover:opacity-100 transition font-medium">View →</span>
               </div>
             </button>
             <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '59, 130, 246' } as React.CSSProperties}>
-              <p className="text-gray-500 text-xs font-medium">Today's Sales</p>
+              <p className="text-gray-600 text-xs font-medium">Today's Sales</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">₹{stats.dailySales.toLocaleString('en-IN')}</p>
-              <BarChart3 className="w-8 h-8 text-blue-200 mt-2" />
+              <BarChart3 className="w-8 h-8 text-blue-400 mt-2" />
             </div>
             <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '34, 197, 94' } as React.CSSProperties}>
-              <p className="text-gray-500 text-xs font-medium">Monthly Sales</p>
+              <p className="text-gray-600 text-xs font-medium">Monthly Sales</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">₹{stats.monthlySales.toLocaleString('en-IN')}</p>
-              <TrendingUp className="w-8 h-8 text-green-200 mt-2" />
+              <TrendingUp className="w-8 h-8 text-green-400 mt-2" />
             </div>
             <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '139, 92, 246' } as React.CSSProperties}>
-              <p className="text-gray-500 text-xs font-medium">Today's Appts</p>
+              <p className="text-gray-600 text-xs font-medium">Today's Appts</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{stats.todayAppointments}</p>
-              <CalendarDays className="w-8 h-8 text-violet-200 mt-2" />
+              <CalendarDays className="w-8 h-8 text-violet-400 mt-2" />
             </div>
             <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '245, 158, 11' } as React.CSSProperties}>
-              <p className="text-gray-500 text-xs font-medium">Pending Bills</p>
+              <p className="text-gray-600 text-xs font-medium">Pending Bills</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{stats.pendingInvoices}</p>
-              <Receipt className="w-8 h-8 text-amber-200 mt-2" />
+              <Receipt className="w-8 h-8 text-amber-400 mt-2" />
             </div>
           </div>
         )}
@@ -157,11 +157,11 @@ export function DashboardPage() {
         {!isAdmin && (
           <div className="grid grid-cols-2 gap-4 animate-fade-in-up">
             <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '139, 92, 246' } as React.CSSProperties}>
-              <p className="text-gray-500 text-xs font-medium">Today's Appointments</p>
+              <p className="text-gray-600 text-xs font-medium">Today's Appointments</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">{stats.todayAppointments}</p>
             </div>
             <div className="dash-card glass rounded-2xl p-5" style={{ '--card-accent': '20, 184, 166' } as React.CSSProperties}>
-              <p className="text-gray-500 text-xs font-medium mb-2">Popular This Month</p>
+              <p className="text-gray-600 text-xs font-medium mb-2">Popular This Month</p>
               <div className="space-y-1">
                 {stats.popularTreatments.slice(0, 3).map((t, i) => (
                   <div key={i} className="flex justify-between text-sm">
@@ -169,7 +169,7 @@ export function DashboardPage() {
                     <span className="font-semibold text-teal-600">{t.count}</span>
                   </div>
                 ))}
-                {stats.popularTreatments.length === 0 && <p className="text-gray-400 text-xs">No data yet</p>}
+                {stats.popularTreatments.length === 0 && <p className="text-gray-600 text-xs">No data yet</p>}
               </div>
             </div>
           </div>
@@ -177,7 +177,7 @@ export function DashboardPage() {
 
         {/* Operator modules */}
         <div className="animate-fade-in-up">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Access</h2>
+          <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-4">Quick Access</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {operatorModules.map(mod => (
               <button key={mod.path} onClick={() => navigate(mod.path)}
@@ -198,7 +198,7 @@ export function DashboardPage() {
         {/* Admin-only modules */}
         {isAdmin && (
           <div className="animate-fade-in-up">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Admin Control Panel</h2>
+            <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-4">Admin Control Panel</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {adminOnlyModules.map(mod => (
                 <button key={mod.path} onClick={() => navigate(mod.path)}
@@ -207,7 +207,7 @@ export function DashboardPage() {
                     {mod.icon}
                   </div>
                   <h3 className="text-base font-bold text-gray-900">{mod.label}</h3>
-                  <p className="text-gray-500 text-xs mt-1">{mod.desc}</p>
+                  <p className="text-gray-600 text-xs mt-1">{mod.desc}</p>
                   <div className="mt-3 inline-block px-3 py-1 btn-lux text-white rounded-lg text-xs font-semibold">Open →</div>
                 </button>
               ))}
