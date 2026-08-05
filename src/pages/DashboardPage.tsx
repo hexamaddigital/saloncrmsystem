@@ -79,7 +79,7 @@ export function DashboardPage() {
     { label: 'Appointments',   desc: `${stats.todayAppointments} today`, path: '/appointments', icon: <CalendarDays className="w-6 h-6" />, accent: 'text-violet-600', glow: 'bg-violet-500/20', rgb: '139, 92, 246' },
     { label: 'Billing',        desc: 'Invoices & payments',      path: '/billing',        icon: <Receipt className="w-6 h-6" />,     accent: 'text-amber-600', glow: 'bg-amber-500/20', rgb: '245, 158, 11' },
     { label: 'Inquiries',      desc: 'Leads & follow-ups',       path: '/inquiries',      icon: <MessageSquare className="w-6 h-6" />, accent: 'text-green-600', glow: 'bg-green-500/20', rgb: '34, 197, 94' },
-    { label: 'QR Menu',        desc: 'View & scan public menu',  path: '/admin/qr-menu',  icon: <QrCode className="w-6 h-6" />,      accent: 'text-cyan-600', glow: 'bg-cyan-500/20', rgb: '6, 182, 212' },
+    { label: 'QR Service Catalog', desc: 'View & scan public catalog', path: '/admin/qr-menu',  icon: <QrCode className="w-6 h-6" />,      accent: 'text-cyan-600', glow: 'bg-cyan-500/20', rgb: '6, 182, 212' },
   ];
 
   const adminOnlyModules = [
@@ -87,7 +87,7 @@ export function DashboardPage() {
     { label: 'Loyalty Points', desc: 'Rewards & point rules',     path: '/admin/loyalty',     icon: <Star className="w-6 h-6" />,        accent: 'text-yellow-600', glow: 'bg-yellow-500/20', rgb: '234, 179, 8' },
     { label: 'Coupons',        desc: 'Discount codes',            path: '/admin/coupons',     icon: <Tag className="w-6 h-6" />,         accent: 'text-rose-600', glow: 'bg-rose-500/20', rgb: '244, 63, 94' },
     { label: 'Reminders',      desc: 'Alerts & follow-ups',       path: '/admin/reminders',   icon: <Bell className="w-6 h-6" />,        accent: 'text-orange-600', glow: 'bg-orange-500/20', rgb: '249, 115, 22' },
-    { label: 'QR Menu',        desc: 'Public service menu',       path: '/admin/qr-menu',     icon: <QrCode className="w-6 h-6" />,      accent: 'text-cyan-600', glow: 'bg-cyan-500/20', rgb: '6, 182, 212' },
+    { label: 'QR Service Catalog', desc: 'Public service catalog',    path: '/admin/qr-menu',     icon: <QrCode className="w-6 h-6" />,      accent: 'text-cyan-600', glow: 'bg-cyan-500/20', rgb: '6, 182, 212' },
     { label: 'Feedback',       desc: 'Reviews & ratings',         path: '/admin/feedback',    icon: <MessageCircle className="w-6 h-6" />, accent: 'text-pink-600', glow: 'bg-pink-500/20', rgb: '236, 72, 153' },
     { label: 'Reports',        desc: 'Analytics & export',        path: '/admin/reports',     icon: <BarChart2 className="w-6 h-6" />,   accent: 'text-indigo-600', glow: 'bg-indigo-500/20', rgb: '99, 102, 241' },
     { label: 'Audit Log',      desc: 'Change history',            path: '/admin/audit',       icon: <Shield className="w-6 h-6" />,      accent: 'text-slate-600', glow: 'bg-slate-500/20', rgb: '100, 116, 139' },

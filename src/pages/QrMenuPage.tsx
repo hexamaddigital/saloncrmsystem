@@ -124,7 +124,7 @@ export function QrMenuPage() {
   }
 
   async function deleteItem(id: string) {
-    if (!confirm('Remove this service from the menu?')) return;
+    if (!confirm('Remove this service from the catalog?')) return;
     await supabase.from('qr_menu_items').delete().eq('id', id);
     fetchMenu();
   }
@@ -156,7 +156,7 @@ export function QrMenuPage() {
     if (!qrDataUrl) return;
     const link = document.createElement('a');
     link.href = qrDataUrl;
-    link.download = 'qr-service-menu.png';
+    link.download = 'qr-service-catalog.png';
     link.click();
   }
 
@@ -165,7 +165,7 @@ export function QrMenuPage() {
     const win = window.open('', '_blank', 'noopener,noreferrer');
     if (!win) return;
     win.document.write(`
-      <html><head><title>QR Code - Service Menu</title>
+      <html><head><title>QR Code - Service Catalog</title>
       <style>
         body { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0; font-family:system-ui,sans-serif; }
         img { width:300px; height:300px; }
@@ -173,8 +173,8 @@ export function QrMenuPage() {
         p { color:#666; font-size:14px; margin:4px 0 0; }
       </style></head><body>
       <img src="${qrDataUrl}" alt="QR Code" />
-      <h2>${menu?.title || 'Service Menu'}</h2>
-      <p>Scan to view our live service menu</p>
+      <h2>${menu?.title || 'Service Catalog'}</h2>
+      <p>Scan to view our live service catalog</p>
       </body></html>
     `);
     win.document.close();
@@ -204,7 +204,7 @@ export function QrMenuPage() {
               <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
             <QrCode className="w-5 h-5 text-teal-600" />
-            <h1 className="text-xl font-bold text-gray-900">QR Service Menu</h1>
+            <h1 className="text-xl font-bold text-gray-900">QR Service Catalog</h1>
             {!isAdmin && <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/40 text-gray-600">View Only</span>}
           </div>
           {isAdmin && (
@@ -225,7 +225,7 @@ export function QrMenuPage() {
             <div className="bg-white rounded-2xl border border-white/20 p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-gray-900">Menu Status</h3>
+                  <h3 className="font-bold text-gray-900">Catalog Status</h3>
                   <p className="text-sm text-gray-600 mt-0.5">{activeItems.length} active services</p>
                 </div>
                 {isAdmin ? (
@@ -244,7 +244,7 @@ export function QrMenuPage() {
 
               {menu?.is_active && (
                 <div className="bg-teal-500/15 border border-teal-300/40 rounded-xl p-4">
-                  <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-2">Public Menu URL</p>
+                  <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-2">Public Service URL</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <code className="flex-1 min-w-0 text-xs glass border border-teal-200 rounded-lg px-3 py-2 text-teal-800 font-mono truncate">{qrUrl}</code>
                     {isAdmin && (
@@ -255,14 +255,14 @@ export function QrMenuPage() {
                     )}
                     <button onClick={copyMenuLink}
                       className="flex items-center gap-1.5 px-3 py-2 btn-lux text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
-                      {linkCopied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><LinkIcon className="w-3.5 h-3.5" /> Copy Menu Link</>}
+                      {linkCopied ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><LinkIcon className="w-3.5 h-3.5" /> Copy Service Link</>}
                     </button>
                     <button onClick={() => window.open(qrUrl, '_blank', 'noopener,noreferrer')}
                       className="flex items-center gap-1.5 px-3 py-2 bg-white/40 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition whitespace-nowrap">
-                      <Eye className="w-3.5 h-3.5" /> Preview
+                      <Eye className="w-3.5 h-3.5" /> Preview Catalog
                     </button>
                   </div>
-                  <p className="text-xs text-teal-600 mt-2">Customers can scan the QR code to view the live menu — no login needed. Operators can also scan or open the link to view.</p>
+                  <p className="text-xs text-teal-600 mt-2">Customers can scan the QR code to view the live service catalog — no login needed. Operators can also scan or open the link to view.</p>
                 </div>
               )}
             </div>
@@ -270,10 +270,10 @@ export function QrMenuPage() {
             {/* Menu settings — admin only */}
             {isAdmin && (
               <div className="bg-white rounded-2xl border border-white/20 p-6 space-y-4">
-                <h3 className="font-bold text-gray-900">Menu Settings</h3>
+                <h3 className="font-bold text-gray-900">Catalog Settings</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Menu Title</label>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Catalog Title</label>
                     <input type="text" value={menuForm.title} onChange={e => setMenuForm(p => ({ ...p, title: e.target.value }))} className={inputCls} />
                   </div>
                   <div>
@@ -324,7 +324,7 @@ export function QrMenuPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id="item-active" checked={itemForm.is_active} onChange={e => setItemForm(p => ({ ...p, is_active: e.target.checked }))} className="w-4 h-4 accent-teal-600" />
-                    <label htmlFor="item-active" className="text-sm font-medium text-gray-700">Visible on menu</label>
+                    <label htmlFor="item-active" className="text-sm font-medium text-gray-700">Visible on catalog</label>
                   </div>
                 </div>
                 {itemError && <p className="text-sm text-red-700 bg-red-500/15 border border-red-300/40 rounded-xl backdrop-blur-sm px-3 py-2 flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5 shrink-0" />{itemError}</p>}
@@ -373,7 +373,7 @@ export function QrMenuPage() {
               {items.length === 0 && (
                 <div className="bg-white rounded-2xl border border-white/20 p-12 text-center">
                   <QrCode className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                  <p className="text-gray-600">{isAdmin ? 'No services added yet. Add your first service to the menu.' : 'No services listed on the menu yet.'}</p>
+                  <p className="text-gray-600">{isAdmin ? 'No services added yet. Add your first service to the catalog.' : 'No services listed on the catalog yet.'}</p>
                 </div>
               )}
             </div>
@@ -391,7 +391,7 @@ export function QrMenuPage() {
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/20">
               <div className="flex items-center gap-2">
                 <QrCode className="w-5 h-5 text-teal-600" />
-                <h2 className="font-bold text-gray-900">QR Code — Service Menu</h2>
+                <h2 className="font-bold text-gray-900">QR Code — Service Catalog</h2>
               </div>
               <button onClick={() => setShowQrModal(false)} className="p-1.5 hover:bg-white/40 rounded-lg transition">
                 <X className="w-4 h-4" />
@@ -402,8 +402,8 @@ export function QrMenuPage() {
                 <div className="bg-white border-2 border-teal-200 rounded-2xl p-4">
                   <img src={qrDataUrl} alt="Service Menu QR Code" className="w-56 h-56" />
                 </div>
-                <p className="text-sm font-bold text-gray-900 mt-4">{menu?.title || 'Service Menu'}</p>
-                <p className="text-xs text-gray-600 mt-1 text-center">Scan to open the live public menu — no login needed</p>
+                <p className="text-sm font-bold text-gray-900 mt-4">{menu?.title || 'Service Catalog'}</p>
+                <p className="text-xs text-gray-600 mt-1 text-center">Scan to open the live public service catalog — no login needed</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -423,7 +423,7 @@ export function QrMenuPage() {
 
               <div className="bg-teal-500/15 border border-teal-100 rounded-xl p-3">
                 <p className="text-xs text-teal-700 leading-relaxed">
-                  This QR code always opens the live public menu. Any service, package, or price changes you make will appear instantly when customers scan it.
+                  This QR code always opens the live public service catalog. Any service, package, or price changes you make will appear instantly when customers scan it.
                 </p>
               </div>
             </div>

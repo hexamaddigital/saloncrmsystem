@@ -42,8 +42,8 @@ export function PublicMenuPage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="glass-strong rounded-3xl p-8 text-center max-w-sm animate-fade-in-up">
         <Scissors className="w-12 h-12 text-teal-400 mx-auto mb-4" />
-        <h1 className="text-xl font-bold text-gray-800 mb-2">Menu Unavailable</h1>
-        <p className="text-gray-600">The service menu is currently offline. Please contact the salon.</p>
+        <h1 className="text-xl font-bold text-gray-800 mb-2">Catalog Unavailable</h1>
+        <p className="text-gray-600">The service catalog is currently offline. Please contact the salon.</p>
       </div>
     </div>
   );
