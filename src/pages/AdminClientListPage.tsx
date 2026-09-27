@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, Search, Loader2, Users, Phone,
-  ChevronRight, Scissors, Sparkles, X,
+  ChevronRight, Scissors, Sparkles, X, Download,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Client } from '../lib/types';
+import { exportClientsToExcel } from '../lib/excelExport';
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
   hair: 'Hair',
@@ -110,12 +111,25 @@ export function AdminClientListPage() {
               <p className="text-xs text-gray-600">Admin view</p>
             </div>
           </div>
-          {!loading && (
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/15 text-teal-700 text-sm font-semibold rounded-lg border border-teal-200">
-              <Users className="w-4 h-4" />
-              {filtered.length}{filtered.length !== clients.length ? ` / ${clients.length}` : ''}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {!loading && (
+              <button
+                onClick={() => exportClientsToExcel(filtered)}
+                disabled={filtered.length === 0}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                title="Export to Excel"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Export Excel</span>
+              </button>
+            )}
+            {!loading && (
+              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-500/15 text-teal-700 text-sm font-semibold rounded-lg border border-teal-200">
+                <Users className="w-4 h-4" />
+                {filtered.length}{filtered.length !== clients.length ? ` / ${clients.length}` : ''}
+              </span>
+            )}
+          </div>
         </div>
       </header>
 
